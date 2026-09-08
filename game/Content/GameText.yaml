@@ -16604,6 +16604,22 @@ FreighterModelTip:
  Id: 30179
  ENG: "The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model."
  FRA: "Le modèle de cargo qu'utilisent Construction auto et Upgrade auto. Coché = Choix auto (le meilleur disponible) ; décochez pour choisir un modèle précis."
+GarrisonTroop:
+ Id: 30343
+ ENG: "Garrison Troop"
+ FRA: "Troupe de garnison"
+GarrisonTroopTip:
+ Id: 30344
+ ENG: "The troop the governor builds when it refills a garrison (Auto Build Garrison and Garrison Size, on the colony screen). Cheapest is the least costly troop you can build, as in the base game. Best is the troop with the highest anti-infantry attack, the same pick a new troop ship gets. Or name one: a troop you can no longer build falls back to Cheapest."
+ FRA: "La troupe que le gouverneur construit quand il regarnit une garnison (Construction auto de garnison et Taille de garnison, sur l'écran de la colonie). La moins chère : la troupe la moins coûteuse que vous savez construire, comme dans le jeu de base. La meilleure : celle à la plus forte attaque anti-infanterie, le choix d'un transport de troupes neuf. Ou nommez-en une : une troupe que vous ne savez plus construire retombe sur La moins chère."
+GarrisonTroopCheapest:
+ Id: 30345
+ ENG: "Cheapest (Default)"
+ FRA: "La moins chère (Défaut)"
+GarrisonTroopBest:
+ Id: 30346
+ ENG: "Best"
+ FRA: "La meilleure"
 InterTradeInhibited:
  Id: 30180
  ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Policies > Trade)."

@@ -31,6 +31,8 @@ namespace Ship_Game
 
         DropOptions<int> FreighterDropDown, ColonyShipDropDown, ScoutDropDown,
                          ConstructorDropDown, ResearchStationDropDown, MiningStationDropDown;
+        // (player feedback) the garrison's troop: a mode or a template name, see GarrisonTroopValue
+        DropOptions<string> GarrisonTroopDropDown;
         bool ResearchStationsEnabled, MiningOpsEnabled;
 
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
@@ -43,6 +45,7 @@ namespace Ship_Game
         // belongs; Freighters lost the priority row and Inter-Empire Trade (-52), also to Policies.
         const float ColonizationBoxH = 130f, ConstructionBoxH = 139f,
                     TradeBoxH = 152f,
+                    TroopsBoxH = 74f, // one row: the garrison troop picker
                     // two switches + slider label + slider + the column title + seven paired
                     // category rows + the Miscellaneous heading + Inhibition, at 26 per row.
                     NotificationsBoxH = 420f;
@@ -64,7 +67,7 @@ namespace Ship_Game
             // the frame hugs its content, anchored on the bar and the left margin.
             // Two columns: [Notifications] and [Colonization / Construction / Trade].
             float col1H = NotificationsBoxH;
-            float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH;
+            float col2H = ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH + BoxGap + TroopsBoxH;
             float contentW = 9 + 10 + BoxW + BoxGap + BoxW2 + 10 + 9;  // ClientArea insets + gutters
             float contentH = 60 + Math.Max(col1H, col2H) + 22;  // tab strip + cross clearance + pads
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
@@ -192,6 +195,14 @@ namespace Ship_Game
             notifications.AddCheckbox(() => !P.DisableInhibitionWarning, v => P.DisableInhibitionWarning = !v,
                                       title: "Inhibition Alerts (map overlay)", tooltip: GameText.InhibitionAlertsAreDisplayedWhen);
 
+            // (player feedback) the troop the governor rebuilds a garrison with - the same family
+            // as the model pickers above: what the machine takes when it builds for you.
+            UIList troops = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH + BoxGap, BoxW2, TroopsBoxH), "Troops");
+            GarrisonTroopDropDown = troops.Add(new LabeledDropdown<string>())
+                .Create(GameText.GarrisonTroop, GameText.GarrisonTroopTip);
+            GarrisonTroopDropDown.OnValueChange = v => SetGarrisonTroop(player, v);
+            troops.ReverseZOrder();
+
             UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Freighters");
             // The picker names the shared Freighter Model that Auto-build and Auto-upgrade both
             // use; its Auto Pick box picks the best model when checked, or reveals the manual
@@ -284,11 +295,45 @@ namespace Ship_Game
             }
         }
 
+        // The picker's value: "" = Cheapest, "*" = Best, otherwise a template name. The two modes
+        // are not names, so they cannot collide with a mod's troop.
+        const string GarrisonCheapestValue = "", GarrisonBestValue = "*";
+
+        static string GarrisonTroopValue(Empire player)
+            => player.GarrisonTroopMode == Empire.GarrisonBest  ? GarrisonBestValue
+             : player.GarrisonTroopMode == Empire.GarrisonNamed ? player.GarrisonTroop
+             : GarrisonCheapestValue;
+
+        static void SetGarrisonTroop(Empire player, string v)
+        {
+            player.GarrisonTroopMode = v == GarrisonCheapestValue ? Empire.GarrisonCheapest
+                                     : v == GarrisonBestValue     ? Empire.GarrisonBest
+                                     : Empire.GarrisonNamed;
+            player.GarrisonTroop = player.GarrisonTroopMode == Empire.GarrisonNamed ? v : null;
+        }
+
+        // the two modes first, then every template the empire can build, cheapest first - the
+        // list fills itself as techs unlock troops, since the screen is rebuilt on each opening
+        void RebuildGarrisonTroopOptions(Empire player)
+        {
+            if (GarrisonTroopDropDown == null)
+                return;
+            GarrisonTroopDropDown.Clear();
+            GarrisonTroopDropDown.AddOption(GameText.GarrisonTroopCheapest, GarrisonCheapestValue);
+            GarrisonTroopDropDown.AddOption(GameText.GarrisonTroopBest, GarrisonBestValue);
+            foreach (Troop t in ResourceManager.GetTroopTemplatesFor(player))
+                GarrisonTroopDropDown.AddOption(t.Name, t.Name);
+            // a named troop no longer buildable shows as Cheapest, which is what the refill does
+            if (!GarrisonTroopDropDown.SetActiveValue(GarrisonTroopValue(player)))
+                GarrisonTroopDropDown.ActiveIndex = 0;
+        }
+
         void UpdateDropDowns()
         {
             Empire player = Universe.Player;
             EmpireData pd = player.data;
 
+            RebuildGarrisonTroopOptions(player);
             InitDropOptions(ScoutDropDown, ref pd.CurrentAutoScout, pd.StartingScout,
                 ship =>
                 {

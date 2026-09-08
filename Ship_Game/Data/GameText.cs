@@ -7414,6 +7414,14 @@ namespace Ship_Game
         FreighterModel = 30178,
         /// <summary>The freighter model Auto-build and Auto-upgrade use. Checked = Auto Pick (the best available); uncheck to choose a specific model.</summary>
         FreighterModelTip = 30179,
+        /// <summary>Garrison Troop</summary>
+        GarrisonTroop = 30343,
+        /// <summary>The troop the governor builds when it refills a garrison.</summary>
+        GarrisonTroopTip = 30344,
+        /// <summary>Cheapest (Default)</summary>
+        GarrisonTroopCheapest = 30345,
+        /// <summary>Best</summary>
+        GarrisonTroopBest = 30346,
         /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
         InterTradeInhibited = 30180,
         /// <summary>Auto-build Explorers</summary>

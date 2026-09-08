@@ -224,6 +224,19 @@ cutoff is untouched: above it nobody orders food, whatever the level.
 
 AI empires keep the default.
 
+### Garrison troop: which template the governor rebuilds with
+`Planet_BuildDefenses.cs`, `Empire.cs`, `AutomationScreen.cs` (Automation > Troops)
+
+**Source: player feedback**, relayed by the maintainer: the automatic refill of a garrison
+always built marines, so a player who wanted tanks had to queue them by hand.
+
+The refill took the cheapest troop the empire can build, which in the stock data is the
+marine. A picker in Automation, next to the ship model pickers, now names the template:
+**Cheapest** (Default, the base game), **Best** (the highest anti-infantry attack, the same
+pick a new troop ship gets), or any troop the empire can build, by name. The list fills
+itself as techs unlock troops. A named troop that can no longer be built falls back to
+Cheapest. AI empires keep the default.
+
 ### A new colony can rush its first turns
 `3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
 

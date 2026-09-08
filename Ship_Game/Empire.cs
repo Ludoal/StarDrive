@@ -126,6 +126,13 @@ namespace Ship_Game
         bool SendExplorersActive  => !isPlayer || SendNewExplorersToExplore;
         [StarData] public bool AutoColonize;
         [StarData] public bool AutoCoreGovernor; // Ludoal fork: Auto Governor - new colonies get a fitting governor (name kept for save compat)
+        // (player feedback) the troop the governor builds when it refills a garrison: Cheapest =
+        // the least costly unlocked troop, as in the base game; Best = the highest anti-infantry
+        // attack, the pick a new troop ship gets; Named = the template in GarrisonTroop. An int and
+        // a name rather than an enum, so a build that never heard of the setting still reads the save.
+        [StarData] public int GarrisonTroopMode;
+        [StarData] public string GarrisonTroop;
+        public const int GarrisonCheapest = 0, GarrisonBest = 1, GarrisonNamed = 2;
         // Ludoal fork: the empire's own building mandates (Policies > Colony) - what a colony set
         // to Auto follows. Stored as ints, not as the enum: BuildMandate does not exist in vanilla,
         // and a build without the deleted-enum skip cannot read past a type it has never heard of.
@@ -605,6 +612,18 @@ namespace Ship_Game
         public float KnownEmpireStrength(Empire e) => AI.ThreatMatrix.KnownEmpireStrength(e);
 
         public WeaponTagModifier WeaponBonuses(WeaponTag which) => data.WeaponTags[which];
+
+        // The garrison's template, out of the ones this empire can build - cheapest first, as
+        // GetTroopTemplatesFor sorts them. A named troop no longer buildable falls back to the cheapest.
+        public Troop GarrisonTroopFrom(Troop[] templates)
+        {
+            switch (GarrisonTroopMode)
+            {
+                case GarrisonBest:  return templates.FindMax(t => t.SoftAttack);
+                case GarrisonNamed: return templates.Find(t => t.Name == GarrisonTroop) ?? templates[0];
+                default:            return templates[0];
+            }
+        }
 
         public int GetTypicalTroopStrength()
         {

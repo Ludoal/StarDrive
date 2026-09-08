@@ -517,7 +517,8 @@ namespace Ship_Game
             Troop[] templates = ResourceManager.GetTroopTemplatesFor(Owner);
             if (templates.Length == 0)
                 return;
-            Construction.Enqueue(templates[0], QueueItemType.Troop);
+            // (player feedback) which template is the empire's Garrison Troop setting (Automation)
+            Construction.Enqueue(Owner.GarrisonTroopFrom(templates), QueueItemType.Troop);
         }
 
         void BuildAndScrapMilitaryBuildings(float budget, float tolerance)
