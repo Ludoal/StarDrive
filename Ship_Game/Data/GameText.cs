@@ -6333,7 +6333,7 @@ namespace Ship_Game
         FuUnitRuns = 30351,
         /// <summary>worlds</summary>
         FuUnitWorlds = 30352,
-        /// <summary>Foreign Trade:</summary>
+        /// <summary>Foreign & Stations:</summary>
         FuForeignTrade = 30357,
         /// <summary>Not in Blueprint</summary>
         MandateNotInBlueprint = 30358,

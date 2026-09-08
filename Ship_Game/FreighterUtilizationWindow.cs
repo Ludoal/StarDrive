@@ -36,7 +36,7 @@ namespace Ship_Game
         // of its cells count worlds). The fleet itself is counted on the left.
         UILabel TotalFreightersLabel;
         UILabel TotalFleetLabel; // the whole freighter fleet, on the left column
-        UILabel ForeignTradeLabel; // hulls on a run to another empire - the one figure nothing else gives (bench 616)
+        UILabel ForeignTradeLabel; // hulls on a run the column cannot show: to another empire, or to a station (bench 617)
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
         UILabel TotalExportingValue;
@@ -178,9 +178,9 @@ namespace Ship_Game
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             NumIdleFreightersLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
-            // the hulls away on foreign runs: not in the column (no need of ours) and not deducible
-            // from anything else on the screen. Idle + the column's top + this = the fleet, save
-            // for the runs to stations.
+            // the hulls on runs the column cannot show - to another empire (no need of ours) or to
+            // a station (no planet at the end) - so Idle + the column's top + this = the fleet,
+            // and a gap left over would be a real fault, not an unlisted case (bench 617)
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuForeignTrade, Fonts.Arial12Bold, Color.Wheat));
             ForeignTradeLabel          = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
@@ -414,7 +414,8 @@ namespace Ship_Game
                 UtilizationBar.Progress = FleetFreighters == 0 ? 0 : (float)NumUtilizedFreighters/FleetFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (FleetFreighters - NumUtilizedFreighters).String();
-                ForeignTradeLabel.Text = allUtilizedFreightesr.Count(f => f.AI.TradeImportFor(Goods.Food) is { } p0 && p0.Owner != Player
+                ForeignTradeLabel.Text = allUtilizedFreightesr.Count(f => f.AI.TradeTargetStation != null
+                                                                      || f.AI.TradeImportFor(Goods.Food) is { } p0 && p0.Owner != Player
                                                                       || f.AI.TradeImportFor(Goods.Production) is { } p1 && p1.Owner != Player).String();
                 TotalFleetLabel.Text = FleetFreighters.String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();

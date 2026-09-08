@@ -22755,8 +22755,8 @@ FuUnitWorlds:
  FRA: "mondes"
 FuForeignTrade:
  Id: 30357
- ENG: "Foreign Trade:"
- FRA: "Commerce extérieur :"
+ ENG: "Foreign & Stations:"
+ FRA: "Étranger & stations :"
 MandateNotInBlueprint:
  Id: 30358
  ENG: "Not in Blueprint"
