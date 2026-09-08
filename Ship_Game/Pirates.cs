@@ -244,6 +244,7 @@ namespace Ship_Game
         // limiter. The starting level on the same notch is what makes the ceiling reachable.
         public float RaidThreatFactor => Universe.P.PirateStrength switch
         {
+            PirateStrengthSetting.Weak   => 0.7f,
             PirateStrengthSetting.Strong => 1.4f,
             PirateStrengthSetting.Brutal => 2f,
             _                            => 1f,
