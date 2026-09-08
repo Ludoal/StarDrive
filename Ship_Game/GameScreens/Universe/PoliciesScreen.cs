@@ -320,11 +320,16 @@ namespace Ship_Game
                 int[] shown = { Share(0), Share(1), Share(2) };
                 if (Player.FreighterPriorityAuto)
                 {
+                    // until the window holds a run, the rails keep the shares as set rather than
+                    // dropping to nought at the switch (bench 617)
                     int[] runs = Player.RecentRuns;
                     int total = runs[0] + runs[1] + runs[2];
-                    shown[0] = total > 0 ? runs[0] * 100 / total : 0;
-                    shown[1] = total > 0 ? runs[1] * 100 / total : 0;
-                    shown[2] = total > 0 ? 100 - shown[0] - shown[1] : 0;
+                    if (total > 0)
+                    {
+                        shown[0] = runs[0] * 100 / total;
+                        shown[1] = runs[1] * 100 / total;
+                        shown[2] = 100 - shown[0] - shown[1];
+                    }
                 }
                 Rebalancing = true;
                 for (int i = 0; i < 3; ++i)
