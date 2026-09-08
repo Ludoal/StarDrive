@@ -435,7 +435,9 @@ namespace Ship_Game.GameScreens
             {
                 if (cb.Checked)
                 {
-                    Player.Universe.Screen?.RunOnSimThread(() => Player.AI.RunEconomicPlanner());
+                    // this screen pauses the universe: the planner runs here and now, between two
+                    // turns, and the slider reads the rate it just set (bench 611)
+                    Player.AI.RunEconomicPlanner();
                     TaxSlider.RelativeValue = Player.data.TaxRate;
                 }
                 TaxSlider.Enabled = !cb.Checked;
@@ -737,7 +739,7 @@ namespace Ship_Game.GameScreens
         {
             Player.data.treasuryGoal = s.AbsoluteValue; // a 0..1 slider: absolute and relative coincide
 
-            Player.Universe.Screen?.RunOnSimThread(() => Player.AI.RunEconomicPlanner()); // Update() rewrites the label from the fresh figure
+            Player.AI.RunEconomicPlanner(); // the screen pauses the universe; Update() rewrites the label from the fresh figures
 
             if (Player.AutoTaxes)
                 TaxSlider.RelativeValue = Player.data.TaxRate;
