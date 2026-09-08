@@ -251,6 +251,10 @@ not when it is designed, so a troop that can no longer be built falls back to Au
 design file only carries the key when a troop is named, so untouched files, mods and older
 designs read as Auto.
 
+Both rows are offered only while they can do something: Hangar Type while the plan holds a
+fighter hangar, Troops while it holds a barracks or a troop bay. They appear with the first
+such module and go with the last, so the screen never proposes a choice that has no effect.
+
 ### A new colony can rush its first turns
 `3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
 

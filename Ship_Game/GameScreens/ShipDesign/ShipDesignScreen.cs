@@ -627,6 +627,7 @@ namespace Ship_Game
         {
             var oldRole = Role;
             UpdateDesignedShip(forceUpdate:false);
+            UpdateOptionRowVisibility();
 
             if (showRoleChangeTip && Role != oldRole)
                 RoleData.CreateDesignRoleToolTip(Role, DesignRoleRect, true, Input.CursorPosition);
@@ -638,6 +639,28 @@ namespace Ship_Game
 
             if (playSound)
                 GameAudio.SmallServo();
+        }
+
+        // (maintainer feedback) a picker that does nothing is not offered: Hangar Type needs a
+        // fighter hangar on the plan, Troops a barracks or a troop bay. Read again at every
+        // change of the grid, so a row appears with the first such module and goes with the
+        // last. The hangar test is RoleData's own, so the row and the role agree on a hangar.
+        void UpdateOptionRowVisibility()
+        {
+            if (HangarOptionsList == null || TroopTemplateList == null)
+                return;
+
+            bool hasHangar = false, hasTroops = false;
+            if (CurrentDesign != null && ModuleGrid != null)
+            {
+                foreach (ShipModule m in ModuleGrid.CopyModulesList())
+                {
+                    hasHangar |= m.ModuleType == ShipModuleType.Hangar && !m.IsSupplyBay && !m.IsTroopBay;
+                    hasTroops |= m.IsTroopBay || m.TroopCapacity > 0 || m.TroopsSupplied > 0;
+                }
+            }
+            HangarOptionsList.Visible = hasHangar;
+            TroopTemplateList.Visible = hasTroops;
         }
 
         bool IsEmptyHull => CurrentDesign.UniqueModuleUIDs.Length == 0;
@@ -1321,9 +1344,9 @@ namespace Ship_Game
                 HangarOptionsList.AddOption(HangarOptionText(item), item);
 
             // (player feedback) the troop the plan embarks, on its own row under Hangar Type: the
-            // same family - what this plan carries - and the same width. Shown whenever a design
-            // is, as Hangar Type is; its entries are filled when a design binds (the player's
-            // unlocked templates), see BindListsToActiveHull.
+            // same family - what this plan carries - and the same width. Shown while the plan
+            // holds a troop module (UpdateOptionRowVisibility); its entries are filled when a
+            // design binds (the player's unlocked templates), see BindListsToActiveHull.
             TroopTemplateList = new TroopTemplateDropDown(new Rectangle(hangarRect.X, hangarRect.Y + ddH + optRowGap,
                                                                         ddHangarW, ddH));
 

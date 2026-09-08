@@ -571,12 +571,20 @@ namespace Ship_Game
             // TODO: these should be split into separate parts
             DrawTitle(batch, new Rectangle((int)CategoryList.X, (int)CategoryList.Y,
                                           (int)CategoryList.Width, (int)CategoryList.Height), RepairCaption);
-            DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
-                                          (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), HangarCaption);
-            HangarOptionsList.Draw(batch, elapsed);
-            DrawTitle(batch, new Rectangle((int)TroopTemplateList.X, (int)TroopTemplateList.Y,
-                                          (int)TroopTemplateList.Width, (int)TroopTemplateList.Height), TroopsCaption);
-            TroopTemplateList.Draw(batch, elapsed);
+            // the two rows go with their modules (UpdateOptionRowVisibility): a caption drawn
+            // beside a hidden picker would name a choice that is not there
+            if (HangarOptionsList.Visible)
+            {
+                DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
+                                              (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), HangarCaption);
+                HangarOptionsList.Draw(batch, elapsed);
+            }
+            if (TroopTemplateList.Visible)
+            {
+                DrawTitle(batch, new Rectangle((int)TroopTemplateList.X, (int)TroopTemplateList.Y,
+                                              (int)TroopTemplateList.Width, (int)TroopTemplateList.Height), TroopsCaption);
+                TroopTemplateList.Draw(batch, elapsed);
+            }
 
             // Ludoal fork: the design's identity plates, drawn in the reworked screens' grammar
             // (dark fill, brass rule). They appear at their place rather than sliding in.

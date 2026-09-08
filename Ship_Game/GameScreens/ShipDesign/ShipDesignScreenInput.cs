@@ -39,8 +39,7 @@ namespace Ship_Game
         {
             ShipDesign design = CurrentDesign;
             CategoryList.Visible = design != null;
-            HangarOptionsList.Visible = design != null;
-            TroopTemplateList.Visible = design != null;
+            UpdateOptionRowVisibility(); // Hangar Type and Troops follow the plan's modules
 
             // bind hull editor to current hull
             HullEditor?.Initialize(CurrentHull);
