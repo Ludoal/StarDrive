@@ -645,6 +645,7 @@ namespace Ship_Game
             DrawFTLInhibitionNodes();
             DrawShipRangeOverlay();
             DrawRouteOverlays(batch);
+            DrawLostShipGhosts(batch);
             DrawFleetIcons(batch);
             DrawIcons.Stop();
         }
@@ -691,6 +692,23 @@ namespace Ship_Game
             }
 
             // (maintainer feedback) the idle-research alarm lives in the top bar's topic slot
+        }
+
+        // (maintainer feedback) the ghosts of ships boarded away from the player: the hull icon in
+        // grey and the name, at the spot the ship was taken, fading over their last turns
+        void DrawLostShipGhosts(SpriteBatch batch)
+        {
+            if (viewState >= UnivScreenState.GalaxyView)
+                return;
+            float now = UState.StarDate;
+            foreach (Empire.LostShipGhost g in Player.LostShipGhosts())
+            {
+                float left = (g.ExpiresAt - now) / (Empire.LostShipGhostTurns * 0.1f);
+                var tint = new Color(180, 180, 180, (byte)(255 * left.Clamped(0.3f, 1f)));
+                DrawTextureProjected(ResourceManager.Texture(g.IconPath), g.Position, 0.5f, tint);
+                Vector2d at = ProjectToScreenPosition(g.Position);
+                batch.DrawString(Fonts.Arial12Bold, g.Name, new Vector2((float)at.X + 14f, (float)at.Y - 7f), tint);
+            }
         }
 
         // Ludoal fork (wishlist): the route overlays. Trade links each planet pair with a live

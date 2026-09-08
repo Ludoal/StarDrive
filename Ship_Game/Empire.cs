@@ -2430,6 +2430,38 @@ namespace Ship_Game
 
             string message = $"{Localizer.Token(GameText.YourShipWasCaptured)} {boarder.Name}!";
             Universe.Notifications?.AddBoardNotification(message, ship.BaseHull.IconPath, "SnapToShip", ship, boarder);
+            lock (LostShipGhostList)
+                LostShipGhostList.Add(new LostShipGhost
+                {
+                    Position  = ship.Position,
+                    Name      = ship.Name,
+                    IconPath  = ship.BaseHull.IconPath,
+                    ExpiresAt = Universe.StarDate + LostShipGhostTurns * 0.1f,
+                });
+        }
+
+        // (maintainer feedback) a ship boarded away from us leaves a ghost where it was taken -
+        // its hull icon greyed, its name - for a few turns: a ship lost from view is not a ship
+        // destroyed. A memory of the session, not of the save. Written on the simulation thread
+        // by the boarding, read by the map's draw, so the list is locked at both ends.
+        public sealed class LostShipGhost
+        {
+            public Vector2 Position;
+            public string Name;
+            public string IconPath;
+            public float ExpiresAt; // star date; a turn is a tenth
+        }
+        public const float LostShipGhostTurns = 5f;
+        readonly Array<LostShipGhost> LostShipGhostList = new();
+        // the live ghosts, expired ones dropped on the way
+        public LostShipGhost[] LostShipGhosts()
+        {
+            lock (LostShipGhostList)
+            {
+                float now = Universe.StarDate;
+                LostShipGhostList.RemoveAll(g => g.ExpiresAt <= now);
+                return LostShipGhostList.ToArray();
+            }
         }
 
         public void AddMutinyNotification(Ship ship, GameText text, Empire initiator)
