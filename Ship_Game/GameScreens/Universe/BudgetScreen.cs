@@ -308,6 +308,7 @@ namespace Ship_Game.GameScreens
                 Rectangle r = Table.Columns[col].Rect;
                 l.Pos = new Vector2(r.X, totalY);
                 l.Size = new Vector2(r.Width - UITable.PadX, Fonts.Arial12Bold.LineSpacing);
+                l.FixedSize = true; // the lane is the column's, as for the cells above it
                 l.TextAlign = TextAlign.Right;
                 Add(l);
                 footerLabels.Add(l);
@@ -377,6 +378,7 @@ namespace Ship_Game.GameScreens
             // -4: closes on the same right edge as the panel values above it
             EmpireNetIncome = Label(new Vector2(rx + rw - NetValueW - 4, netY), "", Fonts.Arial12Bold);
             EmpireNetIncome.Size = new Vector2(NetValueW, Fonts.Arial12Bold.LineSpacing);
+            EmpireNetIncome.FixedSize = true;
             EmpireNetIncome.TextAlign = TextAlign.Right;
             EmpireNetIncome.DropShadow  = true;
             EmpireNetIncome.DynamicText = DynamicText(NetGainNow, f => f.MoneyString());
@@ -599,13 +601,16 @@ namespace Ship_Game.GameScreens
                 };
                 Value = base.Add(new UILabel(l => livePot().MoneyString(), Fonts.Arial12Bold));
                 Value.Color = Color.White;
+                // the value owns its lane, like the table cells: a figure that gains a digit must
+                // not widen the label and walk off the right edge (bench 608)
+                Value.FixedSize = true;
             }
 
             public override void PerformLayout()
             {
                 // the text lane rides 4px BELOW the slider's seat so text, padlock and value
                 // centre on the track - the slider itself keeps its Y
-                const int LockW = 18, ValueW = 52, Gap = 6;
+                const int LockW = 18, ValueW = 64, Gap = 6; // 64: five figures and two decimals fit the lane
                 float cy = Y + 6;
                 NameLbl.Pos = new Vector2(X, cy);
                 ShareSlider.Pos  = new Vector2(X + NameW, Y + 1);
