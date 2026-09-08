@@ -56,8 +56,11 @@ namespace Ship_Game.Commands.Goals
             if (!Pirates.CanDoAnotherRaid(out int numRaids))
                 return 0; // Limit maximum of concurrent raids
 
+            // Each faction raids on its own account: the base game split this chance among the
+            // pirate factions, dead ones included, so two factions raided no more than one and
+            // destroying one relieved nobody (player feedback).
             float startChance = Pirates.Level.LowerBound((int)UState.P.Difficulty + 1) / UState.P.Pace;
-            startChance     = (startChance / Pirates.Universe.PirateFactions.Length.LowerBound(1)).LowerBound(1);
+            startChance     = startChance.LowerBound(1);
             startChance    /= numRaids + 1;
 
             //return 100; // For testing

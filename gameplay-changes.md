@@ -132,6 +132,19 @@ would have undone the player's own restriction the moment they loaded a plan.
 
 ---
 
+### Each pirate faction raids on its own account
+`PirateDirectorRaid.cs` (raid start chance)
+
+**Source: Roland Johansen**, reading the raid formula.
+
+The chance that a pirate faction starts a raid against an empire, each turn, was divided by the
+number of pirate factions in the galaxy - counting the dead ones. Two factions therefore raided
+no more than one would have, the Pirate Factions setting changed nothing about the pressure, and
+destroying a faction did not relieve its victims.
+
+The division is gone: each faction rolls its own chance. With two or more factions raids come
+more often than before; the threat cap and the Strength notch still bound them as they did.
+
 ## New levers
 
 
