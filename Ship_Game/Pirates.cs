@@ -211,7 +211,11 @@ namespace Ship_Game
         public int GetMoneyModifier(Empire victim, float basePercentage)
         {
             float multiplier         = victim.DifficultyModifiers.PiratePayModifier;
-            float minimumPayment     = Level * 100 * multiplier;
+            // ★ the tribute notch scales the FLOOR as well (player feedback). Left off it, a
+            // discount is inert exactly where the floor decides - a young or poor empire, which
+            // is the game the notch was chosen for. The raid's own bite has always done this;
+            // the tribute was the one place that did not.
+            float minimumPayment     = Level * 100 * multiplier * TributeModifier;
             float victimNetPotential = (victim.PotentialIncome - victim.AllSpending).LowerBound(0) * multiplier;
             float payment            = (victimNetPotential*PaymentPeriodTurns) * basePercentage/100;
             payment                 *= (Level / 2).LowerBound(1);
@@ -271,8 +275,11 @@ namespace Ship_Game
         // climb - and since a level is also a base, a slower climb is fewer bases as well.
         float PaceModifier => Universe.P.PiratePace switch
         {
-            PiratePaceSetting.VerySlow => 2f,
-            PiratePaceSetting.Slow     => 1.5f,
+            // ★ the notches answer each other: slowing by a third and hurrying by a third are the
+            // same move mirrored (1/0.75, 1/0.6), so a player reads one scale, not two (player
+            // feedback). They were 2 and 1.5, which braked harder than they ever accelerated.
+            PiratePaceSetting.VerySlow => 1.67f,
+            PiratePaceSetting.Slow     => 1.33f,
             PiratePaceSetting.Fast     => 0.75f,
             PiratePaceSetting.VeryFast => 0.6f,
             _                          => 1f,
