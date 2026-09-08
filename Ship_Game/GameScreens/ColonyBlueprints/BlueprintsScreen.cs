@@ -1022,11 +1022,10 @@ namespace Ship_Game
             return null; // default: use Plan Statistics
         }
 
-        public static Color GetBlueprintsIconColor(Planet.ColonyType colonyType)
-        {
-            // the governors' own table; a plan that switches no governor stays yellow
-            return colonyType == Planet.ColonyType.Colony ? Color.Yellow : Colors.Governor(colonyType);
-        }
+        // the governors' own table, and nothing else: a plan that switches no governor reads the
+        // palette's grey, the colour of "nobody's" on the Colonies page (maintainer feedback -
+        // yellow says active elsewhere in this UI, it should not say none)
+        public static Color GetBlueprintsIconColor(Planet.ColonyType colonyType) => Colors.Governor(colonyType);
 
         // Ludoal fork (maintainer feedback): the return to the colony hangs on the EXIT, not on
         // the gestures that reach it - hooking each gesture leaves out the doors nobody listed,
