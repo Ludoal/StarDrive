@@ -7416,11 +7416,11 @@ namespace Ship_Game
         FreighterModelTip = 30179,
         /// <summary>Garrison Troop</summary>
         GarrisonTroop = 30343,
-        /// <summary>The troop the governor builds when it refills a garrison.</summary>
+        /// <summary>Auto: cheapest rebuilds garrisons with the cheapest troop you can build (base game).</summary>
         GarrisonTroopTip = 30344,
-        /// <summary>Cheapest (Default)</summary>
+        /// <summary>Auto: cheapest (Default)</summary>
         GarrisonTroopCheapest = 30345,
-        /// <summary>Best</summary>
+        /// <summary>Auto: best</summary>
         GarrisonTroopBest = 30346,
         /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
         InterTradeInhibited = 30180,
