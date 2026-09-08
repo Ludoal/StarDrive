@@ -755,14 +755,14 @@ namespace Ship_Game
             double len = a.Distance(b);
             if (len < 1.0)
                 return;
-            // bench 455: a 3px breath between dashes so neighbouring slots never touch,
-            // and a thinner stroke
+            // bench 455: a 3px breath between dashes so neighbouring slots never touch;
+            // the stroke is the map's route width (maintainer feedback: 1 px, a lighter map)
             const double Slot = 14.0, Dash = 11.0, Period = Slot * 3;
             Vector2d dir = (b - a) / len;
             for (double t = slot * Slot; t < len; t += Period)
             {
                 double t2 = Math.Min(t + Dash, len);
-                DrawLine(a + dir * t, a + dir * t2, color, 2f);
+                DrawLine(a + dir * t, a + dir * t2, color, RouteLineWidth);
             }
         }
 
@@ -1356,8 +1356,9 @@ namespace Ship_Game
             }
         }
 
-        // (maintainer feedback) a patrol plan is drawn as thin as every other line on the map
-        const float PatrolLineWidth = 1f;
+        // (maintainer feedback) the routes drawn on the map - freighter runs, a fleet's patrol
+        // plan - are as thin as every other line on it, so a busy map stays readable
+        const float RouteLineWidth = 1f;
 
         void DrawFleetPatrolPlan(Fleet fleet, Color color)
         {
@@ -1366,12 +1367,12 @@ namespace Ship_Game
             SubTexture icon = fleet.Icon;
             for (int i = 0; i < waypoints.Length-1; ++i)
             {
-                DrawLineWideProjected(waypoints[i].Position, waypoints[i+1].Position, color, PatrolLineWidth);
+                DrawLineWideProjected(waypoints[i].Position, waypoints[i+1].Position, color, RouteLineWidth);
                 DrawTextureProjected(icon, waypoints[i].Position, texScale, 0.0f, color);
             }
 
             if (waypoints.Length > 2)
-                DrawLineWideProjected(waypoints[waypoints.Length - 1].Position, waypoints[0].Position, color, PatrolLineWidth);
+                DrawLineWideProjected(waypoints[waypoints.Length - 1].Position, waypoints[0].Position, color, RouteLineWidth);
 
             DrawTextureProjected(icon, waypoints[waypoints.Length - 1].Position, texScale, 0.0f, color);
         }
