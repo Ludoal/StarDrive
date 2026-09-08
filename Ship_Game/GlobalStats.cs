@@ -161,6 +161,10 @@ public static class GlobalStats
     // Ludoal fork (wishlist): only the OLDEST ages out, after the delay below, so the pile
     // empties in the order it filled. Independent of the text above; either stands alone.
     public static bool AutoClearOldest;
+    // (maintainer feedback) a left click opens the notification's page and, by default, drops the
+    // notification; off, the page opens and the notification stays. A right click always drops
+    // it, page or not.
+    public static bool RemoveNotificationOnLeftClick = true;
     // Ludoal fork (wishlist): which notification categories the player has HIDDEN, as a bitmask
     // keyed by (int)NotificationCategory. 0 = nothing hidden (default) = every category shows.
     // This is the one per-category suppression axis; AddNotification drops a hidden category
@@ -484,6 +488,7 @@ public static class GlobalStats
         GetSetting(config, "NotificationAutoClearSeconds", ref NotificationAutoClearSeconds);
         GetSetting(config, "ShowOldestNotificationText", ref ShowOldestNotificationText);
         GetSetting(config, "AutoClearOldest", ref AutoClearOldest);
+        GetSetting(config, "RemoveNotificationOnLeftClick", ref RemoveNotificationOnLeftClick);
         GetSetting(config, "NotificationHiddenCategories", ref NotificationHiddenCategories);
         GetSetting(config, "PauseOnPageOpen", ref PauseOnPageOpen);
         GetSetting(config, "AutoPauseColonyPanel", ref AutoPauseColonyPanel);
@@ -709,6 +714,7 @@ public static class GlobalStats
         WriteSetting(config, "NotificationAutoClearSeconds", NotificationAutoClearSeconds);
         WriteSetting(config, "ShowOldestNotificationText", ShowOldestNotificationText);
         WriteSetting(config, "AutoClearOldest", AutoClearOldest);
+        WriteSetting(config, "RemoveNotificationOnLeftClick", RemoveNotificationOnLeftClick);
         WriteSetting(config, "NotificationHiddenCategories", NotificationHiddenCategories);
         WriteSetting(config, "PauseOnPageOpen", PauseOnPageOpen);
         WriteSetting(config, "AutoPauseColonyPanel", AutoPauseColonyPanel);

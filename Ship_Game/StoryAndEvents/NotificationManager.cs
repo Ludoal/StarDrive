@@ -1070,10 +1070,13 @@ namespace Ship_Game
             {
                 if (n.HandleInput(input, this))
                 {
-                    lock (NotificationList)
+                    if (n.DropAfterClick) // a left click may keep it, see the Notifications switch
                     {
-                        NotificationList.Remove(n);
-                        UpdateAllPositions();
+                        lock (NotificationList)
+                        {
+                            NotificationList.Remove(n);
+                            UpdateAllPositions();
+                        }
                     }
                     return true;
                 }

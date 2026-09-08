@@ -44,6 +44,9 @@ public sealed class Notification
     public bool Important;
     public string Title;
     public string LogMessage; // optional log override when Message contains UI-only text
+    // set by the click just handled: whether the manager drops this notification for it. A left
+    // click follows the player's switch (maintainer feedback), a right click always drops.
+    public bool DropAfterClick = true;
 
     /** @return TRUE if input was captured */
     public bool HandleInput(InputState input, NotificationManager m)
@@ -97,10 +100,12 @@ public sealed class Notification
                     m.ScreenManager.AddScreen(GameScreens.ScreenGroups.Economy(m.Screen));
                     break;
             }
+            DropAfterClick = GlobalStats.RemoveNotificationOnLeftClick;
             return true;
         }
         if (input.RightMouseClick && Action != "LoadEvent")
         {
+            DropAfterClick = true;
             GameAudio.SubBassWhoosh();
             // ADDED BY SHAHMATT (to unpause game on right clicking notification icon)
             if (GlobalStats.PauseOnNotification && Pause)
