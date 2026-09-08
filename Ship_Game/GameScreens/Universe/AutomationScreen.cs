@@ -87,6 +87,12 @@ namespace Ship_Game
             UIList notifications = NewBox(new RectF(x0, top, BoxW, NotificationsBoxH), "Notifications");
             var P = Universe.UState.P;
 
+            // (maintainer feedback) first switch: on by default - the stock conduct; off, a left
+            // click opens the page and keeps the notification, a right click still drops it
+            // without opening anything
+            notifications.AddCheckbox(() => GlobalStats.RemoveNotificationOnLeftClick,
+                                      title: "Remove on left click",
+                                      tooltip: "A left click opens the notification's page and removes it. Unchecked, the page opens and the notification stays; a right click always removes it without opening the page");
             // Ludoal fork (wishlist): two switches above the families, both about the OLDEST
             // notification - the head of the queue. Whether you want a family on screen at all is
             // the per-family box below; that is the only question those rows answer now.
@@ -98,11 +104,6 @@ namespace Ship_Game
             notifications.AddCheckbox(() => GlobalStats.AutoClearOldest,
                                       title: "Auto-clear oldest",
                                       tooltip: "Only the oldest ages out, after the delay below, so the pile empties in the order it filled");
-            // (maintainer feedback) on by default - the stock conduct; off, a left click opens the
-            // page and keeps the notification, a right click still drops it without opening anything
-            notifications.AddCheckbox(() => GlobalStats.RemoveNotificationOnLeftClick,
-                                      title: "Remove on left click",
-                                      tooltip: "A left click opens the notification's page and removes it. Unchecked, the page opens and the notification stays; a right click always removes it without opening the page");
 
             // How long the head of the queue stands before it ages out. 0 = off, nothing clears.
             notifications.Add(new UILabel(GameText.NotificationAutoClear, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.NotificationAutoClearTip;
