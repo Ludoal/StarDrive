@@ -166,19 +166,21 @@ namespace Ship_Game
             // ⚠ the idle count is taken from the pool, and the pool EXCLUDES hulls held by a
             // zone - so assigning freighters makes the fleet look smaller under the player's hand.
             // The part in zones is stated on its own line rather than subtracted.
-            const float LeftRowPitch = 20f, LeftValueX = 150f;
+            // the values right-align on one column (bench 615), so "18" and "3" end on the same
+            // unit digit; the column's right edge stays clear of the divider at +180
+            const float LeftRowPitch = 20f, LeftValueRightX = 174f;
             float leftY = titleOffset + 50;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.TzInZones, Fonts.Arial12Bold, Color.Wheat));
-            FreightersInZonesLabel     = new UILabel(new Vector2(win.X + LeftValueX, leftY), "", Fonts.Arial12Bold, Color.White);
+            FreightersInZonesLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
-            NumIdleFreightersLabel     = new UILabel(new Vector2(win.X + LeftValueX, leftY), "", Fonts.Arial12Bold, Color.White);
+            NumIdleFreightersLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuTotalFreighters, Fonts.Arial12Bold, Color.Wheat));
-            TotalFleetLabel            = new UILabel(new Vector2(win.X + LeftValueX, leftY), "", Fonts.Arial12Bold, Color.White);
+            TotalFleetLabel            = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
-            FreighterConstructingLabel = new UILabel(new Vector2(win.X + LeftValueX, leftY), "", Fonts.Arial12Bold, Color.White);
+            FreighterConstructingLabel = RightAlignedValue(win.X + LeftValueRightX, leftY);
 
             UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40 + HeaderDrop + UnitRow));
             utilizationData.Padding = new(2f, 25f);
