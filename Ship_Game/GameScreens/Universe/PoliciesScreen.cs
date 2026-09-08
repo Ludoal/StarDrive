@@ -58,7 +58,7 @@ namespace Ship_Game
         // look, not a policy.
         // the three share rails stack under the Auto switch, a caption each, on a tight pitch
         const float ShareRailPitch = 30f, ShareRowsH = 3f * ShareRailPitch + 10f;
-        const float TradeBoxH = 126f + 4f * SliderRowH + ShareRowsH;
+        const float TradeBoxH = 126f + 26f + 4f * SliderRowH + ShareRowsH; // +26: the priority title row
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -157,8 +157,10 @@ namespace Ship_Game
             // the game's own conduct: a population-weighted roll between production and colonists
             // each turn, trade on the leftovers. Off, the free hulls of each turn are split at the
             // three percentages below, which sum to 100 and rebalance each other.
+            // a title row, then the Auto switch under it (bench 616)
+            trade.Add(new UILabel(GameText.FreighterPriority, Fonts.Arial12Bold, Colors.Cream)).Tooltip = GameText.PolFreighterPriorityAutoTip;
             trade.AddCheckbox(() => player.FreighterPriorityAuto,
-                              title: GameText.PolFreighterPriorityAuto, tooltip: GameText.PolFreighterPriorityAutoTip);
+                              title: GameText.FreighterPriorityAuto, tooltip: GameText.PolFreighterPriorityAutoTip);
             FreighterShares = trade.Add(new ShareRow(player));
             // Ludoal fork (maintainer feedback): the three quantity numbers. Automation's
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,

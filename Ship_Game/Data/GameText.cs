@@ -6333,8 +6333,6 @@ namespace Ship_Game
         FuUnitRuns = 30351,
         /// <summary>worlds</summary>
         FuUnitWorlds = 30352,
-        /// <summary>Auto Freighter Priority</summary>
-        PolFreighterPriorityAuto = 30353,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>
