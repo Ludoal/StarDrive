@@ -376,7 +376,7 @@ namespace Ship_Game.GameScreens
 
             // (bench 612 trace) the page lost its columns and its tab row once a first-contact
             // dialog closed over it; the state is logged for ten frames after any such close.
-            bool dialogUp = ScreenManager.IsShowing<DiplomacyScreen>();
+            bool dialogUp = ScreenManager.IsShowing<Ship_Game.GameScreens.DiplomacyScreen.DiplomacyScreen>(); // the type, under the namespace of the same name
             if (DialogWasUp && !dialogUp)
             {
                 TraceFrames = 10;
