@@ -22,6 +22,9 @@ namespace Ship_Game
         public Rectangle SliderRect;
         public Rectangle StorageRect;
         public Rectangle QueueRect;
+        // Room the queued item's NAME may take before it runs under the CR box, which shares
+        // its line. Written where the box is placed, so the two never drift apart.
+        int QueueNameRoom;
         public Rectangle PopRect;
         public Rectangle GrowthRect; // Ludoal fork: population growth per turn
         public Rectangle FoodRect;
@@ -211,7 +214,10 @@ namespace Ship_Game
                     v => Universe.RunOnSimThread(() => { if (!P.Owner.RushAllConstruction) P.RushConstruction = v; }),
                     Fonts.Arial12Bold, "CR", GameText.RushAllConstruction));
             }
-            RushBox.SetAbsPos(CancelProductionRect.Right - RushBox.Width, QueueRect.Y + QueueRect.Height / 2 - 30);
+            float rushX = CancelProductionRect.Right - RushBox.Width;
+            RushBox.SetAbsPos(rushX, QueueRect.Y + QueueRect.Height / 2 - 30);
+            // the name starts 40px past the icon at QueueRect.X + 10, and stops 6 short of the box
+            QueueNameRoom = (int)(rushX - (QueueRect.X + 50) - 6);
 
             base.PerformLayout();
         }
@@ -493,7 +499,7 @@ namespace Ship_Game
             if (queue.Length > 0)
             {
                 QueueItem qi = P.BuildingNow ?? queue[0];
-                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30));
+                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30), QueueNameRoom);
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
                 batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red
                 DrawQueueStats(batch, queue);

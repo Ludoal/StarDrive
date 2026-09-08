@@ -9,6 +9,7 @@ using Ship_Game.Universe;
 using Vector2 = SDGraphics.Vector2;
 using Rectangle = SDGraphics.Rectangle;
 using Ship_Game.Commands.Goals;
+using Ship_Game.UI; // UITable.FitText: the shared ellipsis cut
 
 namespace Ship_Game
 {
@@ -85,7 +86,7 @@ namespace Ship_Game
 
         public void SetCanceled(bool state = true) => IsCancelled = state;
 
-        public void DrawAt(UniverseState us, SpriteBatch batch, Vector2 at)
+        public void DrawAt(UniverseState us, SpriteBatch batch, Vector2 at, int nameRoom = 0)
         {
             var r = new Rectangle((int)at.X, (int)at.Y, 29, 30);
             var tCursor = new Vector2(at.X + 40f, at.Y);
@@ -93,16 +94,23 @@ namespace Ship_Game
             var pb = new ProgressBar(pbRect, ActualCost, ProductionSpent);
             Graphics.Font font = Fonts.Arial10;
 
+            // A caller whose row ends in a control on the NAME's own line - the colonies list
+            // puts its CR box there - passes the room the name may take, and the shared cut
+            // gives it an ellipsis on a whole word. 0 = the whole line is the name's, which is
+            // what the colony screen's own queue hands over.
+            string Fit(string s) => nameRoom > 0 ? UITable.FitText(Fonts.Arial12Bold, s, nameRoom) : s;
+
             if (isBuilding)
             {
                 batch.Draw(Building.IconTex, r);
-                batch.DrawString(Fonts.Arial12Bold, Building.TranslatedName, tCursor, Color.White);
+                string shownName = Fit(Building.TranslatedName.Text);
+                batch.DrawString(Fonts.Arial12Bold, shownName, tCursor, Color.White);
                 // ★ an entry with no tile SAYS SO, and shows no progress bar: it is not stalled,
                 // it has yielded its turn and takes a square the moment one frees up. A bar at
                 // nought would read as a fault (bench 597).
                 if (pgs == null)
                 {
-                    float nameW = Fonts.Arial12Bold.TextWidth(Building.TranslatedName);
+                    float nameW = Fonts.Arial12Bold.TextWidth(shownName);
                     batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.CqWaitingForTile),
                                      new Vector2(tCursor.X + nameW + 6, tCursor.Y), Color.Gray);
                 }
@@ -111,7 +119,7 @@ namespace Ship_Game
                     // Same shape as the tile wait above, and mutually exclusive with it: the entry
                     // holds its square, it just cannot start until the plan is far enough along.
                     // Without the words the player sees a queued building that never moves.
-                    float nameW = Fonts.Arial12Bold.TextWidth(Building.TranslatedName);
+                    float nameW = Fonts.Arial12Bold.TextWidth(shownName);
                     batch.DrawString(Fonts.Arial12Bold, Localizer.Token(GameText.CqWaitingForBlueprint),
                                      new Vector2(tCursor.X + nameW + 6, tCursor.Y), Color.Gray);
                 }
@@ -127,14 +135,14 @@ namespace Ship_Game
                 if (Goal is FleetGoal fg && fg.Fleet != null)
                     name = $"{name} ({fg.Fleet.Name})";
 
-                batch.DrawString(Fonts.Arial12Bold, name, tCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, Fit(name), tCursor, Color.White);
                 pb.Draw(batch);
             }
             else if (isTroop)
             {
                 Troop template = ResourceManager.GetTroopTemplate(TroopType);
                 template.Draw(us, batch, r);
-                batch.DrawString(Fonts.Arial12Bold, TroopType, tCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, Fit(TroopType), tCursor, Color.White);
                 pb.Draw(batch);
             }
 
