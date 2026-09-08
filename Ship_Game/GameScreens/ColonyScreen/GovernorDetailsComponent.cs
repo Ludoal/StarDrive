@@ -895,19 +895,8 @@ namespace Ship_Game
         {
             // Governor portrait overlay stuff
             Portrait.Color = Planet.CType == Planet.ColonyType.Colony ? new Color(64, 64, 64) : Color.White;
-            Color borderColor;
-            switch (Planet.CType)
-            {
-                default:                             borderColor = Color.White; break;
-                case Planet.ColonyType.TradeHub:     borderColor = Color.Yellow; break;
-                case Planet.ColonyType.Colony:       borderColor = new Color(64, 64, 64); break;
-                case Planet.ColonyType.Industrial:   borderColor = Color.Orange; break;
-                case Planet.ColonyType.Agricultural: borderColor = Color.Green; break;
-                case Planet.ColonyType.Research:     borderColor = Color.CornflowerBlue; break;
-                case Planet.ColonyType.Military:     borderColor = Color.Red; break;
-            }
-
-            Portrait.Border = borderColor;
+            Portrait.Border = Planet.CType == Planet.ColonyType.Colony ? new Color(64, 64, 64)
+                                                                        : Colors.Governor(Planet.CType);
             batch.Draw(PortraitShine, Portrait.Rect);
         }
 

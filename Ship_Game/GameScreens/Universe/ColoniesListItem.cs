@@ -427,17 +427,17 @@ namespace Ship_Game
             if (GovernorRect.Width > 0)
             {
                 // one bold letter, the governor portrait's type colour (bench 407)
-                string gov; Color govColor;
-                switch (P.CType)
+                string gov = P.CType switch
                 {
-                    case Planet.ColonyType.Colony:       gov = "--"; govColor = Color.Gray; break;
-                    case Planet.ColonyType.TradeHub:     gov = "T";  govColor = Color.Yellow; break;
-                    case Planet.ColonyType.Industrial:   gov = "I";  govColor = Color.Orange; break;
-                    case Planet.ColonyType.Agricultural: gov = "A";  govColor = Color.Green; break;
-                    case Planet.ColonyType.Research:     gov = "R";  govColor = Color.CornflowerBlue; break;
-                    case Planet.ColonyType.Military:     gov = "M";  govColor = Color.Red; break;
-                    default:                             gov = "C";  govColor = Color.White; break; // Core
-                }
+                    Planet.ColonyType.Colony       => "--",
+                    Planet.ColonyType.TradeHub     => "T",
+                    Planet.ColonyType.Industrial   => "I",
+                    Planet.ColonyType.Agricultural => "A",
+                    Planet.ColonyType.Research     => "R",
+                    Planet.ColonyType.Military     => "M",
+                    _                              => "C", // Core
+                };
+                Color govColor = Colors.Governor(P.CType);
                 var govPos = new Vector2(GovernorRect.X + (GovernorRect.Width - Fonts.Arial12Bold.MeasureString(gov).X) / 2,
                                          PlanetNameRect.Y + PlanetNameRect.Height / 2 - Fonts.Arial12Bold.LineSpacing / 2).ToFloored();
                 batch.DrawString(Fonts.Arial12Bold, gov, govPos, govColor);

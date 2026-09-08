@@ -16,6 +16,19 @@ namespace Ship_Game
         public static Color Warning(byte alpha = 255)       => new Color(Color.Yellow, alpha);       //indicate to user that command may fail
 
         public static readonly Color Cream = new Color(255, 239, 208);
+
+        // ONE table for a governor's colour, worn by the Colonies page, the colony portrait and
+        // every plan icon and title. A world with no governor takes the caller's own neutral.
+        public static Color Governor(Planet.ColonyType type) => type switch
+        {
+            Planet.ColonyType.Industrial   => Color.Orange,
+            Planet.ColonyType.Agricultural => Color.Green,
+            Planet.ColonyType.Research     => Color.CornflowerBlue,
+            Planet.ColonyType.Military     => Color.Red,
+            Planet.ColonyType.TradeHub     => Color.Yellow,
+            Planet.ColonyType.Core         => Color.White,
+            _                              => Color.Gray,
+        };
         public static readonly Color TransparentDarkGray = new Color(50, 50, 50, 128).Premultiplied();
 
         // used as background colors for multiple 

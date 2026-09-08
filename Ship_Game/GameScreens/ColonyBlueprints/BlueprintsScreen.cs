@@ -1024,15 +1024,8 @@ namespace Ship_Game
 
         public static Color GetBlueprintsIconColor(Planet.ColonyType colonyType)
         {
-            switch (colonyType)
-            {
-                case Planet.ColonyType.Research:     return Color.CornflowerBlue;
-                case Planet.ColonyType.Industrial:   return Color.Orange;
-                case Planet.ColonyType.Agricultural: return Color.Green;
-                case Planet.ColonyType.Military:     return Color.Red;
-                case Planet.ColonyType.Core:         return Color.White;
-                default:                             return Color.Yellow;
-            }
+            // the governors' own table; a plan that switches no governor stays yellow
+            return colonyType == Planet.ColonyType.Colony ? Color.Yellow : Colors.Governor(colonyType);
         }
 
         // Ludoal fork (maintainer feedback): the return to the colony hangs on the EXIT, not on
