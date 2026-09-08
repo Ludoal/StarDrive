@@ -1356,6 +1356,9 @@ namespace Ship_Game
             }
         }
 
+        // (maintainer feedback) a patrol plan is drawn as thin as every other line on the map
+        const float PatrolLineWidth = 1f;
+
         void DrawFleetPatrolPlan(Fleet fleet, Color color)
         {
             float texScale = viewState <= UnivScreenState.SectorView ? 0.5f : 0.75f;
@@ -1363,12 +1366,12 @@ namespace Ship_Game
             SubTexture icon = fleet.Icon;
             for (int i = 0; i < waypoints.Length-1; ++i)
             {
-                DrawLineWideProjected(waypoints[i].Position, waypoints[i+1].Position, color, 2);
+                DrawLineWideProjected(waypoints[i].Position, waypoints[i+1].Position, color, PatrolLineWidth);
                 DrawTextureProjected(icon, waypoints[i].Position, texScale, 0.0f, color);
             }
 
             if (waypoints.Length > 2)
-                DrawLineWideProjected(waypoints[waypoints.Length - 1].Position, waypoints[0].Position, color, 2);
+                DrawLineWideProjected(waypoints[waypoints.Length - 1].Position, waypoints[0].Position, color, PatrolLineWidth);
 
             DrawTextureProjected(icon, waypoints[waypoints.Length - 1].Position, texScale, 0.0f, color);
         }
