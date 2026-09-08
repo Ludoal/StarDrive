@@ -773,6 +773,7 @@ namespace Ship_Game
             PiratePaceSetting.VerySlow => Localizer.Token(GameText.RmPaceVerySlow),
             PiratePaceSetting.Slow     => Localizer.Token(GameText.RmPaceSlow),
             PiratePaceSetting.Fast     => Localizer.Token(GameText.RmPaceFast),
+            PiratePaceSetting.VeryFast => Localizer.Token(GameText.RmPaceVeryFast),
             _                          => Localizer.Token(GameText.RmPaceNormal),
         };
 
@@ -1147,6 +1148,7 @@ namespace Ship_Game
         // notch goes at the END and the clicks read the right way round on their own.
         // ⚠ APPENDED for the ordinal, same reason as the Remnant scales.
         Fast,
+        VeryFast, // (player feedback) one more step up, appended for the same reason
     }
 
     // Ludoal fork: how many pirate factions start alive. Pirate factions are whatever the data

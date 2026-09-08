@@ -167,9 +167,9 @@ nearest notch on load.
 **Pirate Factions** - None, All, One (random), or a named pirate faction taken from the mod's
 own data, so a mod that ships its factions ships its notches.
 
-**Pirate Pace** - Very Slow, Slow, Normal, Fast. Pirates level up on a roll made after each
-successful act of piracy; the base game's odds are one in (level x game pace + empires / 2), and
-the pace multiplies that expected number of acts (x2, x1.5, x1, x0.75). The roll is a percentage
+**Pirate Pace** - Very Slow, Slow, Normal, Fast, Very Fast. Pirates level up on a roll made after
+each successful act of piracy; the base game's odds are one in (level x game pace + empires / 2),
+and the pace multiplies that expected number of acts (x2, x1.5, x1, x0.75, x0.6). The roll is a percentage
 rather than the base game's integer die, so the notches keep their order at every level; Normal
 differs from the base game only in a one-empire galaxy at level 1 (67% instead of 100%).
 

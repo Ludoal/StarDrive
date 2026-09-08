@@ -273,6 +273,7 @@ namespace Ship_Game
             PiratePaceSetting.VerySlow => 2f,
             PiratePaceSetting.Slow     => 1.5f,
             PiratePaceSetting.Fast     => 0.75f,
+            PiratePaceSetting.VeryFast => 0.6f,
             _                          => 1f,
         };
 

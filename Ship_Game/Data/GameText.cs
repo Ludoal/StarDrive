@@ -6350,6 +6350,8 @@ namespace Ship_Game
         RmStrengthTwice = 30149,
         /// <summary>Fast</summary>
         RmPaceFast = 30150,
+        /// <summary>Very Fast</summary>
+        RmPaceVeryFast = 30339,
         /// <summary>Pirate Strength</summary>
         PirateStrengthLabel = 30151,
         /// <summary>What the pirates are, not only what they charge.</summary>

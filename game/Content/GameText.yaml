@@ -29011,6 +29011,10 @@ RmPaceFast:
  Id: 30150
  ENG: "Fast"
  FRA: "Rapide"
+RmPaceVeryFast:
+ Id: 30339
+ ENG: "Very Fast"
+ FRA: "Très rapide"
 PirateStrengthLabel:
  Id: 30151
  ENG: "Pirate Strength"
