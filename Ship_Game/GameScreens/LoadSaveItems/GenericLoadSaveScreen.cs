@@ -144,25 +144,30 @@ namespace Ship_Game
             EnterNameArea.Enabled = (Mode == SLMode.Save); // Only enable name field change when saving
 
             string title = Mode == SLMode.Save ? SaveButtonTitle : "Load";
-            DoBtn = ButtonSmall(sub.X + sub.W - 88, EnterNameArea.Y - 2, title, b =>
+            // the row is laid out FROM the two button widths and the right margin, so a screen
+            // that needs wider buttons for longer words overrides the widths and nothing else
+            float mainX = sub.X + sub.W - ButtonRowRightMargin - MainButtonW;
+            DoBtn = ButtonSmall(mainX, EnterNameArea.Y - 2, title, b =>
             {
                 if (Mode == SLMode.Save)
                     TrySave();
                 else if (Mode == SLMode.Load)
                     Load();
             });
+            DoBtn.SetAbsSize(MainButtonW, 24);
 
             // a screen that offers a second gesture on the same name adds it here, on the
             // same row and left of the main button - the geometry stays in one place
-            AddExtraButtons(sub.X + sub.W - 176, EnterNameArea.Y - 2);
+            float extraX = mainX - ButtonRowGap - ExtraButtonW;
+            AddExtraButtons(extraX, EnterNameArea.Y - 2);
 
             if (ShowSaveExport)
             {
                 // on the SAME row, left of Load/Save, and just "Export" - the window grew the
                 // 80px this button needs; blue - the fork's active-control plate
-                var exportBtn = Add(new UIButton(ButtonStyle.WideActive, new Vector2(sub.X + sub.W - 176, EnterNameArea.Y - 2), "Export"));
+                var exportBtn = Add(new UIButton(ButtonStyle.WideActive, new Vector2(extraX, EnterNameArea.Y - 2), "Export"));
                 exportBtn.OnClick = b => ExportSave();
-                exportBtn.SetAbsSize(80, 24);
+                exportBtn.SetAbsSize(ExtraButtonW, 24);
                 exportBtn.Tooltip = GameText.ThisWillLetYouEasily;
             }
             // (no base.LoadContent() here: it ran at the top, and calling it again would
@@ -171,6 +176,11 @@ namespace Ship_Game
 
         protected virtual string SaveButtonTitle => "Save";
         protected virtual void AddExtraButtons(float x, float y) { }
+        // the widths of the main button (Save / Load) and of the extra one (Export, or a
+        // screen's own gesture); the stock 68 and 80 keep every popup exactly where it was
+        protected virtual int MainButtonW => 68;
+        protected virtual int ExtraButtonW => 80;
+        const int ButtonRowRightMargin = 20, ButtonRowGap = 8;
 
         protected virtual void OnSaveLoadItemClicked(SaveLoadListItem item)
         {

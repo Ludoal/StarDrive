@@ -50,6 +50,9 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
     // (maintainer feedback) the two names say what stays: "Save as..." keeps the old plan,
     // "Overwrite as..." - the rename - does not.
     protected override string SaveButtonTitle => Mode == SLMode.Save ? Localizer.Token(GameText.BpSaveAs) : "Load";
+    // 20px wider than stock, for "Overwrite as..." and "Save as..." (maintainer feedback)
+    protected override int MainButtonW => Mode == SLMode.Save ? 88 : 68;
+    protected override int ExtraButtonW => 100;
 
     protected override void AddExtraButtons(float x, float y)
     {
@@ -59,7 +62,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         // hostile tint (maintainer feedback): the old plan goes, with no question asked
         var rename = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(x, y), Localizer.Token(GameText.BpRename)));
         rename.OnClick = b => TryRename();
-        rename.SetAbsSize(80, 24);
+        rename.SetAbsSize(ExtraButtonW, 24);
         rename.Tooltip = GameText.BpRenameTip;
     }
 
