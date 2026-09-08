@@ -267,15 +267,18 @@ namespace Ship_Game.UI
             return -1;
         }
 
-        // marks `col` as the sorted column (the orange one) and flips its direction;
-        // returns true if the new direction is ascending
+        // marks `col` as the sorted column (the orange one) and sets its direction; returns
+        // true if the new direction is ascending. A column taken FRESH opens the way the hand
+        // wants it: a figure column on its biggest values, a text column on A; the next click
+        // on the same column flips (maintainer feedback). One rule here, for every table.
         public bool SetSorted(int col)
         {
+            Column sc = Columns[col];
+            bool again = sc.Sorted;
             foreach (Column c in Columns)
                 c.Sorted = false;
-            Column sc = Columns[col];
             sc.Sorted = true;
-            sc.Ascending = !sc.Ascending;
+            sc.Ascending = again ? !sc.Ascending : sc.Align != TableAlign.Number;
             return sc.Ascending;
         }
 
