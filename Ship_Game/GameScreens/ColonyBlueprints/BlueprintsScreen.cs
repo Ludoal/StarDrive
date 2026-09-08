@@ -785,6 +785,9 @@ namespace Ship_Game
 
         public override void Update(float elapsedTime)
         {
+            // the title wears the colour of the governor the plan switches to, like the plan's
+            // icon in the Load popup; no governor keeps the plain yellow (maintainer feedback)
+            BlueprintsName.Color = GetBlueprintsIconColor(SwitchColonyType.ActiveValue);
             SaveBlueprints.Enabled = TilesList.Count(t => t.HasBuilding) > 1;
             UpdateShipAndTroopBuioildWarnings();
             PlannedPopLbl.Visible = PlannedPopulation.NotEqual(InitPopulationBillion);
