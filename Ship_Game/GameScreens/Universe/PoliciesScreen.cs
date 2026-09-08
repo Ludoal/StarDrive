@@ -56,8 +56,10 @@ namespace Ship_Game
         // the Economy screen and Auto-research on the Research screen, each over the panels it
         // governs. A frame holding one switch that is also somewhere else is a second place to
         // look, not a policy.
-        // the three share rails stack under the Auto switch, a caption each, on a tight pitch
-        const float ShareRailPitch = 30f, ShareRowsH = 3f * ShareRailPitch + 10f;
+        // the three share rails stack under the Auto switch, each under its own caption row, on
+        // the rhythm of the other rails: a caption, then a rail whose track is tucked up under it
+        // (bench 617: the knob climbed onto a caption drawn on the rail itself)
+        const float ShareCaptionH = 18f, ShareRailPitch = 46f, ShareRowsH = 3f * ShareRailPitch + 10f;
         const float TradeBoxH = 126f + 26f + 4f * SliderRowH + ShareRowsH; // +26: the priority title row
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
@@ -234,8 +236,8 @@ namespace Ship_Game
             base.LoadContent();
         }
 
-        // Three linked shares stacked - Production, Colonists, Trade - each a rail with its own
-        // caption and a padlock at its right end (bench 616: stacked, so the values line up). They
+        // Three linked shares stacked - Production, Colonists, Trade - each a caption over a rail,
+        // with a padlock at the rail's right end (bench 616: stacked, so the values line up). They
         // sum to 100: moving one rebalances the unlocked others at their current proportion, a
         // locked one is left alone. Under Auto the rails are inert, the locks drawn shut, and the
         // rails show what the pool did over the last ten turns (maintainer feedback).
@@ -244,6 +246,7 @@ namespace Ship_Game
             const float RailW = SliderRailW, RailH = 28f, LockGap = 6f;
             public const float LockSize = 16f;
             readonly Empire Player;
+            readonly UILabel[] Captions = new UILabel[3];
             readonly FloatSlider[] Rails = new FloatSlider[3];
             readonly LockToggle[] Locks = new LockToggle[3];
             bool Rebalancing; // a rail set from here fires its own OnChange - not a player's move
@@ -255,11 +258,12 @@ namespace Ship_Game
                 for (int i = 0; i < 3; ++i)
                 {
                     int k = i;
-                    // the rail carries its caption: drawn at its top-left, clear of the track and
-                    // of the value at the far right
-                    Rails[i] = new FloatSlider(SliderStyle.Decimal, new Vector2(RailW, RailH), CaptionText[i], 0, 100, Share(i))
+                    Captions[i] = new UILabel(new Vector2(-200f, -200f), CaptionText[i], Fonts.Arial12Bold, Colors.Cream) { Tooltip = GameText.PolShareTip };
+                    // the same rail as SliderRow builds: no text of its own, the track tucked up
+                    // under the caption row
+                    Rails[i] = new FloatSlider(SliderStyle.Decimal, new Vector2(RailW, RailH), "", 0, 100, Share(i))
                     {
-                        Step = 1, Tip = GameText.PolShareTip, ValueSuffix = "%",
+                        Step = 1, Tip = GameText.PolShareTip, TrackYOffset = -5, ValueSuffix = "%",
                     };
                     Rails[i].OnChange = s => OnShareMoved(k, (int)s.AbsoluteValue);
                     Locks[i] = new LockToggle(Locked(i), v => SetLocked(k, v)) { Tooltip = GameText.PolShareLockTip };
@@ -343,10 +347,13 @@ namespace Ship_Game
                 for (int i = 0; i < 3; ++i)
                 {
                     float y = Pos.Y + i * ShareRailPitch;
-                    Rails[i].Pos = new Vector2(Pos.X, y);
+                    Captions[i].Pos = new Vector2(Pos.X, y);
+                    Captions[i].PerformLayout();
+                    float railY = y + ShareCaptionH;
+                    Rails[i].Pos = new Vector2(Pos.X, railY);
                     Rails[i].PerformLayout();
-                    // the padlock sits on the track's line, past the value lane
-                    Locks[i].Pos = new Vector2(Pos.X + RailW + LockGap, y + RailH / 2f + 3f - LockSize / 2f);
+                    // the padlock sits on the track's line (RailH/2 + TrackYOffset), past the value lane
+                    Locks[i].Pos = new Vector2(Pos.X + RailW + LockGap, railY + RailH / 2f - 5f - LockSize / 2f + 3f);
                     Locks[i].PerformLayout();
                 }
                 base.PerformLayout();
@@ -358,6 +365,7 @@ namespace Ship_Game
                 {
                     if (Locks[i].Enabled && Locks[i].HandleInput(input)) return true;
                     if (Rails[i].Enabled && Rails[i].HandleInput(input)) return true;
+                    if (Captions[i].HandleInput(input)) return true;
                 }
                 return false;
             }
@@ -374,6 +382,8 @@ namespace Ship_Game
                     Locks[i].Enabled = !auto;
                     Locks[i].Shut = auto || Locked(i);
                     Locks[i].Greyed = auto;
+                    Captions[i].Color = auto ? Color.Gray : Colors.Cream;
+                    Captions[i].Draw(batch, elapsed);
                     Rails[i].Draw(batch, elapsed);
                     Locks[i].Draw(batch, elapsed);
                 }
