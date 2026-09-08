@@ -312,7 +312,7 @@ namespace Ship_Game
             {
                 // grey and SIGNED: it is a demand, not something the player is producing - and
                 // the minus says out loud that it comes off the production above it (bench 535)
-                DrawAlignedNumber(batch, font, "-" + P.Consumption.String(), curComma, y, Color.Gray);
+                DrawAlignedNumber(batch, font, "-" + P.Consumption.StringFixed1(), curComma, y, Color.Gray);
                 return;
             }
 
@@ -337,7 +337,9 @@ namespace Ship_Game
             Color color = IsCyberneticProdRow ? (UnderWater ? Color.Red : Colors.Cream)
                         : value < 0f         ? Color.LightPink
                                              : Colors.Cream;
-            DrawAlignedNumber(batch, font, value.String(), curComma, y, color);
+            // the decimal is always written: "0.#" drops it on a whole number and the figure
+            // jumps off the comma column the moment 9.8 becomes 10 (bench 608)
+            DrawAlignedNumber(batch, font, value.StringFixed1(), curComma, y, color);
 
             if (ShowMaxValue)
             {
@@ -345,7 +347,7 @@ namespace Ship_Game
                 float maxComma = slashX + font.TextWidth("/ ") + unitsW;
                 batch.DrawString(font, "/", new Vector2(slashX, y), Colors.Cream.Alpha(0.5f));
                 // The max is a potential, not a state: grey so it informs without rivalling the real value.
-                DrawAlignedNumber(batch, font, (IsCyberneticProdRow ? GrossMaxOutput : MaxValue).String(),
+                DrawAlignedNumber(batch, font, (IsCyberneticProdRow ? GrossMaxOutput : MaxValue).StringFixed1(),
                                   maxComma, y, Color.Gray);
             }
         }
