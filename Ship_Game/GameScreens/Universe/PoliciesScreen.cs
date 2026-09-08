@@ -31,7 +31,7 @@ namespace Ship_Game
         // page occupies, dynamic size included
         public override Rectangle PageFrame => EmpireTabs?.Rect ?? base.PageFrame;
 
-        DropOptions<CargoPriority> FreighterPriorityDropDown;
+        ShareRow FreighterShares;
         DropOptions<Planet.BuildMandate> EmpireBuildMandateList, EmpireScrapMandateList;
         DropOptions<string>[] BlueprintPolicyLists;
         UICheckBox RushNewColonies;
@@ -56,7 +56,7 @@ namespace Ship_Game
         // the Economy screen and Auto-research on the Research screen, each over the panels it
         // governs. A frame holding one switch that is also somewhere else is a second place to
         // look, not a policy.
-        const float TradeBoxH = 126f + 4f * SliderRowH;
+        const float TradeBoxH = 126f + 5f * SliderRowH; // the fifth is the row of three shares
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -151,15 +151,13 @@ namespace Ship_Game
                       0, Planet.FoodImportCutoffPct, player.FoodFirstBelowPct, default,
                       v => player.FoodFirstBelowPct = v, "%",
                       maxText: GameText.PolFoodFirstDefault, valueLane: 100);
-            FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
-                // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
-                // food guarantee is not false for it - it is empty. Omitted rather than qualified,
-                // because an aside about a people you are not playing is noise on every other
-                // player's screen (bench 531).
-                .Create(GameText.FreighterPriority, player.NonCybernetic ? GameText.FreighterPriorityTip
-                                                                         : GameText.FreighterPriorityTipCyber);
-            RebuildFreighterPriorityOptions(player);
-            FreighterPriorityDropDown.OnValueChange = v => player.CargoPriority = v;
+            // (maintainer feedback) Freighter Priority is a switch and three linked shares. Auto is
+            // the game's own conduct: a population-weighted roll between production and colonists
+            // each turn, trade on the leftovers. Off, the free hulls of each turn are split at the
+            // three percentages below, which sum to 100 and rebalance each other.
+            trade.AddCheckbox(() => player.FreighterPriorityAuto,
+                              title: GameText.PolFreighterPriorityAuto, tooltip: GameText.PolFreighterPriorityAutoTip);
+            FreighterShares = trade.Add(new ShareRow(player));
             // Ludoal fork (maintainer feedback): the three quantity numbers. Automation's
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
             // which is what puts them on this page. Every one of them is neutral at its
@@ -230,6 +228,188 @@ namespace Ship_Game
             addToQueue.Tooltip = GameText.AddToQueueApplyTip;
 
             base.LoadContent();
+        }
+
+        // Three linked shares on one row - Production, Colonists, Trade - each a caption over a
+        // short rail and a padlock. They sum to 100: moving one rebalances the unlocked others at
+        // their current proportion, a locked one is left alone. Under Auto the row is inert, the
+        // locks drawn shut, and the rails show what the pool did last turn (maintainer feedback).
+        class ShareRow : UIElementV2
+        {
+            const float RailW = 120f, RailH = 28f, Gap = 26f, CaptionH = 18f;
+            readonly Empire Player;
+            readonly UILabel[] Captions = new UILabel[3];
+            readonly FloatSlider[] Rails = new FloatSlider[3];
+            readonly LockToggle[] Locks = new LockToggle[3];
+            bool Rebalancing; // a rail set from here fires its own OnChange - not a player's move
+            static readonly GameText[] CaptionText = { GameText.Production, GameText.Colonists, GameText.Trade };
+
+            public ShareRow(Empire player)
+            {
+                Player = player;
+                for (int i = 0; i < 3; ++i)
+                {
+                    int k = i;
+                    Captions[i] = new UILabel(new Vector2(-200f, -200f), CaptionText[i], Fonts.Arial12Bold, Colors.Cream) { Tooltip = GameText.PolShareTip };
+                    Rails[i] = new FloatSlider(SliderStyle.Decimal, new Vector2(RailW, RailH), "", 0, 100, Share(i))
+                    {
+                        Step = 1, Tip = GameText.PolShareTip, TrackYOffset = -5, ValueSuffix = "%",
+                    };
+                    Rails[i].OnChange = s => OnShareMoved(k, (int)s.AbsoluteValue);
+                    Locks[i] = new LockToggle(Locked(i), v => SetLocked(k, v)) { Tooltip = GameText.PolShareLockTip };
+                }
+                Size = new Vector2(3 * RailW + 2 * Gap, CaptionH + RailH);
+            }
+
+            int Share(int i) => i == 0 ? Player.ShareProdPct : i == 1 ? Player.ShareColonistsPct : Player.ShareTradePct;
+            bool Locked(int i) => i == 0 ? Player.ShareProdLocked : i == 1 ? Player.ShareColonistsLocked : Player.ShareTradeLocked;
+            void SetShare(int i, int v)
+            {
+                if (i == 0) Player.ShareProdPct = v; else if (i == 1) Player.ShareColonistsPct = v; else Player.ShareTradePct = v;
+            }
+            void SetLocked(int i, bool v)
+            {
+                if (i == 0) Player.ShareProdLocked = v; else if (i == 1) Player.ShareColonistsLocked = v; else Player.ShareTradeLocked = v;
+            }
+
+            // the moved share takes its value within what the locked ones leave; the unlocked
+            // others share the rest at their current proportion (evenly when both stand at nought)
+            void OnShareMoved(int moved, int value)
+            {
+                if (Rebalancing || Player.FreighterPriorityAuto)
+                    return;
+                Rebalancing = true;
+                int lockedSum = 0;
+                var free = new Array<int>();
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (i == moved) continue;
+                    if (Locked(i)) lockedSum += Share(i);
+                    else free.Add(i);
+                }
+                int room = 100 - lockedSum;
+                value = value.Clamped(0, room);
+                int rest = room - value;
+                int freeSum = 0;
+                foreach (int i in free) freeSum += Share(i);
+                int given = 0;
+                for (int n = 0; n < free.Count; ++n)
+                {
+                    int i = free[n];
+                    int part = n == free.Count - 1 ? rest - given
+                             : freeSum > 0 ? rest * Share(i) / freeSum
+                             : rest / free.Count;
+                    SetShare(i, part);
+                    given += part;
+                }
+                SetShare(moved, value);
+                ShowShares();
+                Rebalancing = false;
+            }
+
+            // what the rails print: the shares - or under Auto, in the same unit, what the pool
+            // actually did last turn (runs laid down per pass, as percentages)
+            void ShowShares()
+            {
+                int[] shown = { Share(0), Share(1), Share(2) };
+                if (Player.FreighterPriorityAuto)
+                {
+                    int[] runs = Player.LastTurnRuns;
+                    int total = runs[0] + runs[1] + runs[2];
+                    shown[0] = total > 0 ? runs[0] * 100 / total : 0;
+                    shown[1] = total > 0 ? runs[1] * 100 / total : 0;
+                    shown[2] = total > 0 ? 100 - shown[0] - shown[1] : 0;
+                }
+                Rebalancing = true;
+                for (int i = 0; i < 3; ++i)
+                    if ((int)Rails[i].AbsoluteValue != shown[i])
+                        Rails[i].AbsoluteValue = shown[i];
+                Rebalancing = false;
+            }
+
+            public override void PerformLayout()
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    float x = Pos.X + i * (RailW + Gap);
+                    Captions[i].Pos = new Vector2(x, Pos.Y);
+                    Captions[i].PerformLayout();
+                    Rails[i].Pos = new Vector2(x, Pos.Y + CaptionH);
+                    Rails[i].PerformLayout();
+                    Locks[i].Pos = new Vector2(x + RailW + 4f, Pos.Y + CaptionH + 5f);
+                    Locks[i].PerformLayout();
+                }
+                base.PerformLayout();
+            }
+
+            public override bool HandleInput(InputState input)
+            {
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (Locks[i].Enabled && Locks[i].HandleInput(input)) return true;
+                    if (Rails[i].Enabled && Rails[i].HandleInput(input)) return true;
+                    if (Captions[i].HandleInput(input)) return true;
+                }
+                return false;
+            }
+
+            public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+            {
+                bool auto = Player.FreighterPriorityAuto;
+                ShowShares();
+                for (int i = 0; i < 3; ++i)
+                {
+                    bool inert = auto || Locked(i);
+                    Rails[i].Enabled = !inert;
+                    Rails[i].Greyed = inert;
+                    Locks[i].Enabled = !auto;
+                    Locks[i].Shut = auto || Locked(i);
+                    Locks[i].Greyed = auto;
+                    Captions[i].Color = auto ? Color.Gray : Colors.Cream;
+                    Captions[i].Draw(batch, elapsed);
+                    Rails[i].Draw(batch, elapsed);
+                    Locks[i].Draw(batch, elapsed);
+                }
+            }
+        }
+
+        // a padlock: lit when shut, dim when open, darker when the whole row is inert
+        class LockToggle : UIElementV2
+        {
+            readonly SubTexture Icon = ResourceManager.Texture("NewUI/icon_lock");
+            readonly Action<bool> OnToggle;
+            public bool Shut;
+            public bool Greyed;
+            public LocalizedText Tooltip;
+
+            public LockToggle(bool shut, Action<bool> onToggle)
+            {
+                Shut = shut;
+                OnToggle = onToggle;
+                Size = new Vector2(16f, 16f);
+            }
+
+            public override bool HandleInput(InputState input)
+            {
+                if (!Rect.HitTest(input.CursorPosition))
+                    return false;
+                if (Tooltip.IsValid)
+                    ToolTip.CreateTooltip(Tooltip);
+                if (input.LeftMouseClick)
+                {
+                    Shut = !Shut;
+                    OnToggle(Shut);
+                    GameAudio.AcceptClick();
+                    return true;
+                }
+                return false;
+            }
+
+            public override void Draw(SpriteBatch batch, DrawTimes elapsed)
+            {
+                Color tint = Greyed ? new Color(70, 70, 70) : Shut ? Color.White : new Color(120, 120, 120);
+                batch.Draw(Icon, Rect, tint);
+            }
         }
 
         // A number set on a rail, the way the tax rate and the notification delay already work.
@@ -452,38 +632,8 @@ namespace Ship_Game
             return list;
         }
 
-        // Trade First is offered only while the empire may trade abroad: a priority that points
-        // at a forbidden pass is an option that lies. The list is built once, so a right toggled
-        // with the screen open is caught in Update - the same watch the new-colony rush already
-        // keeps on the empire-wide rush. Rebuilding is what the widget supports; a greyed entry
-        // is not a thing DropOptions has.
-        void RebuildFreighterPriorityOptions(Empire player)
-        {
-            bool mayTradeAbroad = Universe.UState.P.AllowPlayerInterTrade;
-            FreighterPriorityDropDown.Clear();
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityAuto, CargoPriority.Auto);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityProductionFirst, CargoPriority.ProductionFirst);
-            FreighterPriorityDropDown.AddOption(GameText.FreighterPriorityColonistsFirst, CargoPriority.ColonistsFirst);
-            if (mayTradeAbroad)
-                FreighterPriorityDropDown.AddOption(GameText.PolFreighterTradeFirst, CargoPriority.TradeFirst);
-
-            // a suspended choice is never overwritten: while the right is off the closed list
-            // shows Auto, which is also what the dispatch does, and granting the right again
-            // brings the pick back untouched.
-            if (mayTradeAbroad || player.CargoPriority != CargoPriority.TradeFirst)
-                FreighterPriorityDropDown.ActiveValue = player.CargoPriority;
-
-            PriorityListMayTradeAbroad = mayTradeAbroad;
-        }
-
-        bool PriorityListMayTradeAbroad;
-
         public override void Update(float fixedDeltaTime)
         {
-            if (FreighterPriorityDropDown != null
-                && PriorityListMayTradeAbroad != Universe.UState.P.AllowPlayerInterTrade)
-                RebuildFreighterPriorityOptions(Universe.Player);
-
             if (RushNewColonies != null)
             {
                 // greyed AND inert while the empire-wide rush is on: it already rushes everything

@@ -452,6 +452,7 @@ namespace Ship_Game
             // in an ongoing game throws.
             ObsoletePlayerDesigns ??= new();
             MigrateFreighterAutomation(); // split the old single Automatic Trade toggle into three
+            MigratePinnedPriorityToShares(); // a pinned freighter order of an older save becomes shares
             MigrateExplorerAutomation();  // split the old single Auto-explore toggle into two
             CommonInitialize();
         }

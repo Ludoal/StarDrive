@@ -18,7 +18,9 @@ namespace Ship_Game
     // pin the order. Auto MUST stay value 0 so existing saves load as Auto.
     // (Named CargoPriority to avoid Ship_Game.AI.FreighterPriority, an unrelated
     // freighter-sizing status enum.)
-    public enum CargoPriority { Auto, ProductionFirst, ColonistsFirst, TradeFirst }
+    // ⚠ appended at the end, the save writes the ordinal: Shares is the empire's split of its
+    // free hulls at three percentages; the pinned orders live on for trade zones only
+    public enum CargoPriority { Auto, ProductionFirst, ColonistsFirst, TradeFirst, Shares }
 
     public partial class Empire
     {
@@ -57,6 +59,42 @@ namespace Ship_Game
             get => (CargoPriority)CargoPriorityValue;
             set => CargoPriorityValue = (int)value;
         }
+        // (maintainer feedback) the freighter SHARES. With Auto off, the free hulls of a turn are
+        // split between the production, colonists and trade passes at these three percentages,
+        // which sum to 100 (the screen keeps them so). A locked share is left alone when the
+        // player moves another. Ints and bools only, so nothing older has to read a new type.
+        [StarData] public int ShareProdPct;
+        [StarData] public int ShareColonistsPct;
+        [StarData] public int ShareTradePct;
+        [StarData] public bool ShareProdLocked;
+        [StarData] public bool ShareColonistsLocked;
+        [StarData] public bool ShareTradeLocked;
+        public bool UsesFreighterShares => isPlayer && CargoPriority == CargoPriority.Shares;
+        // what the common pool actually did last turn - runs laid down by the production,
+        // colonists and foreign passes - for the Policies page to show under Auto, in the
+        // same unit as the shares. Not saved: it is remade every turn.
+        public int[] LastTurnRuns { get; private set; } = new int[3];
+        int[] TurnRuns = new int[3];
+        // Auto's own conduct, in one number: the chance that production is served before colonists
+        // this turn. It rises with the population and is 100 from half the ceiling on.
+        public float AutoProductionFirstChance => TotalPopBillion / MaxPopBillion * (NonCybernetic ? 200 : 300);
+        // the switch the Policies page shows: Auto is the game's own conduct, off is the shares.
+        // Leaving Auto with no shares set starts from thirds, so the rails never show a blank split.
+        public bool FreighterPriorityAuto
+        {
+            get => CargoPriority != CargoPriority.Shares;
+            set
+            {
+                if (value) { CargoPriority = CargoPriority.Auto; return; }
+                CargoPriority = CargoPriority.Shares;
+                if (ShareProdPct + ShareColonistsPct + ShareTradePct != 100)
+                    SetShares(34, 33, 33);
+            }
+        }
+        void SetShares(int prod, int colonists, int trade)
+        {
+            ShareProdPct = prod; ShareColonistsPct = colonists; ShareTradePct = trade;
+        }
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
         public float TotalTradeMoneyAddedThisTurn { get; private set; }
@@ -79,6 +117,20 @@ namespace Ship_Game
             AutoUpgradeFreighters  = AutoFreighters;
             AutoScrapIdleFreighters= AutoFreighters;
             FreighterAutomationSplit = true;
+        }
+
+        // Save migration: a pinned order of an older save becomes shares. The pinned pass took
+        // everything and the others lived on leftovers, which is what a whole share does.
+        public void MigratePinnedPriorityToShares()
+        {
+            switch (CargoPriority)
+            {
+                case CargoPriority.ProductionFirst: SetShares(100, 0, 0); break;
+                case CargoPriority.ColonistsFirst:  SetShares(0, 100, 0); break;
+                case CargoPriority.TradeFirst:      SetShares(0, 0, 100); break;
+                default: return;
+            }
+            CargoPriority = CargoPriority.Shares;
         }
 
         // ⚠ THE PERIMETER (maintainer feedback): these two count PLANETS, not hulls. An exclusive
@@ -202,7 +254,9 @@ namespace Ship_Game
             // a colony that stops being ours leaves the zones that named it, and a zone left
             // without one is dissolved - the housekeeping has to RUN, not merely exist
             RefreshTradeZones();
-            TradeState tradeState = new(this, false);
+            TradeState tradeState = new(this, false) { CountsRuns = true };
+            LastTurnRuns = TurnRuns;
+            TurnRuns = new int[3];
             // Trade First lifts the foreign runs above production and colonists - once in the
             // turn, and never above food, which stays the first call below.
             // ★ EXCLUSIVE COLONIES ARE NOT THE COMMON PASS'S TO SERVE. A zone that requisitions
@@ -211,6 +265,7 @@ namespace Ship_Game
             // carry. Read once for the turn - the regimes do not change inside it.
             Array<Planet> commonColonies = ColoniesOutsideExclusiveZones();
             bool tradeFirst = isPlayer && CargoPriority == CargoPriority.TradeFirst;
+            bool shares = UsesFreighterShares;
             bool servedAbroad = false;
             bool servedZones = false;
             for (int i = 1; i <= 3; i++)
@@ -233,44 +288,57 @@ namespace Ship_Game
                         break;
                 }
 
-                if (tradeFirst && !servedAbroad)
+                if (shares)
                 {
-                    // the domestic state must have fetched before the foreign runs take their
-                    // pick: it is the only one allowed to BUILD, and a cybernetic empire runs
-                    // no food pass to trigger that fetch. Under this priority a run abroad is
-                    // therefore reason enough to lay down a freighter, which is its point.
+                    // ★ THE SHARES (maintainer feedback): the free hulls of this lap are split
+                    // between the production, colonists and trade passes at the player's
+                    // percentages, a pass with nothing to carry leaving its share to the others.
+                    // What a pass does not use is free again on the next lap and re-split the
+                    // same way; the last lap knows no share, so nothing sleeps. The domestic
+                    // state fetches first: it alone may BUILD, and the foreign pass needs its pool.
                     tradeState.FetchIdleFreightersOrBuild();
-                    DispatchInterEmpireTrade(ref tradeState);
+                    DispatchShares(commonColonies, lastLap: i == 3, ref tradeState);
                     servedAbroad = true;
-                    if (tradeState.NoFreeFreighters)
-                        break;
-                }
-
-                // Under a freighter shortage the dispatch order is the priority. The player
-                // can pin it (Policies > Trade); Auto — and every AI empire — keeps the
-                // vanilla population-weighted dice (colonists win more often early game).
-                bool productionFirst;
-                // only the two pinned orders answer here; Trade First reorders the PASSES and
-                // leaves production against colonists to the dice, exactly as Auto does.
-                if (isPlayer && (CargoPriority == CargoPriority.ProductionFirst
-                                 || CargoPriority == CargoPriority.ColonistsFirst))
-                    productionFirst = CargoPriority == CargoPriority.ProductionFirst;
-                else
-                {
-                    float popRatio = TotalPopBillion / MaxPopBillion;
-                    float productionFirstChance = popRatio * (NonCybernetic ? 200 : 300);
-                    productionFirst = Random.RollDice(productionFirstChance);
-                }
-
-                if (productionFirst)
-                {
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
                 }
                 else
                 {
-                    DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
-                    DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
+                    if (tradeFirst && !servedAbroad)
+                    {
+                        // the domestic state must have fetched before the foreign runs take their
+                        // pick: it is the only one allowed to BUILD, and a cybernetic empire runs
+                        // no food pass to trigger that fetch. Under this priority a run abroad is
+                        // therefore reason enough to lay down a freighter, which is its point.
+                        tradeState.FetchIdleFreightersOrBuild();
+                        DispatchInterEmpireTrade(ref tradeState);
+                        servedAbroad = true;
+                        if (tradeState.NoFreeFreighters)
+                            break;
+                    }
+
+                    // Under a freighter shortage the dispatch order is the priority. The player
+                    // can pin it (Policies > Trade); Auto — and every AI empire — keeps the
+                    // vanilla population-weighted dice (colonists win more often early game).
+                    bool productionFirst;
+                    // only the two pinned orders answer here; Trade First reorders the PASSES and
+                    // leaves production against colonists to the dice, exactly as Auto does.
+                    if (isPlayer && (CargoPriority == CargoPriority.ProductionFirst
+                                     || CargoPriority == CargoPriority.ColonistsFirst))
+                        productionFirst = CargoPriority == CargoPriority.ProductionFirst;
+                    else
+                    {
+                        productionFirst = Random.RollDice(AutoProductionFirstChance);
+                    }
+
+                    if (productionFirst)
+                    {
+                        DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
+                        DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
+                    }
+                    else
+                    {
+                        DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
+                        DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
+                    }
                 }
 
                 // the food top-up: the colonies over the Food First level, after production and colonists
@@ -420,7 +488,53 @@ namespace Ship_Game
         // interTrade state never builds. It therefore borrows the domestic state's free
         // freighters and hands back what it did not send, rather than replacing it.
         // Cybernetic factions never touch Food trade. Filthy Opteris are disgusted by protein-bugs. Ironic.
-        void DispatchInterEmpireTrade(ref TradeState domestic)
+        // One lap of the shares: quotas in hulls from the free pool and the three percentages,
+        // over the passes that still have something to carry; -1 is no cap (the last lap). The
+        // rounding's remainder and the passes' order both favour the largest share.
+        void DispatchShares(Array<Planet> colonies, bool lastLap, ref TradeState state)
+        {
+            int free = state.IdleFreighters.Length;
+            if (free == 0)
+                return;
+
+            bool tradeOpen = Universe.P.AllowPlayerInterTrade && TradingEmpiresPlanetList().Count > 0;
+            int[] weight =
+            {
+                state.HasImportPlanetOf(Goods.Production) ? ShareProdPct : 0,
+                state.HasImportPlanetOf(Goods.Colonists)  ? ShareColonistsPct : 0,
+                tradeOpen                                 ? ShareTradePct : 0,
+            };
+            int sum = weight[0] + weight[1] + weight[2];
+            int[] quota = { -1, -1, -1 };
+            if (!lastLap && sum > 0)
+            {
+                int given = 0;
+                for (int k = 0; k < 3; ++k)
+                {
+                    quota[k] = free * weight[k] / sum;
+                    given += quota[k];
+                }
+                int largest = weight[1] > weight[0] ? 1 : 0;
+                if (weight[2] > weight[largest]) largest = 2;
+                quota[largest] += free - given;
+            }
+
+            int[] order = { 0, 1, 2 };
+            System.Array.Sort(order, (a, b) => weight[b].CompareTo(weight[a]));
+            foreach (int pass in order)
+            {
+                if (quota[pass] == 0 || state.NoFreeFreighters)
+                    continue;
+                switch (pass)
+                {
+                    case 0: DispatchOrBuildFreighters(Goods.Production, colonies, CommonExportGround(Goods.Production), false, ref state, null, quota[0]); break;
+                    case 1: DispatchOrBuildFreighters(Goods.Colonists,  colonies, CommonExportGround(Goods.Colonists),  false, ref state, null, quota[1]); break;
+                    case 2: if (tradeOpen) DispatchInterEmpireTrade(ref state, quota[2]); break;
+                }
+            }
+        }
+
+        void DispatchInterEmpireTrade(ref TradeState domestic, int maxHulls = -1)
         {
             if (!domestic.HasFreeFreighters || isPlayer && !Universe.P.AllowPlayerInterTrade)
                 return;
@@ -429,18 +543,22 @@ namespace Ship_Game
             if (interTradePlanets.Count == 0)
                 return;
 
-            TradeState abroad = new(this, true);
+            TradeState abroad = new(this, true) { CountsRuns = domestic.CountsRuns };
             abroad.SetIdleFreighters(domestic.IdleFreighters.ToArr());
+            int before = abroad.IdleFreighters.Length;
             if (NonCybernetic)
-                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, CommonExportGround(Goods.Food), true, ref abroad);
+                DispatchOrBuildFreighters(Goods.Food, interTradePlanets, CommonExportGround(Goods.Food), true, ref abroad, null, maxHulls);
 
-            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, CommonExportGround(Goods.Production), true, ref abroad);
+            // the cap covers both foreign runs together
+            int left = maxHulls < 0 ? -1 : (maxHulls - (before - abroad.IdleFreighters.Length)).LowerBound(0);
+            DispatchOrBuildFreighters(Goods.Production, interTradePlanets, CommonExportGround(Goods.Production), true, ref abroad, null, left);
             domestic.SetIdleFreighters(abroad.IdleFreighters);
         }
 
         struct TradeState
         {
             readonly bool InterTrade;
+            public bool CountsRuns; // the empire's own state books its runs (LastTurnRuns); zones do not
             public Ship[] IdleFreighters {get; private set; }
             public EmpireIdleFreighters State { get; private set; }
             bool BuildFreighterRequested;
@@ -692,7 +810,7 @@ namespace Ship_Game
             if (zone.Priority == CargoPriority.ProductionFirst || zone.Priority == CargoPriority.ColonistsFirst)
                 productionFirst = zone.Priority == CargoPriority.ProductionFirst;
             else
-                productionFirst = Random.RollDice(TotalPopBillion / MaxPopBillion * (NonCybernetic ? 200 : 300));
+                productionFirst = Random.RollDice(AutoProductionFirstChance);
 
             if (productionFirst)
             {
@@ -828,9 +946,10 @@ namespace Ship_Game
         // in every pass - and an enclave that lends its goods to the realm is not an enclave.
         void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList,
                                        Array<Planet> exportPlanetList, bool interTrade, ref TradeState state,
-                                       Predicate<Planet> importFilter = null)
+                                       Predicate<Planet> importFilter = null, int maxHulls = -1)
         {
-            if (state.NoFreeFreighters)
+            // maxHulls caps the runs this call may lay down (the shares); -1 is no cap
+            if (state.NoFreeFreighters || maxHulls == 0)
                 return;
 
             // Order importing planets to balance freighters distribution
@@ -880,8 +999,11 @@ namespace Ship_Game
 
             importingPlanets.Sort(p => p.GetCachedIncomingCargoPriority(goods));
 
+            int assigned = 0;
             for (int i = 0; i < importingPlanets.Length; i++)
             {
+                if (maxHulls >= 0 && assigned >= maxHulls)
+                    break;
                 Planet importPlanet = importingPlanets[i];
                 // Check export planets
                 if (GetTradeParameters(goods, idleFreighters, importPlanet, exportingPlanets, out ExportPlanetAndFreighter exportAndFreighter))
@@ -891,6 +1013,12 @@ namespace Ship_Game
                     freighter.RefreshTradeRoutes();
                     freighter.AI.SetupFreighterPlan(exportPlanet, importPlanet, goods);
                     idleFreighters.Remove(freighter, out idleFreighters);
+                    ++assigned;
+                    if (state.CountsRuns)
+                    {
+                        int pass = interTrade ? 2 : goods == Goods.Production ? 0 : goods == Goods.Colonists ? 1 : -1;
+                        if (pass >= 0) ++TurnRuns[pass]; // domestic food stands above the shares
+                    }
 
                     // Remove the export planet from the exporting list if no more export slots left
                     if (exportPlanet.FreeGoodsExportSlots(goods) == 0)

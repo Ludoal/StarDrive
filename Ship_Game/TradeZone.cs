@@ -90,9 +90,9 @@ namespace Ship_Game
             get
             {
                 var p = (CargoPriority)PriorityValue;
-                return p == CargoPriority.TradeFirst ? CargoPriority.Auto : p;
+                return p == CargoPriority.TradeFirst || p == CargoPriority.Shares ? CargoPriority.Auto : p;
             }
-            set => PriorityValue = value == CargoPriority.TradeFirst ? 0 : (int)value;
+            set => PriorityValue = value == CargoPriority.TradeFirst || value == CargoPriority.Shares ? 0 : (int)value;
         }
 
         // The hulls that belong to this zone. Exclusive only: a soft zone borrows a share of the

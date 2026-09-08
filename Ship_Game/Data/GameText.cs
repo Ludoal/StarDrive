@@ -6333,6 +6333,14 @@ namespace Ship_Game
         FuUnitRuns = 30351,
         /// <summary>worlds</summary>
         FuUnitWorlds = 30352,
+        /// <summary>Auto Freighter Priority</summary>
+        PolFreighterPriorityAuto = 30353,
+        /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
+        PolFreighterPriorityAutoTip = 30354,
+        /// <summary>The share of the turn's free freighters this pass may take first.</summary>
+        PolShareTip = 30355,
+        /// <summary>Lock this share: moving another share leaves it as it is.</summary>
+        PolShareLockTip = 30356,
         /// <summary>Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own.</summary>
         BpRenameTip = 30138,
         /// <summary>That name cannot be used for a file, or holds a character the game cannot draw.</summary>
@@ -7192,8 +7200,6 @@ namespace Ship_Game
         PolRushNewColony = 30245,
         /// <summary>A newly founded colony rushes its construction queue for this many turns.</summary>
         PolRushNewColonyTip = 30246,
-        /// <summary>Sets how your freighters choose their assignments.</summary>
-        FreighterPriorityTipCyber = 30250,
         /// <summary>Show All</summary>
         BpShowAll = 30251,
         /// <summary>Lists every building in the game, not only the ones you have researched.</summary>
@@ -7222,8 +7228,6 @@ namespace Ship_Game
         PolFoodFirstBelowTip = 30341,
         /// <summary>Default (90%)</summary>
         PolFoodFirstDefault = 30342,
-        /// <summary>Trade First</summary>
-        PolFreighterTradeFirst = 30262,
         /// <summary>Zone</summary>
         TzZoneName = 30263,
         /// <summary>Colonies</summary>

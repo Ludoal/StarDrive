@@ -368,9 +368,19 @@ the build queue.
 **Source: maintainer.**
 
 Under a freighter shortage, whether production or colonists got served first was a
-population-weighted dice roll (`Random.RollDice(productionFirstChance)`). The player can now
-fix that order (`Auto` / `Production First` / `Colonists First`). AI empires keep the vanilla
-dice behaviour.
+population-weighted dice roll (`Random.RollDice(productionFirstChance)`), and the pass that
+won took every free freighter, the other living on leftovers. A pinned order (Production
+First, Colonists First, Trade First) only chose which pass did the taking.
+
+Freighter Priority is now a switch and three linked shares. **Auto** keeps the game's own
+roll. Off, the free freighters of each turn are split between the production, colonists and
+trade passes at three percentages that sum to 100 and rebalance each other; a padlock holds
+one share while the others move. A pass with nothing to carry leaves its share to the others,
+what a pass does not use is free again on the next pass, and the last pass of the turn knows
+no share, so no freighter sleeps. Under Auto the rails are inert and show, in the same unit,
+what the fleet actually did last turn.
+An older save's pinned order becomes the matching whole share. Trade zones keep their own
+pinned order. AI empires keep the vanilla dice behaviour.
 
 ### Auto Governor on new colonies
 `3c1457d3` — `Planet_Colonize.cs` (`SetupColonyType`)

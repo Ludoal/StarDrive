@@ -22753,6 +22753,22 @@ FuUnitWorlds:
  Id: 30352
  ENG: "worlds"
  FRA: "mondes"
+PolFreighterPriorityAuto:
+ Id: 30353
+ ENG: "Auto Freighter Priority"
+ FRA: "Priorité des cargos automatique"
+PolFreighterPriorityAutoTip:
+ Id: 30354
+ ENG: "Checked: freighters choose their assignments the game's own way, a population-weighted roll between production and colonists each turn, trade on what is left. Unchecked: the free freighters of each turn are split between the three at the shares below. Food deliveries under the Food First level always come first."
+ FRA: "Coché : les cargos choisissent leurs missions à la façon du jeu, un tirage pondéré par la population entre production et colons à chaque tour, le commerce sur ce qui reste. Décoché : les cargos libres de chaque tour sont partagés entre les trois selon les parts ci-dessous. La nourriture sous le niveau Food First passe toujours en premier."
+PolShareTip:
+ Id: 30355
+ ENG: "The share of the turn's free freighters this pass may take first. The three sum to 100: move one and the unlocked others follow. A pass with nothing to carry leaves its share to the others, and what a pass does not use is free again on the next pass."
+ FRA: "La part des cargos libres du tour que cette passe peut prendre en premier. Les trois font 100 : bougez-en une et les autres, non verrouillées, suivent. Une passe qui n'a rien à transporter laisse sa part aux autres, et ce qu'une passe n'utilise pas redevient libre à la passe suivante."
+PolShareLockTip:
+ Id: 30356
+ ENG: "Lock this share: moving another share leaves it as it is."
+ FRA: "Verrouiller cette part : bouger une autre part la laisse telle quelle."
 BpRenameTip:
  Id: 30138
  ENG: "Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own."
@@ -28863,10 +28879,6 @@ PolRushNewColonyTip:
  Id: 30246
  ENG: "A colony you found is born with its own Continuous Rush already on, so a fresh world stands up instead of crawling. It is that colony's toggle from the first turn - switch it off there when you judge it has found its feet. Greyed while the empire-wide Continuous Rush is on, which already rushes everything."
  FRA: "Une colonie que vous fondez nait avec son propre Continuous Rush deja actif, pour qu'un monde neuf se leve au lieu de ramper. C'est le reglage de cette colonie des le premier tour : desactivez-le la-bas quand vous jugez qu'elle tient debout. Grise tant que le Continuous Rush d'empire est actif, qui accelere deja tout."
-FreighterPriorityTipCyber:
- Id: 30250
- ENG: "Sets how your freighters choose their assignments."
- FRA: "Definit la facon dont vos cargos choisissent leurs missions."
 BpShowAll:
  Id: 30251
  ENG: "Show All"
@@ -28923,10 +28935,6 @@ PolFoodFirstDefault:
  Id: 30342
  ENG: "Default (90%)"
  FRA: "Défaut (90 %)"
-PolFreighterTradeFirst:
- Id: 30262
- ENG: "Trade First"
- FRA: "Commerce d'abord"
 TzZoneName:
  Id: 30263
  ENG: "Zone"
