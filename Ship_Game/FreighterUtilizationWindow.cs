@@ -107,10 +107,10 @@ namespace Ship_Game
         public void SeatByMinimap()
         {
             const int windowWidth = 650;
-            // Ludoal fork (bench 578): SIX rows - the left column carries the in-zones line and
-            // the fleet total. The height is counted in rows on purpose, so a row added here
-            // needs no second number changed.
-            int windowHeight = 6 * (Fonts.Arial12Bold.LineSpacing + 25);
+            // Ludoal fork (bench 578): FIVE rows. The left column's four lines and the button
+            // fit in them on a 20px pitch (maintainer feedback). The height is counted in rows on
+            // purpose, so a row added here needs no second number changed.
+            int windowHeight = 5 * (Fonts.Arial12Bold.LineSpacing + 25);
             Rect = new Rectangle((int)Screen.Minimap.X - 5 - windowWidth, (int)Screen.Minimap.Y +
                 (int)Screen.Minimap.Height - windowHeight, windowWidth, windowHeight); // foot flush with the minimap frame
             if (HasContent)
