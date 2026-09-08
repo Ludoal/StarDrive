@@ -42,6 +42,12 @@ namespace Ship_Game
         [StarData] public int FreighterReservePct;   // 0 = build only when the pool runs dry
         [StarData] public int MaxFreighterRefitsPct; // 0 = refits run on the game's own formula
         [StarData] public int FreighterIdleTurns;    // 0 = the vanilla 20 idle turns before scrapping
+        // (maintainer feedback) the top share of the food store where food waits behind production
+        // and colonists. The rail shows the LEVEL under which food comes first (0 to 89, then
+        // Default at the 90% cutoff); the save holds the band above that level, so that an old
+        // save's 0 reads as the base game and the rail's own 0 - food last everywhere - is a
+        // real position.
+        [StarData] public int FoodDeferredPct;
         // Stored as an int, not as the enum: CargoPriority does not exist in vanilla, and a
         // build without the deleted-enum skip cannot read past a type it has never heard of.
         // An int is a fundamental type every build reads, so the save stays loadable downstream.
@@ -118,6 +124,18 @@ namespace Ship_Game
         // RefitShip is also the warship refit goal and the player's manual refit - only ours counts.
         public int FreightersInRefit => AI.CountGoals(g => g is RefitShip r && r.OldShip?.IsFreighter == true);
         public int IdleTurnsBeforeScrap => FreighterIdleTurns > 0 ? FreighterIdleTurns : 20;
+        // The rail's number: the level under which food is served first. At the cutoff (Default)
+        // nothing is deferred.
+        public int FoodFirstBelowPct
+        {
+            get => Planet.FoodImportCutoffPct - FoodDeferredPct;
+            set => FoodDeferredPct = (Planet.FoodImportCutoffPct - value).Clamped(0, Planet.FoodImportCutoffPct);
+        }
+        // As a ratio of the store, for the dispatch. Default reads 1 rather than the cutoff on
+        // purpose: "everyone who orders" must stay true if the cutoff ever moves.
+        public float FoodFirstBelow => FoodDeferredPct > 0 ? FoodFirstBelowPct / 100f : 1f;
+        bool FoodBelowLevel(Planet p) => p.Storage.FoodRatio < FoodFirstBelow;
+        bool FoodAboveLevel(Planet p) => !FoodBelowLevel(p);
         // No ceiling set: freighter refits run on the game's own formula - the fleet-fill
         // thresholds and the original dice. That position is the comparison baseline, which
         // is why it reads "Auto" rather than zero.
@@ -200,8 +218,12 @@ namespace Ship_Game
                 if (tradeState.NoFreeFreighters)
                     break;
 
+                // ★ the food pass is split around the Food First level (Policies > Trade): the
+                // colonies below it are served here, before anything else; the rest get their
+                // top-up after production and colonists, further down. At Default the level is
+                // the cutoff, so this pass is the whole food pass and the top-up finds nobody.
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, commonColonies, CommonExportGround(Goods.Food), false, ref tradeState);
+                    DispatchOrBuildFreighters(Goods.Food, commonColonies, CommonExportGround(Goods.Food), false, ref tradeState, FoodBelowLevel);
 
                 if (!servedZones)
                 {
@@ -250,6 +272,10 @@ namespace Ship_Game
                     DispatchOrBuildFreighters(Goods.Colonists, commonColonies, CommonExportGround(Goods.Colonists), false, ref tradeState);
                     DispatchOrBuildFreighters(Goods.Production, commonColonies, CommonExportGround(Goods.Production), false, ref tradeState);
                 }
+
+                // the food top-up: the colonies over the Food First level, after production and colonists
+                if (NonCybernetic)
+                    DispatchOrBuildFreighters(Goods.Food, commonColonies, CommonExportGround(Goods.Food), false, ref tradeState, FoodAboveLevel);
 
                 tradeState.UpdatePlanetsTradeGoods();
             }
@@ -352,10 +378,12 @@ namespace Ship_Game
                 TradeState zoneState = new(this, false);
                 zoneState.SetIdleFreighters(lent.ToArray());
                 if (NonCybernetic)
-                    DispatchOrBuildFreighters(Goods.Food, colonies, softFoodGround, false, ref zoneState);
+                    DispatchOrBuildFreighters(Goods.Food, colonies, softFoodGround, false, ref zoneState, FoodBelowLevel);
 
                 DispatchOrBuildFreighters(Goods.Production, colonies, softProdGround, false, ref zoneState);
                 DispatchOrBuildFreighters(Goods.Colonists, colonies, softColGround, false, ref zoneState);
+                if (NonCybernetic) // the food top-up, the same split as the common pass
+                    DispatchOrBuildFreighters(Goods.Food, colonies, softFoodGround, false, ref zoneState, FoodAboveLevel);
 
                 // What the zone did not send goes back to the common pool - a quota is a share of
                 // a turn, not a possession - EXCEPT the berths its stations are waiting on.
@@ -656,7 +684,7 @@ namespace Ship_Game
             TradeState state = new(this, false);
             state.SetIdleFreighters(idle);
             if (NonCybernetic)
-                DispatchOrBuildFreighters(Goods.Food, colonies, colonies, false, ref state);
+                DispatchOrBuildFreighters(Goods.Food, colonies, colonies, false, ref state, FoodBelowLevel);
 
             // the zone's one lever. Pinned, it answers; on Auto it keeps the empire's own
             // population-weighted dice, so a zone left alone behaves like the empire around it.
@@ -676,6 +704,9 @@ namespace Ship_Game
                 DispatchOrBuildFreighters(Goods.Colonists, colonies, colonies, false, ref state);
                 DispatchOrBuildFreighters(Goods.Production, colonies, colonies, false, ref state);
             }
+
+            if (NonCybernetic) // the food top-up, the same split as the common pass
+                DispatchOrBuildFreighters(Goods.Food, colonies, colonies, false, ref state, FoodAboveLevel);
 
             state.UpdatePlanetsTradeGoods();
         }
@@ -796,7 +827,8 @@ namespace Ship_Game
         // planet, a hull carrying no zone mark flies into an exclusive zone to LOAD, every turn,
         // in every pass - and an enclave that lends its goods to the realm is not an enclave.
         void DispatchOrBuildFreighters(Goods goods, Array<Planet> importPlanetList,
-                                       Array<Planet> exportPlanetList, bool interTrade, ref TradeState state)
+                                       Array<Planet> exportPlanetList, bool interTrade, ref TradeState state,
+                                       Predicate<Planet> importFilter = null)
         {
             if (state.NoFreeFreighters)
                 return;
@@ -810,6 +842,15 @@ namespace Ship_Game
                 {
                     state.SetNoImportPlanetOf(goods);
                     return;
+                }
+
+                // a pass that serves only PART of the importers leaves the state's book alone:
+                // the others are still there for the pass that comes back for them
+                if (importFilter != null)
+                {
+                    importingPlanets = importingPlanets.Filter(importFilter);
+                    if (importingPlanets.Length == 0)
+                        return;
                 }
             }
             else

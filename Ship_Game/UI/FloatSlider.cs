@@ -19,12 +19,15 @@ namespace Ship_Game
     {
         Rectangle SliderRect; // colored slider
         // room kept at the right end for the value text, wide enough for the longest a percent
-        // can be ("100%") plus the eight pixels the drawing puts between the two
-        const int ValueLane = 44;
+        // can be ("100%") plus the eight pixels the drawing puts between the two. A rail whose
+        // stop carries a word wider than a number sets its own lane once, at construction.
+        public const int DefaultValueLane = 44;
+        public int ValueLane = DefaultValueLane;
         Rectangle KnobRect;   // knob area used to move the slider value
         public LocalizedText Text;
         public LocalizedText Tip;
         public LocalizedText ZeroString; // Display this string if the value is 0
+        public LocalizedText MaxString;  // Display this string if the value is at Max
 
         public Action<FloatSlider> OnChange;
 
@@ -209,6 +212,8 @@ namespace Ship_Game
 
                 if (ZeroString.IsValid && AbsoluteValue < 1)
                     value = ZeroString.Text;
+                else if (MaxString.IsValid && AbsoluteValue >= Max)
+                    value = MaxString.Text;
 
                 return value;
             }

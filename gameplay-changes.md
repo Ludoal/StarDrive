@@ -206,6 +206,24 @@ what lifts them, bounding the wave by a number instead of by the fleet's fill.
 
 **Idle Turns before Scrapping** (20) exposes what was a hardcoded twenty.
 
+### Food priority: the store level under which food is served first
+`Empire_Trade.cs`, `PoliciesScreen.cs` (Policies > Trade)
+
+**Source: maintainer**, from a game where every freighter was hauling food while production
+and colonists waited, with several stores already well filled.
+
+Food is the dispatch's first call: every colony that orders food is served before any
+production or colonist run, and a colony orders food until its store is 90% full. That is
+the base game's rule, and it stays the default.
+
+**Food First below** (Default, 90%) says for whom that guarantee holds. At any other level,
+only the colonies whose food store is below it are served first; the others still get their
+food, but after production and colonists. At 0 food waits behind both everywhere. The level
+is a share of the store, so it means the same on a small colony and a large one, and the 90%
+cutoff is untouched: above it nobody orders food, whatever the level.
+
+AI empires keep the default.
+
 ### A new colony can rush its first turns
 `3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
 

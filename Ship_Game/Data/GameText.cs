@@ -7212,6 +7212,12 @@ namespace Ship_Game
         PolFreighterIdleTurnsTip = 30260,
         /// <summary>Auto</summary>
         PolFreighterRefitAuto = 30261,
+        /// <summary>Food First below</summary>
+        PolFoodFirstBelow = 30340,
+        /// <summary>Default (90%): food shipments come first wherever a colony still needs food.</summary>
+        PolFoodFirstBelowTip = 30341,
+        /// <summary>Default (90%)</summary>
+        PolFoodFirstDefault = 30342,
         /// <summary>Trade First</summary>
         PolFreighterTradeFirst = 30262,
         /// <summary>Zone</summary>

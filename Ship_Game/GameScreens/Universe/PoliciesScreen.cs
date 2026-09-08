@@ -51,12 +51,12 @@ namespace Ship_Game
         // must hold a 26px knob (bench 485). The rail is narrower than its frame: these are
         // short ranges, and the value prints past the rail's right end (bench 538).
         const float SliderRowH = 64f, SliderRailW = 300f;
-        // Trade carries the priority picker, the three quantity rails and the game rule.
+        // Trade carries the food level, the priority picker, the three quantity rails and the game rule.
         // ⚠ no Economy or Research frame on this page (maintainer feedback): Auto-taxes lives on
         // the Economy screen and Auto-research on the Research screen, each over the panels it
         // governs. A frame holding one switch that is also somewhere else is a second place to
         // look, not a policy.
-        const float TradeBoxH = 126f + 3f * SliderRowH;
+        const float TradeBoxH = 126f + 4f * SliderRowH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -143,6 +143,14 @@ namespace Ship_Game
             // travel with the empire.
             trade.AddCheckbox(() => Universe.UState.P.AllowPlayerInterTrade,
                               title: GameText.AllowPlayerInterTradeTitle, tooltip: GameText.PolInterTradeGameRuleTip);
+            // (maintainer feedback) food is the dispatch's first call; this level says for WHOM.
+            // Its right stop is not a quantity: at Default every colony that orders food is served
+            // first, as in the base game, and the stop names the 90% cutoff it stands on. That
+            // word is wider than a number, so the rail keeps a wider value lane.
+            SliderRow(trade, GameText.PolFoodFirstBelow, GameText.PolFoodFirstBelowTip,
+                      0, Planet.FoodImportCutoffPct, player.FoodFirstBelowPct, default,
+                      v => player.FoodFirstBelowPct = v, "%",
+                      maxText: GameText.PolFoodFirstDefault, valueLane: 100);
             FreighterPriorityDropDown = trade.Add(new LabeledDropdown<CargoPriority>())
                 // ⚠ two texts, one condition: a cybernetic empire trades no food at all, so the
                 // food guarantee is not false for it - it is empty. Omitted rather than qualified,
@@ -227,9 +235,12 @@ namespace Ship_Game
         // A number set on a rail, the way the tax rate and the notification delay already work.
         // The title takes its own row: the slider prints its value at the rail's right end, so
         // a label inside would crowd it. zeroText names what the left stop MEANS when nought
-        // is not a quantity; left empty the rail simply shows the number.
+        // is not a quantity; left empty the rail simply shows the number. maxText does the same
+        // for the right stop. valueLane is the widest the value can be: a rail whose stop carries
+        // a word gives up track for it, and the column still lines up on the last digit.
         void SliderRow(UIList box, GameText title, GameText tooltip, float min, float max,
-                       int current, LocalizedText zeroText, Action<int> onChange, string suffix = "")
+                       int current, LocalizedText zeroText, Action<int> onChange, string suffix = "",
+                       LocalizedText maxText = default, int valueLane = FloatSlider.DefaultValueLane)
         {
             box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
             var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(SliderRailW, 28),
@@ -239,7 +250,9 @@ namespace Ship_Game
                 Tip = tooltip,
                 TrackYOffset = -5, // tuck the rail up under its own title
                 ZeroString = zeroText,
+                MaxString = maxText,
                 ValueSuffix = suffix,
+                ValueLane = valueLane,
             });
             rail.OnChange = s => onChange((int)s.AbsoluteValue);
         }

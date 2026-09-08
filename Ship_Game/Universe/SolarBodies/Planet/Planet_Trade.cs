@@ -177,6 +177,9 @@ namespace Ship_Game
         // ★ THE ONE FOOD RULE: the only owner of this arithmetic, read by the dispatch and by the
         // trade book alike (bench 601). beforeServing leaves out the cargo already on its way, for
         // the reader that prints that cargo beside the figure.
+        // the ONE owner of the cutoff: the Food First rail (Policies > Trade) stands on it too
+        public const int FoodImportCutoffPct = 90;
+
         public int GetFoodImportSlots(bool beforeServing = false)
         {
             if (TradeBlocked || !ImportFood)
@@ -185,7 +188,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): every colony stops ordering food once its store is
             // over 90% full, governed or not. A store drains as it is eaten, so the slots reopen on
             // their own, and a starving colony still outranks everyone in the dispatch order.
-            if (Storage.FoodRatio > 0.9f)
+            if (Storage.FoodRatio > FoodImportCutoffPct / 100f)
                 return 0;
 
             if (ManualFoodImportSlots > 0 && Owner == Universe.Player)

@@ -28879,6 +28879,18 @@ PolFreighterRefitAuto:
  Id: 30261
  ENG: "Auto"
  FRA: "Auto"
+PolFoodFirstBelow:
+ Id: 30340
+ ENG: "Food First below"
+ FRA: "Nourriture d'abord sous"
+PolFoodFirstBelowTip:
+ Id: 30341
+ ENG: "Default (90%): food shipments come first wherever a colony still needs food, that is below the 90% cutoff (base game). Any other value: food comes first only for colonies whose food storage is below this level; above it, food is served after production and colonists."
+ FRA: "Défaut (90 %) : la nourriture passe en premier partout où une colonie en manque, c'est-à-dire sous la coupure de 90 % (jeu de base). Toute autre valeur : la nourriture passe en premier seulement pour les colonies dont le silo est sous ce niveau ; au-dessus, elle est servie après la production et les colons."
+PolFoodFirstDefault:
+ Id: 30342
+ ENG: "Default (90%)"
+ FRA: "Défaut (90 %)"
 PolFreighterTradeFirst:
  Id: 30262
  ENG: "Trade First"
