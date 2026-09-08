@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
 using SDGraphics.Input;
@@ -41,6 +42,8 @@ namespace Ship_Game.GameScreens
         // hides the columns outside the window
         readonly ScreenGroups.RaceRowScroller Scroller = new();
         int AppliedFirst = -1; // last scroll position applied to the widgets
+        bool DialogWasUp;      // (bench 612 trace)
+        int TraceFrames;       // (bench 612 trace)
 
         Font Font12 = Fonts.Arial12;
         Font Font12Bold = Fonts.Arial12Bold;
@@ -72,6 +75,7 @@ namespace Ship_Game.GameScreens
             public Rectangle Rect;
             public Rectangle Base;   // unscrolled position - Rect = Base shifted by the scroll
             public bool Shown = true;
+            public bool Built;              // its sliders and boxes exist (an empire met late gets them from Update)
             public FloatSlider Weight;      // infiltration weight (others) / defense weight (player)
             public FloatSlider Budget;      // player only
             public FloatSlider Limit;       // others only: infiltration level ceiling
@@ -226,72 +230,81 @@ namespace Ship_Game.GameScreens
                 Columns.Add(c);
 
                 bool known = e == Player || Player.IsKnown(e);
-                if (!known || e.IsDefeated)
-                    continue;
-
-                float budgetY = col.Y + HeaderH + 24;
-                if (e == Player)
-                {
-                    // BUDGET: multiplier (+ cost label drawn live); DEFENSE: weight
-                    var budgetRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
-                    c.Budget = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
-                    c.Budget.Tip = GameText.EspioangeBudgetMuliplierTip;
-                    c.Budget.OnChange = s =>
-                    {
-                        Player.UpdateEspionageDefenseRatio();
-                        Player.SetEspionageBudgetMultiplier(s.AbsoluteValue.RoundToFractionOf10());
-                    };
-                    Add(c.Budget);
-
-                    // (maintainer feedback) Defense Weight is a spending decision, so it belongs
-                    // with the budget - on the same row the rival columns give Level Max, which
-                    // keeps every column's second slider on one line.
-                    var defRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
-                    c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
-                                               max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
-                    c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
-                    c.Weight.OnChange = s =>
-                    {
-                        Player.SetEspionageDefenseWeight(s.AbsoluteValue.RoundUpTo(1));
-                        Player.UpdateEspionageDefenseRatio();
-                    };
-                    Add(c.Weight);
-                    continue;
-                }
-
-                Ship_Game.Espionage esp = Player.GetEspionage(e);
-                c.Esp = esp;
-
-                var weightRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
-                c.Weight = new FloatSlider(weightRect, GameText.EspioangeInfiltrationWeight, min: 0, max: 10, value: esp.GrossWeight);
-                c.Weight.Tip = GameText.EspioangeInfiltrationWeightTip;
-                c.Weight.OnChange = s =>
-                {
-                    esp.SetWeight(s.AbsoluteValue.RoundUpTo(1));
-                    Player.UpdateEspionageDefenseRatio();
-                };
-                Add(c.Weight);
-
-                // Ludoal fork: a slider, not a click-to-cycle button - five discrete levels read
-                // plainly, and the column's two other settings are sliders as well.
-                var limitRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
-                c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, GameText.IfLevelMax,
-                                          1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
-                c.Limit.Tip = GameText.EspionageLimitLevelTip;
-                c.Limit.OnChange = s => esp.SetLimitLevel((byte)s.AbsoluteValue.RoundUpTo(1));
-                Add(c.Limit);
-
-                // the five levels, ALL options — grayed until reached. Rows come from the shared
-                // cascade so they land exactly where DrawColumn paints their level.
-                ForEachInfiltrationRow(col, null, (level, rowY, i) =>
-                {
-                    var (type, folded, full, tip, def) = ActiveOpsFor(level)[i];
-                    c.Ops.Add(new OpBox(this, esp, Player, level, type, folded, full, tip,
-                                        new Vector2(col.X + 16, rowY), col.Right - 72, def));
-                });
+                if (known && !e.IsDefeated)
+                    BuildColumnWidgets(c);
             }
 
             GameAudio.MuteRacialMusic();
+        }
+
+        // The widgets of one column - the sliders and the operation boxes. Built at load for every
+        // empire known then, and again from Update for one met while the page is open: its column
+        // had a portrait but no controls until the page was reopened (bench 612).
+        void BuildColumnWidgets(EmpireColumn c)
+        {
+            c.Built = true;
+            Empire e = c.E;
+            Rectangle col = c.Base;
+            float budgetY = col.Y + HeaderH + 24;
+            if (e == Player)
+            {
+                // BUDGET: multiplier (+ cost label drawn live); DEFENSE: weight
+                var budgetRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
+                c.Budget = new FloatSlider(SliderStyle.Decimal1, budgetRect, GameText.EspioangeBudgetMuliplier, 1f, 5f, value: Player.EspionageBudgetMultiplier);
+                c.Budget.Tip = GameText.EspioangeBudgetMuliplierTip;
+                c.Budget.OnChange = s =>
+                {
+                    Player.UpdateEspionageDefenseRatio();
+                    Player.SetEspionageBudgetMultiplier(s.AbsoluteValue.RoundToFractionOf10());
+                };
+                Add(c.Budget);
+
+                // (maintainer feedback) Defense Weight is a spending decision, so it belongs
+                // with the budget - on the same row the rival columns give Level Max, which
+                // keeps every column's second slider on one line.
+                var defRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
+                c.Weight = new FloatSlider(defRect, GameText.EspioangeDefenseWeight, min: 0,
+                                           max: Empire.MaxEspionageDefenseWeight, value: Player.EspionageDefenseWeight);
+                c.Weight.Tip = GameText.EspioangeDefenseWeightTip;
+                c.Weight.OnChange = s =>
+                {
+                    Player.SetEspionageDefenseWeight(s.AbsoluteValue.RoundUpTo(1));
+                    Player.UpdateEspionageDefenseRatio();
+                };
+                Add(c.Weight);
+                return;
+            }
+
+            Ship_Game.Espionage esp = Player.GetEspionage(e);
+            c.Esp = esp;
+
+            var weightRect = new Rectangle(col.X + 8, (int)budgetY + Block2, col.Width - 60, 40);
+            c.Weight = new FloatSlider(weightRect, GameText.EspioangeInfiltrationWeight, min: 0, max: 10, value: esp.GrossWeight);
+            c.Weight.Tip = GameText.EspioangeInfiltrationWeightTip;
+            c.Weight.OnChange = s =>
+            {
+                esp.SetWeight(s.AbsoluteValue.RoundUpTo(1));
+                Player.UpdateEspionageDefenseRatio();
+            };
+            Add(c.Weight);
+
+            // Ludoal fork: a slider, not a click-to-cycle button - five discrete levels read
+            // plainly, and the column's two other settings are sliders as well.
+            var limitRect = new Rectangle(col.X + 8, (int)budgetY + Block1, col.Width - 60, 40);
+            c.Limit = new FloatSlider(SliderStyle.Decimal, limitRect, GameText.IfLevelMax,
+                                      1f, Ship_Game.Espionage.MaxLevel, value: esp.LimitLevel);
+            c.Limit.Tip = GameText.EspionageLimitLevelTip;
+            c.Limit.OnChange = s => esp.SetLimitLevel((byte)s.AbsoluteValue.RoundUpTo(1));
+            Add(c.Limit);
+
+            // the five levels, ALL options — grayed until reached. Rows come from the shared
+            // cascade so they land exactly where DrawColumn paints their level.
+            ForEachInfiltrationRow(col, null, (level, rowY, i) =>
+            {
+                var (type, folded, full, tip, def) = ActiveOpsFor(level)[i];
+                c.Ops.Add(new OpBox(this, esp, Player, level, type, folded, full, tip,
+                                    new Vector2(col.X + 16, rowY), col.Right - 72, def));
+            });
         }
 
         // Ludoal fork: ONE band, "INFILTRATION", and the five levels as bold text lines under it -
@@ -352,6 +365,26 @@ namespace Ship_Game.GameScreens
 
         public override void Update(float fixedDeltaTime)
         {
+            // an empire met while the page is open gets its controls now, and the scroll pass
+            // that follows places them
+            foreach (EmpireColumn c in Columns)
+                if (!c.Built && !c.E.IsDefeated && (c.E == Player || Player.IsKnown(c.E)))
+                {
+                    BuildColumnWidgets(c);
+                    AppliedFirst = -1;
+                }
+
+            // (bench 612 trace) the page lost its columns and its tab row once a first-contact
+            // dialog closed over it; the state is logged for ten frames after any such close.
+            bool dialogUp = ScreenManager.IsShowing<DiplomacyScreen>();
+            if (DialogWasUp && !dialogUp)
+            {
+                TraceFrames = 10;
+                Log.Write(ConsoleColor.DarkYellow, "EspTrace: dialog closed; stack = " + string.Join(" | ",
+                    ScreenManager.Screens.Select(sc => $"{sc.GetType().Name} popup={sc.IsPopup} vis={sc.Visible} state={sc.ScreenState}")));
+            }
+            DialogWasUp = dialogUp;
+
             if (AppliedFirst != Scroller.First)
                 ApplyScroll();
             foreach (EmpireColumn c in Columns)
@@ -411,6 +444,12 @@ namespace Ship_Game.GameScreens
             // ⚠ cleared every pass: a column that stops drawing its portrait must not leave a
             // clickable rect behind over whatever takes its place.
             PortraitRects.Clear();
+            if (TraceFrames > 0)
+            {
+                --TraceFrames;
+                Log.Write(ConsoleColor.DarkYellow, $"EspTrace: shown={Columns.Count(c => c.Shown)}/{Columns.Count}"
+                    + $" first={Scroller.First} overflow={Scroller.Overflowing} tabs={GroupTabs.Rect} frame={LeftRect} client={GroupTabs.ClientArea}");
+            }
             foreach (EmpireColumn c in Columns)
                 if (c.Shown)
                     DrawColumn(batch, c);
