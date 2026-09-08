@@ -441,6 +441,29 @@ namespace Ship_Game
             // Default button is 168 wide and a row would overlap itself by 36 per button.
             const int BtnW = 132, BtnGap = 6;
         // enum display names, spoken through the localization system
+        // Ludoal fork (maintainer feedback): a saved setup summed up the way this screen shows it -
+        // the same labels, in the same order, "label : value" - for the setup popups' tooltips.
+        public static string SettingsSummary(UniverseParams p)
+        {
+            string pace = p.Pace == 1f ? "1x" : string.Format(Localizer.Token(GameText.NgPaceSlower), $"{p.Pace:0.##}");
+            string[] rows =
+            {
+                LocalizedText.Parse("{GalaxySize}").Text + " : " + GalSizeText(p.GalaxySize),
+                LocalizedText.Parse("{SolarSystems}").Text + " : " + p.StarsCount,
+                LocalizedText.Parse("{Opponents}").Text + " : " + p.NumOpponents,
+                LocalizedText.Parse("{GameMode}").Text + " : " + ModeText(p.Mode).Text,
+                LocalizedText.Parse("{Pacing}").Text + " : " + pace,
+                LocalizedText.Parse("{Difficulty}").Text + " : " + DifficultyText(p.Difficulty),
+                LocalizedText.Parse("{RemnantPresence}").Text + " : " + RemnantText(p.ExtraRemnant),
+                Localizer.Token(GameText.RmPaceLabel) + " : " + RemnantPaceText(p.RemnantPace),
+                Localizer.Token(GameText.RmStrengthLabel) + " : " + RemnantStrengthText(p.RemnantStrength),
+                Localizer.Token(GameText.PirateFactionsLabel) + " : " + PirateFactionsText(p.PirateFactionChoice),
+                Localizer.Token(GameText.PiratePaceLabel) + " : " + PiratePaceText(p.PiratePace),
+                Localizer.Token(GameText.PirateStrengthLabel) + " : " + PirateStrengthText(p.PirateStrength),
+            };
+            return string.Join(", ", rows);
+        }
+
         static string GalSizeText(GalSize g) => g switch { GalSize.Tiny => Localizer.Token(GameText.GsTiny), GalSize.Small => Localizer.Token(GameText.GsSmall), GalSize.Medium => Localizer.Token(GameText.GsMedium), GalSize.Large => Localizer.Token(GameText.GsLarge), GalSize.Huge => Localizer.Token(GameText.GsHuge), GalSize.Epic => Localizer.Token(GameText.GsEpic), GalSize.TrulyEpic => Localizer.Token(GameText.GsTrulyEpic), _ => g.ToString() };
         static string DifficultyText(GameDifficulty d) => d switch { GameDifficulty.Normal => Localizer.Token(GameText.DfNormal), GameDifficulty.Hard => Localizer.Token(GameText.DfHard), GameDifficulty.Brutal => Localizer.Token(GameText.DfBrutal), GameDifficulty.Insane => Localizer.Token(GameText.DfInsane), _ => d.ToString() };
         static string RemnantText(ExtraRemnantPresence r) => r switch { ExtraRemnantPresence.VeryRare => Localizer.Token(GameText.RmVeryRare), ExtraRemnantPresence.Rare => Localizer.Token(GameText.RmRare), ExtraRemnantPresence.Normal => Localizer.Token(GameText.RmNormal), ExtraRemnantPresence.More => Localizer.Token(GameText.RmMore), ExtraRemnantPresence.MuchMore => Localizer.Token(GameText.RmMuchMore), ExtraRemnantPresence.Everywhere => Localizer.Token(GameText.RmEverywhere), _ => r.ToString() };
@@ -635,9 +658,11 @@ namespace Ship_Game
             P.GalaxySize = P.GalaxySize.IncrementWithWrap(OptionIncrement);
         }
 
-        LocalizedText GetModeText()
+        LocalizedText GetModeText() => ModeText(P.Mode);
+
+        static LocalizedText ModeText(GameMode mode)
         {
-            switch (P.Mode)
+            switch (mode)
             {
                 default:
                 case GameMode.Random:        return GameText.RandomGameMode;

@@ -53,7 +53,8 @@ public sealed class SaveNewGameSetupScreen : GenericLoadSaveScreen
 
                 string info = data.Date;
                 string extraInfo = data.ModName.NotEmpty() ? $"Mod: {data.ModName}" : "Vanilla";
-                string tooltip = file.Name;
+                // the row's tooltip reads like the setup screen it summarizes (maintainer feedback)
+                string tooltip = data.Settings != null ? RaceDesignScreen.SettingsSummary(data.Settings) : file.Name;
                 saves.Add(new(file, data, data.Name, info, extraInfo, tooltip, null, Color.White)
                 {
                     Enabled = GlobalStats.IsValidForCurrentMod(data.ModName)
