@@ -70,11 +70,25 @@ namespace Ship_Game
         [StarData] public bool ShareColonistsLocked;
         [StarData] public bool ShareTradeLocked;
         public bool UsesFreighterShares => isPlayer && CargoPriority == CargoPriority.Shares;
-        // what the common pool actually did last turn - runs laid down by the production,
-        // colonists and foreign passes - for the Policies page to show under Auto, in the
-        // same unit as the shares. Not saved: it is remade every turn.
-        public int[] LastTurnRuns { get; private set; } = new int[3];
+        // what the common pool actually did over the last ten turns - runs laid down by the
+        // production, colonists and foreign passes - for the Policies page to show under Auto,
+        // in the same unit as the shares. One turn is too coarse: a turn that laid down nothing
+        // would read 0 / 0 / 0 (bench 616). Not saved: it fills up again.
+        const int RunsWindowTurns = 10;
+        readonly Queue<int[]> RunsWindow = new();
+        public int[] RecentRuns { get; } = new int[3];
         int[] TurnRuns = new int[3];
+        void BookTurnRuns()
+        {
+            RunsWindow.Enqueue(TurnRuns);
+            for (int k = 0; k < 3; ++k) RecentRuns[k] += TurnRuns[k];
+            if (RunsWindow.Count > RunsWindowTurns)
+            {
+                int[] old = RunsWindow.Dequeue();
+                for (int k = 0; k < 3; ++k) RecentRuns[k] -= old[k];
+            }
+            TurnRuns = new int[3];
+        }
         // Auto's own conduct, in one number: the chance that production is served before colonists
         // this turn. It rises with the population and is 100 from half the ceiling on.
         public float AutoProductionFirstChance => TotalPopBillion / MaxPopBillion * (NonCybernetic ? 200 : 300);
@@ -255,8 +269,7 @@ namespace Ship_Game
             // without one is dissolved - the housekeeping has to RUN, not merely exist
             RefreshTradeZones();
             TradeState tradeState = new(this, false) { CountsRuns = true };
-            LastTurnRuns = TurnRuns;
-            TurnRuns = new int[3];
+            BookTurnRuns();
             // Trade First lifts the foreign runs above production and colonists - once in the
             // turn, and never above food, which stays the first call below.
             // ★ EXCLUSIVE COLONIES ARE NOT THE COMMON PASS'S TO SERVE. A zone that requisitions
@@ -558,7 +571,7 @@ namespace Ship_Game
         struct TradeState
         {
             readonly bool InterTrade;
-            public bool CountsRuns; // the empire's own state books its runs (LastTurnRuns); zones do not
+            public bool CountsRuns; // the empire's own state books its runs (RecentRuns); zones do not
             public Ship[] IdleFreighters {get; private set; }
             public EmpireIdleFreighters State { get; private set; }
             bool BuildFreighterRequested;

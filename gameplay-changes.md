@@ -378,7 +378,7 @@ trade passes at three percentages that sum to 100 and rebalance each other; a pa
 one share while the others move. A pass with nothing to carry leaves its share to the others,
 what a pass does not use is free again on the next pass, and the last pass of the turn knows
 no share, so no freighter sleeps. Under Auto the rails are inert and show, in the same unit,
-what the fleet actually did last turn.
+what the fleet actually did over the last ten turns.
 An older save's pinned order becomes the matching whole share. Trade zones keep their own
 pinned order. AI empires keep the vanilla dice behaviour.
 

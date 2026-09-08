@@ -56,7 +56,9 @@ namespace Ship_Game
         // the Economy screen and Auto-research on the Research screen, each over the panels it
         // governs. A frame holding one switch that is also somewhere else is a second place to
         // look, not a policy.
-        const float TradeBoxH = 126f + 5f * SliderRowH; // the fifth is the row of three shares
+        // the three share rails stack under the Auto switch, a caption each, on a tight pitch
+        const float ShareRailPitch = 30f, ShareRowsH = 3f * ShareRailPitch + 10f;
+        const float TradeBoxH = 126f + 4f * SliderRowH + ShareRowsH;
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -230,15 +232,16 @@ namespace Ship_Game
             base.LoadContent();
         }
 
-        // Three linked shares on one row - Production, Colonists, Trade - each a caption over a
-        // short rail and a padlock. They sum to 100: moving one rebalances the unlocked others at
-        // their current proportion, a locked one is left alone. Under Auto the row is inert, the
-        // locks drawn shut, and the rails show what the pool did last turn (maintainer feedback).
+        // Three linked shares stacked - Production, Colonists, Trade - each a rail with its own
+        // caption and a padlock at its right end (bench 616: stacked, so the values line up). They
+        // sum to 100: moving one rebalances the unlocked others at their current proportion, a
+        // locked one is left alone. Under Auto the rails are inert, the locks drawn shut, and the
+        // rails show what the pool did over the last ten turns (maintainer feedback).
         class ShareRow : UIElementV2
         {
-            const float RailW = 120f, RailH = 28f, Gap = 26f, CaptionH = 18f;
+            const float RailW = SliderRailW, RailH = 28f, LockGap = 6f;
+            public const float LockSize = 16f;
             readonly Empire Player;
-            readonly UILabel[] Captions = new UILabel[3];
             readonly FloatSlider[] Rails = new FloatSlider[3];
             readonly LockToggle[] Locks = new LockToggle[3];
             bool Rebalancing; // a rail set from here fires its own OnChange - not a player's move
@@ -250,15 +253,16 @@ namespace Ship_Game
                 for (int i = 0; i < 3; ++i)
                 {
                     int k = i;
-                    Captions[i] = new UILabel(new Vector2(-200f, -200f), CaptionText[i], Fonts.Arial12Bold, Colors.Cream) { Tooltip = GameText.PolShareTip };
-                    Rails[i] = new FloatSlider(SliderStyle.Decimal, new Vector2(RailW, RailH), "", 0, 100, Share(i))
+                    // the rail carries its caption: drawn at its top-left, clear of the track and
+                    // of the value at the far right
+                    Rails[i] = new FloatSlider(SliderStyle.Decimal, new Vector2(RailW, RailH), CaptionText[i], 0, 100, Share(i))
                     {
-                        Step = 1, Tip = GameText.PolShareTip, TrackYOffset = -5, ValueSuffix = "%",
+                        Step = 1, Tip = GameText.PolShareTip, ValueSuffix = "%",
                     };
                     Rails[i].OnChange = s => OnShareMoved(k, (int)s.AbsoluteValue);
                     Locks[i] = new LockToggle(Locked(i), v => SetLocked(k, v)) { Tooltip = GameText.PolShareLockTip };
                 }
-                Size = new Vector2(3 * RailW + 2 * Gap, CaptionH + RailH);
+                Size = new Vector2(RailW + LockGap + LockSize, 3 * ShareRailPitch);
             }
 
             int Share(int i) => i == 0 ? Player.ShareProdPct : i == 1 ? Player.ShareColonistsPct : Player.ShareTradePct;
@@ -308,13 +312,13 @@ namespace Ship_Game
             }
 
             // what the rails print: the shares - or under Auto, in the same unit, what the pool
-            // actually did last turn (runs laid down per pass, as percentages)
+            // actually did over the last ten turns (runs laid down per pass, as percentages)
             void ShowShares()
             {
                 int[] shown = { Share(0), Share(1), Share(2) };
                 if (Player.FreighterPriorityAuto)
                 {
-                    int[] runs = Player.LastTurnRuns;
+                    int[] runs = Player.RecentRuns;
                     int total = runs[0] + runs[1] + runs[2];
                     shown[0] = total > 0 ? runs[0] * 100 / total : 0;
                     shown[1] = total > 0 ? runs[1] * 100 / total : 0;
@@ -331,12 +335,11 @@ namespace Ship_Game
             {
                 for (int i = 0; i < 3; ++i)
                 {
-                    float x = Pos.X + i * (RailW + Gap);
-                    Captions[i].Pos = new Vector2(x, Pos.Y);
-                    Captions[i].PerformLayout();
-                    Rails[i].Pos = new Vector2(x, Pos.Y + CaptionH);
+                    float y = Pos.Y + i * ShareRailPitch;
+                    Rails[i].Pos = new Vector2(Pos.X, y);
                     Rails[i].PerformLayout();
-                    Locks[i].Pos = new Vector2(x + RailW + 4f, Pos.Y + CaptionH + 5f);
+                    // the padlock sits on the track's line, past the value lane
+                    Locks[i].Pos = new Vector2(Pos.X + RailW + LockGap, y + RailH / 2f + 3f - LockSize / 2f);
                     Locks[i].PerformLayout();
                 }
                 base.PerformLayout();
@@ -348,7 +351,6 @@ namespace Ship_Game
                 {
                     if (Locks[i].Enabled && Locks[i].HandleInput(input)) return true;
                     if (Rails[i].Enabled && Rails[i].HandleInput(input)) return true;
-                    if (Captions[i].HandleInput(input)) return true;
                 }
                 return false;
             }
@@ -365,8 +367,6 @@ namespace Ship_Game
                     Locks[i].Enabled = !auto;
                     Locks[i].Shut = auto || Locked(i);
                     Locks[i].Greyed = auto;
-                    Captions[i].Color = auto ? Color.Gray : Colors.Cream;
-                    Captions[i].Draw(batch, elapsed);
                     Rails[i].Draw(batch, elapsed);
                     Locks[i].Draw(batch, elapsed);
                 }
@@ -386,7 +386,7 @@ namespace Ship_Game
             {
                 Shut = shut;
                 OnToggle = onToggle;
-                Size = new Vector2(16f, 16f);
+                Size = new Vector2(ShareRow.LockSize, ShareRow.LockSize);
             }
 
             public override bool HandleInput(InputState input)
