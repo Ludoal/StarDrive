@@ -22745,6 +22745,14 @@ FuTotalFreighters:
  Id: 30350
  ENG: "Total Freighters:"
  FRA: "Total cargos :"
+FuUnitRuns:
+ Id: 30351
+ ENG: "runs"
+ FRA: "voyages"
+FuUnitWorlds:
+ Id: 30352
+ ENG: "worlds"
+ FRA: "mondes"
 BpRenameTip:
  Id: 30138
  ENG: "Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own."

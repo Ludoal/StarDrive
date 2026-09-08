@@ -6329,6 +6329,10 @@ namespace Ship_Game
         BpSaveAs = 30349,
         /// <summary>Total Freighters:</summary>
         FuTotalFreighters = 30350,
+        /// <summary>runs</summary>
+        FuUnitRuns = 30351,
+        /// <summary>worlds</summary>
+        FuUnitWorlds = 30352,
         /// <summary>Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own.</summary>
         BpRenameTip = 30138,
         /// <summary>That name cannot be used for a file, or holds a character the game cannot draw.</summary>

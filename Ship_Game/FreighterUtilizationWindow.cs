@@ -68,6 +68,15 @@ namespace Ship_Game
         static float ColumnRightUnder(float headerX, GameText header)
             => headerX + Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text) * 0.5f + FractionColW * 0.5f;
 
+        // a small grey unit centred under a header at headerX
+        void UnitUnder(float headerX, GameText header, GameText unit, float y)
+        {
+            float headerW = Fonts.Arial12Bold.TextWidth(new LocalizedText(header).Text);
+            string text   = new LocalizedText(unit).Text;
+            float unitW   = Fonts.Arial10.TextWidth(text);
+            Add(new UILabel(new Vector2(headerX + (headerW - unitW) * 0.5f, y), text, Fonts.Arial10, Color.Gray));
+        }
+
         // a white number label right-aligned so its right edge lands on rightX
         static UILabel RightAlignedValue(float rightX, float y)
             => new(new Vector2(rightX - NumberColW, y), "", Fonts.Arial12Bold, Color.White)
@@ -145,6 +154,13 @@ namespace Ship_Game
             FreightersRightX = ColumnRightUnder(win.X + 370, GameText.Freighters);
             ImportingRightX  = ColumnRightUnder(win.X + 470, GameText.TzImporters);
             ExportingRightX  = ColumnRightUnder(win.X + 570, GameText.TzExporters);
+            // (maintainer feedback) the unit under each header, in small type, so the column says
+            // what it counts instead of leaving it to guess: runs for Freighters, worlds for the
+            // other two. The goods rows step down by UnitRow to make its room; the frame does not grow.
+            const float UnitDrop = 13f, UnitRow = 10f;
+            UnitUnder(win.X + 370, GameText.Freighters,  GameText.FuUnitRuns,   headerY + UnitDrop);
+            UnitUnder(win.X + 470, GameText.TzImporters, GameText.FuUnitWorlds, headerY + UnitDrop);
+            UnitUnder(win.X + 570, GameText.TzExporters, GameText.FuUnitWorlds, headerY + UnitDrop);
             // the left column, in the order the maintainer reads it: what is held by zones, what
             // is idle, the whole fleet, then what is coming. One row pitch, values on one column.
             // ⚠ the idle count is taken from the pool, and the pool EXCLUDES hulls held by a
@@ -164,7 +180,7 @@ namespace Ship_Game
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FreightersUnderConstruction, Fonts.Arial12Bold, Color.Wheat));
             FreighterConstructingLabel = new UILabel(new Vector2(win.X + LeftValueX, leftY), "", Fonts.Arial12Bold, Color.White);
 
-            UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40 + HeaderDrop));
+            UIList utilizationData = AddList(new(win.X + 5f, win.Y + 40 + HeaderDrop + UnitRow));
             utilizationData.Padding = new(2f, 25f);
             foreach (GoodsUtilization gu in  GoodsUtilizationMap.Values)
                 utilizationData.Add(gu);
