@@ -264,10 +264,9 @@ namespace Ship_Game
             return victim.IsDefeated;
         }
 
-        // Ludoal fork (maintainer feedback): the player's say on how fast piracy escalates.
-        // A BIGGER die is a rarer hit, so multiplying it stretches the climb - and since a level
-        // is also a base, a slower climb is fewer bases as well. Capped at Normal: this exists to
-        // make them gentler, never harder, same as the Remnant pace.
+        // Ludoal fork (maintainer feedback): the player's say on how fast piracy escalates. It
+        // scales the number of successful acts a level costs, so a bigger factor stretches the
+        // climb - and since a level is also a base, a slower climb is fewer bases as well.
         float PaceModifier => Universe.P.PiratePace switch
         {
             PiratePaceSetting.VerySlow => 2f,
@@ -304,12 +303,12 @@ namespace Ship_Game
             if (Level == MaxLevel)
                 return;
 
-            int dieRoll = (int)(Level * Universe.P.Pace + Universe.ActiveMajorEmpires.Length / 2f);
-            // ⚠ the die is floored, and it is rolled on every SUCCESSFUL ACT OF PIRACY rather
-            // than on a clock - so a modifier below 1 flattens it to 1 in the early game and
-            // hands out a level per raid. Anything faster than Normal floors at 2 instead.
-            dieRoll = ((int)(dieRoll * PaceModifier)).LowerBound(PaceModifier < 1f ? 2 : 1);
-            if (alwaysLevelUp || Random.RollDie(dieRoll) == 1)
+            // Rolled on every SUCCESSFUL act of piracy, not on a clock. The base game rolls an
+            // integer die of L * Pace + N/2 and climbs on a 1; the same expectation is kept as a
+            // percentage so that the pace factor scales it continuously - an integer die rounded
+            // twice let a faster notch climb slower than Normal in the early game (player feedback).
+            float actsPerLevel = (Level * Universe.P.Pace + Universe.ActiveMajorEmpires.Length / 2f) * PaceModifier;
+            if (alwaysLevelUp || Random.RollDice(100f / actsPerLevel.LowerBound(1f)))
             {
                 int newLevel = Level + 1;
                 if (NewLevelOperations(u, newLevel))
