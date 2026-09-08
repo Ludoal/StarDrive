@@ -36,7 +36,7 @@ namespace Ship_Game
         // of its cells count worlds). The fleet itself is counted on the left.
         UILabel TotalFreightersLabel;
         UILabel TotalFleetLabel; // the whole freighter fleet, on the left column
-        UILabel ServingLabel;    // hulls on a run, so that Idle + Serving = Total (bench 616)
+        UILabel TradingLabel;    // hulls in the trading state, so that Idle + Trading = Total (bench 616)
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
         UILabel TotalExportingValue;
@@ -178,10 +178,10 @@ namespace Ship_Game
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             NumIdleFreightersLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
-            // every hull on a run - realm, stations and foreign trade alike - so Idle + Serving is
-            // the whole fleet; the column's figure counts the realm's planets only
-            Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuServingFreighters, Fonts.Arial12Bold, Color.Wheat));
-            ServingLabel               = RightAlignedValue(win.X + LeftValueRightX, leftY);
+            // every hull in the trading state - realm, stations and foreign trade alike - so
+            // Idle + Trading is the whole fleet; the column's figure counts the realm's planets only
+            Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuTradingFreighters, Fonts.Arial12Bold, Color.Wheat));
+            TradingLabel               = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuTotalFreighters, Fonts.Arial12Bold, Color.Wheat));
             TotalFleetLabel            = RightAlignedValue(win.X + LeftValueRightX, leftY);
@@ -282,7 +282,7 @@ namespace Ship_Game
             BuildFreighter.Draw(batch, elapsed);
             FreighterConstructingLabel.Draw(batch, elapsed);
             NumIdleFreightersLabel.Draw(batch, elapsed);
-            ServingLabel.Draw(batch, elapsed);
+            TradingLabel.Draw(batch, elapsed);
             TotalFleetLabel.Draw(batch, elapsed);
             FreightersInZonesLabel.Draw(batch, elapsed);
             DrawLine(new Vector2(Pos.X + 180, Pos.Y + 35), new Vector2(Pos.X + 180, Pos.Y + Height - 10), Color.Wheat, 2);
@@ -413,7 +413,7 @@ namespace Ship_Game
                 UtilizationBar.Progress = FleetFreighters == 0 ? 0 : (float)NumUtilizedFreighters/FleetFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (FleetFreighters - NumUtilizedFreighters).String();
-                ServingLabel.Text = NumUtilizedFreighters.String();
+                TradingLabel.Text = NumUtilizedFreighters.String();
                 TotalFleetLabel.Text = FleetFreighters.String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 
