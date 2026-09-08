@@ -704,7 +704,7 @@ namespace Ship_Game
             foreach (Empire.LostShipGhost g in Player.LostShipGhosts())
             {
                 float left = (g.ExpiresAt - now) / (Empire.LostShipGhostTurns * 0.1f);
-                var tint = new Color(180, 180, 180, (byte)(255 * left.Clamped(0.3f, 1f)));
+                var tint = new Color(180, 180, 180, (int)(255 * left.Clamped(0.3f, 1f)));
                 DrawTextureProjected(ResourceManager.Texture(g.IconPath), g.Position, 0.5f, tint);
                 Vector2d at = ProjectToScreenPosition(g.Position);
                 batch.DrawString(Fonts.Arial12Bold, g.Name, new Vector2((float)at.X + 14f, (float)at.Y - 7f), tint);

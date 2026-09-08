@@ -1121,7 +1121,7 @@ namespace Ship_Game
             if (s.InPlayerSensorRange)
                 Screen.SnapViewShip(s);
             else if (where != Vector2.Zero)
-                Screen.SnapViewTo(new(where.X, where.Y, Screen.GetZfromScreenState(UnivScreenState.SystemView)), 5f, 2f);
+                Screen.SnapViewTo(new(where.X, where.Y, Screen.GetZfromScreenState(UniverseScreen.UnivScreenState.SystemView)), 5f, 2f);
             else
                 Screen.SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
         }
