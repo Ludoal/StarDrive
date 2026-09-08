@@ -230,22 +230,23 @@ namespace Ship_Game
 
         // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot, so
         // a raid above the local defence leaves the player no reaction time (player feedback).
-        // Hardening happens through how OFTEN raids come; see RaidThreatFloor.
+        // Hardening happens through how OFTEN raids come; see RaidThreatFactor.
         float BiteModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.75f : 1f;
 
         // ★ HOW RARE A RAID MAY BE, and this is the notch that actually makes pirates dangerous.
         // The chance a raid starts is capped by the victim's THREAT level, which begins at 1 - so
         // roughly one turn in a hundred, whatever the pirates' level or the difficulty. It climbs
         // one notch per refused demand and stays under a few percent for a very long time, which
-        // is why a player can finish a game without ever seeing a raid. This lifts that cap.
-        // ⚠ IT LIFTS A CEILING, IT DOES NOT SET A RATE: the pirates' own level is the other
-        // limiter, so a floor of ten against level-three pirates still yields three. The starting
-        // level on the same notch is what makes the floor reachable.
-        public int RaidThreatFloor => Universe.P.PirateStrength switch
+        // is why a player can finish a game without ever seeing a raid. This notch multiplies
+        // that cap, so the threat stays the one notion and the setting is a slope on it: gentler
+        // than a fixed cap early, harder once the threat has climbed (player feedback).
+        // ⚠ IT SCALES A CEILING, IT DOES NOT SET A RATE: the pirates' own level is the other
+        // limiter. The starting level on the same notch is what makes the ceiling reachable.
+        public float RaidThreatFactor => Universe.P.PirateStrength switch
         {
-            PirateStrengthSetting.Strong => 5,
-            PirateStrengthSetting.Brutal => 10,
-            _                            => 1,
+            PirateStrengthSetting.Strong => 1.4f,
+            PirateStrengthSetting.Brutal => 2f,
+            _                            => 1f,
         };
 
         // How many levels they are handed at galaxy creation. ⚠ a level is NEVER a number one

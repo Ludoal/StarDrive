@@ -174,8 +174,9 @@ rather than the base game's integer die, so the notches keep their order at ever
 differs from the base game only in a one-empire galaxy at level 1 (67% instead of 100%).
 
 **Pirate Strength** - Weak, Default, Strong, Brutal. It sets the level they start at (1, 1, 2, 3),
-the floor of the chance that a raid starts against a victim (1, 1, 5, 10 percent per check; the
-victim's threat level lifts it further), and, for Weak only, a softer raid and half the tribute.
+a multiplier on the threat cap that bounds the chance a raid starts against a victim (x1, x1,
+x1.4, x2 - the cap follows the victim's threat level, so the notch is a slope on it rather than
+a fixed floor), and, for Weak only, a softer raid and half the tribute.
 The former Pirate Tribute setting folds onto the matching notch on load.
 
 ⚠ that number pulls in two directions and both favour the player when lowered: it scales the
