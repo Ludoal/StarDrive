@@ -6376,6 +6376,8 @@ namespace Ship_Game
         CqWaitingForTile = 30162,
         /// <summary>(waiting for the blueprint)</summary>
         CqWaitingForBlueprint = 30163,
+        /// <summary>...and {0} more</summary>
+        BpMoreBuildings = 30339,
         /// <summary>Locked - requires {0}</summary>
         TcLockedRequiresTech = 30000,
         /// <summary>Research Bonus Granted: {0}%</summary>

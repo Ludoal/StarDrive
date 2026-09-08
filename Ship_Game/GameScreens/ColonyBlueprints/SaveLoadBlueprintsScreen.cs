@@ -266,8 +266,30 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
 
         string title2 = blueprints.Validated && blueprints.LinkTo.NotEmpty() ? $"Linked to: {blueprints.LinkTo}" : "";
         Color color = BlueprintsScreen.GetBlueprintsIconColor(blueprints.ColonyType);
-        return new(info, blueprints, blueprints.Name, title1, title2, "", BlueprintsIcon, color)
+        return new(info, blueprints, blueprints.Name, title1, title2, BuildingsTooltip(blueprints), BlueprintsIcon, color)
         { Enabled = blueprints.Validated, InfoColor = infoColor, FileNameColor = color };
+    }
+
+    // The plan's buildings, hovered: one line, comma-separated, in the plan's own order - the
+    // order the colony raises them in - and capped like the game's other lists (maintainer
+    // feedback).
+    const int TooltipBuildings = 12;
+    static string BuildingsTooltip(BlueprintsTemplate blueprints)
+    {
+        Array<string> names = blueprints.PlannedBuildings;
+        if (names == null || names.Count == 0)
+            return "";
+
+        var text = new System.Text.StringBuilder();
+        int shown = Math.Min(names.Count, TooltipBuildings);
+        for (int i = 0; i < shown; ++i)
+        {
+            if (i > 0) text.Append(", ");
+            text.Append(ResourceManager.GetBuilding(names[i], out Building b) ? b.TranslatedName.Text : names[i]);
+        }
+        if (names.Count > shown)
+            text.Append(' ').Append(string.Format(Localizer.Token(GameText.BpMoreBuildings), names.Count - shown));
+        return text.ToString();
     }
 
     protected override void InitSaveList()
