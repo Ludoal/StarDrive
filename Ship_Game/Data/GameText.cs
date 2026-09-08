@@ -6331,8 +6331,6 @@ namespace Ship_Game
         BpRenameTip = 30138,
         /// <summary>Overwrite '{0}' as '{1}'? {2} colonies, {3} governor defaults and {4} chains will follow the new name.</summary>
         BpRenameConfirm = 30139,
-        /// <summary>That is already the name of this plan.</summary>
-        BpRenameSameName = 30140,
         /// <summary>That name cannot be used for a file, or holds a character the game cannot draw.</summary>
         BpRenameBadChars = 30141,
         /// <summary>'{0}' is already carried by another plan, now or in the past.</summary>

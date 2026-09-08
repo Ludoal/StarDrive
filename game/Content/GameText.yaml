@@ -22749,10 +22749,6 @@ BpRenameConfirm:
  Id: 30139
  ENG: "Overwrite '{0}' as '{1}'?\n{2} colonies, {3} governor defaults and {4} chains will follow the new name."
  FRA: "Écraser « {0} » sous « {1} » ?\n{2} colonies, {3} plans par défaut de gouverneur et {4} chaînes suivront le nouveau nom."
-BpRenameSameName:
- Id: 30140
- ENG: "That is already the name of this plan."
- FRA: "C'est déjà le nom de ce plan."
 BpRenameBadChars:
  Id: 30141
  ENG: "That name cannot be used for a file, or holds a character the game cannot draw."

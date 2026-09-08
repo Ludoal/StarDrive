@@ -69,6 +69,14 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
     {
         string oldName = BlueprintsToSave.Name;
         string newName = EnterNameArea.Text;
+        // (maintainer feedback) the plan's own name: nothing to rename, the plan is written over
+        // itself - the same thing Save as... does with that name, without the question
+        if (newName.NotEmpty() && newName == oldName)
+        {
+            DoSave();
+            return;
+        }
+
         if (!RenameRefused(oldName, newName, out string why))
         {
             int colonies = BlueprintsScreen.Player.CountPlanetsWithBlueprints(oldName);
@@ -89,8 +97,6 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         why = "";
         if (newName.IsEmpty())
             why = Localizer.Token(GameText.MmEnterFileName);
-        else if (newName == oldName)
-            why = Localizer.Token(GameText.BpRenameSameName);
         else if (newName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
             why = Localizer.Token(GameText.BpRenameBadChars);
         else if (NotDrawable(newName))
