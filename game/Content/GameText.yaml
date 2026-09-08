@@ -22066,8 +22066,8 @@ NgExcludedBy:
  FRA: "(exclu par {0})"
 BpSaveBlueprintsAs:
  Id: 4907
- ENG: "Save Blueprints As..."
- FRA: "Sauvegarder les schémas sous..."
+ ENG: "Save Blueprint As..."
+ FRA: "Enregistrer le schéma sous..."
 BpSavedBlueprintsOverwrite:
  Id: 4908
  ENG: "Saved Blueprints exists. If you choose to overwrite, planets with these Blueprints will be reloaded with the new version. Overwrite?"
@@ -22735,16 +22735,20 @@ BgtPerTurn:
  FRA: "BC/tour"
 BpRename:
  Id: 30137
- ENG: "Rename"
- FRA: "Renommer"
+ ENG: "Overwrite as..."
+ FRA: "Écraser sous..."
+BpSaveAs:
+ Id: 30349
+ ENG: "Save as..."
+ FRA: "Enregistrer sous..."
 BpRenameTip:
  Id: 30138
  ENG: "Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own."
  FRA: "Renommer ce plan. Les colonies qui l'ont adopté, les plans par défaut des gouverneurs qui le désignent et les chaînes qui pointent dessus suivent tous. Le plan garde son ancien nom, si bien que les anciennes sauvegardes le retrouvent d'elles-mêmes."
 BpRenameConfirm:
  Id: 30139
- ENG: "Rename '{0}' to '{1}'?\n{2} colonies, {3} governor defaults and {4} chains will follow the new name."
- FRA: "Renommer « {0} » en « {1} » ?\n{2} colonies, {3} plans par défaut de gouverneur et {4} chaînes suivront le nouveau nom."
+ ENG: "Overwrite '{0}' as '{1}'?\n{2} colonies, {3} governor defaults and {4} chains will follow the new name."
+ FRA: "Écraser « {0} » sous « {1} » ?\n{2} colonies, {3} plans par défaut de gouverneur et {4} chaînes suivront le nouveau nom."
 BpRenameSameName:
  Id: 30140
  ENG: "That is already the name of this plan."

@@ -47,8 +47,9 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         InitPath();
     }
 
-    // "Save" would promise the wrong thing next to a Rename: this one keeps the old plan.
-    protected override string SaveButtonTitle => Mode == SLMode.Save ? "Save as copy" : "Load";
+    // (maintainer feedback) the two names say what stays: "Save as..." keeps the old plan,
+    // "Overwrite as..." - the rename - does not.
+    protected override string SaveButtonTitle => Mode == SLMode.Save ? Localizer.Token(GameText.BpSaveAs) : "Load";
 
     protected override void AddExtraButtons(float x, float y)
     {
