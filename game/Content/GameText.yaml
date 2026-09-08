@@ -29063,10 +29063,6 @@ CqWaitingForBlueprint:
  Id: 30163
  ENG: "(waiting for the blueprint)"
  FRA: "(en attente du plan)"
-BpMoreBuildings:
- Id: 30339
- ENG: "...and {0} more"
- FRA: "...et {0} de plus"
 TzActiveTip:
  Id: 30281
  ENG: "Freighters currently flying to these colonies, whoever owns them. Yellow when only part of the need is on its way, red when none of it is. See Owned for the zone's own hulls."

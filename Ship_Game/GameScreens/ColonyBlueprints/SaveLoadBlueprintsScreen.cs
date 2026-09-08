@@ -270,10 +270,8 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         { Enabled = blueprints.Validated, InfoColor = infoColor, FileNameColor = color };
     }
 
-    // The plan's buildings, hovered: one line, comma-separated, in the plan's own order - the
-    // order the colony raises them in - and capped like the game's other lists (maintainer
-    // feedback).
-    const int TooltipBuildings = 12;
+    // The plan's buildings, hovered: the whole list, comma-separated, in the plan's own order -
+    // the order the colony raises them in (maintainer feedback). The tooltip wraps.
     static string BuildingsTooltip(BlueprintsTemplate blueprints)
     {
         Array<string> names = blueprints.PlannedBuildings;
@@ -281,14 +279,11 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
             return "";
 
         var text = new System.Text.StringBuilder();
-        int shown = Math.Min(names.Count, TooltipBuildings);
-        for (int i = 0; i < shown; ++i)
+        for (int i = 0; i < names.Count; ++i)
         {
             if (i > 0) text.Append(", ");
             text.Append(ResourceManager.GetBuilding(names[i], out Building b) ? b.TranslatedName.Text : names[i]);
         }
-        if (names.Count > shown)
-            text.Append(' ').Append(string.Format(Localizer.Token(GameText.BpMoreBuildings), names.Count - shown));
         return text.ToString();
     }
 
