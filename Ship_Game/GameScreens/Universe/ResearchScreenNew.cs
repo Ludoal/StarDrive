@@ -440,10 +440,13 @@ namespace Ship_Game
             
             bool added = false;
             
+            // The queue is edited here directly: this screen pauses the universe, so the click
+            // lands between two turns, and the reload below must see it at once. A write handed
+            // to the simulation thread ran a click late and inverted the toggle (bench 611).
             if (!Player.Research.IsQueued(tech.UID))
             {
                 GameAudio.ResearchSelect();
-                Player.Universe.Screen?.RunOnSimThread(() => Player.Research.AddTechToQueue(tech.UID));
+                Player.Research.AddTechToQueue(tech.UID);
                 added = true;
             }
             
@@ -463,7 +466,7 @@ namespace Ship_Game
             {
                 if (!added)
                 {
-                    Player.Universe.Screen?.RunOnSimThread(() => Player.Research.RemoveTechFromQueue(tech.UID));
+                    Player.Research.RemoveTechFromQueue(tech.UID);
                 }
             }
             
