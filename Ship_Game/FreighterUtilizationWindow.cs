@@ -36,6 +36,7 @@ namespace Ship_Game
         // of its cells count worlds). The fleet itself is counted on the left.
         UILabel TotalFreightersLabel;
         UILabel TotalFleetLabel; // the whole freighter fleet, on the left column
+        UILabel ServingLabel;    // hulls on a run, so that Idle + Serving = Total (bench 616)
         UILabel TotalFreightersValue;
         UILabel TotalImportingValue;
         UILabel TotalExportingValue;
@@ -167,14 +168,20 @@ namespace Ship_Game
             // zone - so assigning freighters makes the fleet look smaller under the player's hand.
             // The part in zones is stated on its own line rather than subtracted.
             // the values right-align on one column (bench 615), so "18" and "3" end on the same
-            // unit digit; the column's right edge stays clear of the divider at +180
+            // unit digit; the column's right edge stays clear of the divider at +180. The bar
+            // shares the heading's line (bench 616), so the rows start one pitch under it.
             const float LeftRowPitch = 20f, LeftValueRightX = 174f;
-            float leftY = titleOffset + 50;
+            float leftY = titleOffset + 25;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.TzInZones, Fonts.Arial12Bold, Color.Wheat));
             FreightersInZonesLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.IdleFrieghters, Fonts.Arial12Bold, Color.Wheat));
             NumIdleFreightersLabel     = RightAlignedValue(win.X + LeftValueRightX, leftY);
+            leftY += LeftRowPitch;
+            // every hull on a run - realm, stations and foreign trade alike - so Idle + Serving is
+            // the whole fleet; the column's figure counts the realm's planets only
+            Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuServingFreighters, Fonts.Arial12Bold, Color.Wheat));
+            ServingLabel               = RightAlignedValue(win.X + LeftValueRightX, leftY);
             leftY += LeftRowPitch;
             Add(new UILabel(new Vector2(win.X + 15, leftY), GameText.FuTotalFreighters, Fonts.Arial12Bold, Color.Wheat));
             TotalFleetLabel            = RightAlignedValue(win.X + LeftValueRightX, leftY);
@@ -224,7 +231,9 @@ namespace Ship_Game
         public override void PerformLayout()
         {
             const int utilColX = 10, utilColW = 150, buildBtnW = 130;
-            UtilizationBar.SetRect(new Rectangle((int)Pos.X + utilColX, (int)Pos.Y+65, utilColW, 18));
+            // the bar rides the heading's own line, right of the word (bench 616): 90px is room
+            // for its percentage, and it ends clear of the divider at +180
+            UtilizationBar.SetRect(new Rectangle((int)Pos.X + 85, (int)Pos.Y + 37, 90, 18));
             // Ludoal fork: the Build Freighter button centred on the util column.
             // ⚠ anchored to the FOOT, not to a constant off the top: off the bottom it follows
             // whatever height the window takes, so a row added above cannot land on it (bench 580).
@@ -273,6 +282,7 @@ namespace Ship_Game
             BuildFreighter.Draw(batch, elapsed);
             FreighterConstructingLabel.Draw(batch, elapsed);
             NumIdleFreightersLabel.Draw(batch, elapsed);
+            ServingLabel.Draw(batch, elapsed);
             TotalFleetLabel.Draw(batch, elapsed);
             FreightersInZonesLabel.Draw(batch, elapsed);
             DrawLine(new Vector2(Pos.X + 180, Pos.Y + 35), new Vector2(Pos.X + 180, Pos.Y + Height - 10), Color.Wheat, 2);
@@ -403,6 +413,7 @@ namespace Ship_Game
                 UtilizationBar.Progress = FleetFreighters == 0 ? 0 : (float)NumUtilizedFreighters/FleetFreighters*100;
                 FreighterConstructingLabel.Text = Player.FreightersBeingBuilt.String();
                 NumIdleFreightersLabel.Text = (FleetFreighters - NumUtilizedFreighters).String();
+                ServingLabel.Text = NumUtilizedFreighters.String();
                 TotalFleetLabel.Text = FleetFreighters.String();
                 FreightersInZonesLabel.Text = Player.OwnedShips.Count(s => s?.IsFreighter == true && s.InTradeZone).String();
 

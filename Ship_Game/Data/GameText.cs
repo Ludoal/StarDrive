@@ -4633,7 +4633,7 @@ namespace Ship_Game
         MineableRichnessTip = 4502,
         /// <summary>Freighter Utilization</summary>
         FreighterUtilization = 4503,
-        /// <summary>Total Utilization</summary>
+        /// <summary>Utilization</summary>
         TotalFreighterUtilization = 4504,
         /// <summary>Cargo Distribution</summary>
         CargoDistribution = 4505,
@@ -6333,6 +6333,8 @@ namespace Ship_Game
         FuUnitRuns = 30351,
         /// <summary>worlds</summary>
         FuUnitWorlds = 30352,
+        /// <summary>Serving Freighters:</summary>
+        FuServingFreighters = 30357,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>
