@@ -2436,7 +2436,7 @@ namespace Ship_Game
                     Position  = ship.Position,
                     Name      = ship.Name,
                     IconPath  = ship.BaseHull.IconPath,
-                    ExpiresAt = Universe.StarDate + LostShipGhostTurns * 0.1f,
+                    ExpiresAt = float.MaxValue, // posted: holds while the alert is up; the countdown starts when the alert leaves
                 });
         }
 
@@ -2462,6 +2462,16 @@ namespace Ship_Game
                 LostShipGhostList.RemoveAll(g => g.ExpiresAt <= now);
                 return LostShipGhostList.ToArray();
             }
+        }
+        // Ludoal fork (bench 619): the alert has left, so start this ghost's countdown now - its
+        // few turns are the player's to look, not spent while the alert waited. Guarded to a
+        // still-posted ghost so a second removal cannot reset a running countdown.
+        public void StampLostShipGhostAt(Vector2 at)
+        {
+            lock (LostShipGhostList)
+                foreach (LostShipGhost g in LostShipGhostList)
+                    if (g.Position == at && g.ExpiresAt == float.MaxValue)
+                        g.ExpiresAt = Universe.StarDate + LostShipGhostTurns * 0.1f;
         }
 
         public void AddMutinyNotification(Ship ship, GameText text, Empire initiator)

@@ -1063,6 +1063,20 @@ namespace Ship_Game
             }
         }
 
+        // Ludoal fork (bench 619): a boarding alert leaving the queue - by click, right-click or
+        // auto-clear - starts its lost-ship ghost's countdown, so the ghost holds while the alert
+        // is posted then fades. Only boarding alerts carry a WorldPosition, so nothing else moves.
+        void DropNotification(Notification n)
+        {
+            if (n.WorldPosition != Vector2.Zero)
+                Screen.UState.Player?.StampLostShipGhostAt(n.WorldPosition);
+            lock (NotificationList)
+            {
+                NotificationList.Remove(n);
+                UpdateAllPositions();
+            }
+        }
+
         public bool HandleInput(InputState input)
         {
             Notification[] notifications = GetNotificationsAtomic();
@@ -1072,11 +1086,7 @@ namespace Ship_Game
                 {
                     if (n.DropAfterClick) // a left click may keep it, see the Notifications switch
                     {
-                        lock (NotificationList)
-                        {
-                            NotificationList.Remove(n);
-                            UpdateAllPositions();
-                        }
+                        DropNotification(n);
                     }
                     return true;
                 }
@@ -1192,11 +1202,7 @@ namespace Ship_Game
                     n.SecondsAlive += elapsedRealTime;
                     if (n.SecondsAlive >= autoClear)
                     {
-                        lock (NotificationList)
-                        {
-                            NotificationList.Remove(n);
-                            UpdateAllPositions();
-                        }
+                        DropNotification(n);
                     }
                 }
             }
@@ -1210,11 +1216,7 @@ namespace Ship_Game
                     if (n.DestinationRect.Y != n.ClickRect.Y) break;
                     if (n.Action != "LoadEvent" && !(GlobalStats.PauseOnNotification && n.Pause))
                     {
-                        lock (NotificationList)
-                        {
-                            NotificationList.Remove(n);
-                            UpdateAllPositions();
-                        }
+                        DropNotification(n);
                         break;
                     }
                 }
