@@ -87,7 +87,9 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             WhichDialog = whichDialog;
             IsPopup = true;
             TransitionOnTime = 1.0f;
-            CanEscapeFromScreen = false; // don't allow right click escape from this screen
+            // the base's silent right-click escape stays off: the way out is END - right-click
+            // included, see HandleInput - which records an unanswered demand as refused
+            CanEscapeFromScreen = false;
 
             AlliedEmpiresAtWar = GetAlliedEmpiresTheyAreAtWarWith(them, us);
             EmpiresTheyAreAlliedWith = GetAiAlliedEmpires(them, us);
@@ -789,7 +791,17 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             if (AngerRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(GameText.ThisIndicatesHowAngryA);
             if (ThreatRect.HitTest(input.CursorPosition))  ToolTip.CreateTooltip(GameText.ThisIndicatesHowMuchA2);
 
-            return base.HandleInput(input);
+            if (base.HandleInput(input))
+                return true;
+
+            // (maintainer feedback) a right-click nobody claimed is END: the same exit as the
+            // button, refusal of an unanswered demand included - never a way around it
+            if (input.RightMouseClick)
+            {
+                OnExitClicked(Exit);
+                return true;
+            }
+            return false;
         }
 
         // parses text for any diplomacy placeholders
