@@ -11,6 +11,9 @@ public sealed class Notification
 {
     public object ReferencedItem1;
     public GameObject ReferencedItem2;
+    // where it happened (maintainer feedback): a ship the player can no longer see - boarded,
+    // sailed off - would take the camera to its live position, an empty spot; the scene is here
+    public Vector2 WorldPosition;
 
     public Empire RelevantEmpire;
     public Rectangle ClickRect;
@@ -79,7 +82,7 @@ public sealed class Notification
                     m.ScreenManager.AddScreen(new ShipDesignScreen(m.Screen, m.Screen.EmpireUI));
                     break;
                 case "SnapToShip":
-                    m.SnapToShip(ReferencedItem1 as Ship);
+                    m.SnapToShip(ReferencedItem1 as Ship, WorldPosition);
                     break;
                 case "SnapToStation":
                     m.SnapToStation(ReferencedItem1 as Ship);

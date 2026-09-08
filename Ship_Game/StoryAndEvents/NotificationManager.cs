@@ -799,6 +799,7 @@ namespace Ship_Game
                 Message         = message,
                 Action          = action,
                 ReferencedItem1 = s,
+                WorldPosition   = s.Position, // the scene of the boarding, for once the ship is gone from view
                 IconPath        = iconPath ?? "ResearchMenu/icon_event_science_bad"
             }, NotificationCategory.Combat, "sd_ui_notification_encounter");
         }
@@ -1104,16 +1105,20 @@ namespace Ship_Game
             Screen.SnapViewColony(p, combatView: false);
         }
 
-        public void SnapToShip(Ship s)
+        public void SnapToShip(Ship s, Vector2 where = default)
         {
             GameAudio.SubBassWhoosh();
             // A ship outside our sensor vision (e.g. one of ours freshly boarded by the
             // enemy) cannot be meaningfully selected or chased - the camera would follow
-            // an invisible dot. Snap to its last known position instead.
+            // an invisible dot. Snap to the scene the notification recorded instead, at
+            // system height so the surroundings say what happened; its live position
+            // only when no scene was recorded (bench 617: the live spot was empty space).
             if (s == null)
                 return;
             if (s.InPlayerSensorRange)
                 Screen.SnapViewShip(s);
+            else if (where != Vector2.Zero)
+                Screen.SnapViewTo(new(where.X, where.Y, Screen.GetZfromScreenState(UnivScreenState.SystemView)), 5f, 2f);
             else
                 Screen.SnapViewTo(new(s.Position.X, s.Position.Y + 400, 2500), 5f, 2f);
         }
