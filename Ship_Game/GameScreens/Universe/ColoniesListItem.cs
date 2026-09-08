@@ -22,9 +22,10 @@ namespace Ship_Game
         public Rectangle SliderRect;
         public Rectangle StorageRect;
         public Rectangle QueueRect;
-        // Room the queued item's NAME may take before it runs under the CR box, which shares
-        // its line. Written where the box is placed, so the two never drift apart.
-        int QueueNameRoom;
+        // The line the queued item's NAME may have before it runs under the CR box, which
+        // shares it. Written where the box is placed, so the two never drift apart - and it is
+        // the ONE owner of that width: the draw and the hover both read it.
+        Rectangle QueueNameRect;
         public Rectangle PopRect;
         public Rectangle GrowthRect; // Ludoal fork: population growth per turn
         public Rectangle FoodRect;
@@ -217,7 +218,8 @@ namespace Ship_Game
             float rushX = CancelProductionRect.Right - RushBox.Width;
             RushBox.SetAbsPos(rushX, QueueRect.Y + QueueRect.Height / 2 - 30);
             // the name starts 40px past the icon at QueueRect.X + 10, and stops 6 short of the box
-            QueueNameRoom = (int)(rushX - (QueueRect.X + 50) - 6);
+            QueueNameRect = new Rectangle(QueueRect.X + 50, QueueRect.Y + QueueRect.Height / 2 - 30,
+                                          (int)(rushX - (QueueRect.X + 50) - 6), Fonts.Arial12Bold.LineSpacing);
 
             base.PerformLayout();
         }
@@ -259,6 +261,19 @@ namespace Ship_Game
 
             if (CancelProductionRect.HitTest(input.CursorPosition))
                 ToolTip.CreateTooltip(GameText.CancelProductionAndRemoveThis);
+
+            // a name the CR box cut hands the whole of itself back on hover, and ONLY then:
+            // an unclipped name would give a tooltip that repeats what is already on screen
+            if (QueueNameRect.Width > 0 && QueueNameRect.HitTest(input.CursorPosition))
+            {
+                QueueItem[] hovered = P.ConstructionQueueSnapshot;
+                if (hovered.Length > 0)
+                {
+                    string full = (P.BuildingNow ?? hovered[0]).DrawnName;
+                    if (UITable.FitText(Fonts.Arial12Bold, full, QueueNameRect.Width) != full)
+                        ToolTip.CreateTooltip(full);
+                }
+            }
 
             // capability icons name the building that unlocks them (empty rects never hit)
             if (SpacePortIconRect.HitTest(input.CursorPosition))
@@ -499,7 +514,7 @@ namespace Ship_Game
             if (queue.Length > 0)
             {
                 QueueItem qi = P.BuildingNow ?? queue[0];
-                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30), QueueNameRoom);
+                qi.DrawAt(P.Universe, batch, new Vector2(QueueRect.X + 10, QueueRect.Y + QueueRect.Height / 2 - 30), QueueNameRect.Width);
                 batch.Draw((ApplyProdHover ? ResourceManager.Texture("NewUI/icon_queue_rushconstruction_hover1") : ResourceManager.Texture("NewUI/icon_queue_rushconstruction")), ApplyProductionRect, Color.White);
                 batch.Draw((CancelProdHover ? ResourceManager.Texture("NewUI/icon_queue_delete_hover1") : ResourceManager.Texture("NewUI/icon_queue_delete")), CancelProductionRect, Color.Red); // destruction reads red
                 DrawQueueStats(batch, queue);

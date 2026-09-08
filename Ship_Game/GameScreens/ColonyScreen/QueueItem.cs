@@ -103,7 +103,7 @@ namespace Ship_Game
             if (isBuilding)
             {
                 batch.Draw(Building.IconTex, r);
-                string shownName = Fit(Building.TranslatedName.Text);
+                string shownName = Fit(DrawnName);
                 batch.DrawString(Fonts.Arial12Bold, shownName, tCursor, Color.White);
                 // ★ an entry with no tile SAYS SO, and shows no progress bar: it is not stalled,
                 // it has yielded its turn and takes a square the moment one frees up. A bar at
@@ -131,18 +131,14 @@ namespace Ship_Game
             else if (isShip)
             {
                 batch.Draw(ShipData.Icon, r);
-                string name = DisplayName.IsEmpty() ? ShipData.Name : DisplayName;
-                if (Goal is FleetGoal fg && fg.Fleet != null)
-                    name = $"{name} ({fg.Fleet.Name})";
-
-                batch.DrawString(Fonts.Arial12Bold, Fit(name), tCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, Fit(DrawnName), tCursor, Color.White);
                 pb.Draw(batch);
             }
             else if (isTroop)
             {
                 Troop template = ResourceManager.GetTroopTemplate(TroopType);
                 template.Draw(us, batch, r);
-                batch.DrawString(Fonts.Arial12Bold, Fit(TroopType), tCursor, Color.White);
+                batch.DrawString(Fonts.Arial12Bold, Fit(DrawnName), tCursor, Color.White);
                 pb.Draw(batch);
             }
 
@@ -162,6 +158,26 @@ namespace Ship_Game
                     cost *= Planet.ShipCostModifier; // single troop ships do not get shipyard bonus
 
                 return (int)cost; // FB - int to avoid float issues in release which prevent items from being complete
+            }
+        }
+
+        // The name DrawAt paints, before any cut. ⚠ ONE owner: a caller that clips the name
+        // needs the whole string back for its tooltip, and rebuilding it there would give the
+        // fleet suffix two authors. Not DisplayText - that one is a lookup key (it is matched
+        // against "Subspace Projector") and carries no fleet suffix.
+        public string DrawnName
+        {
+            get
+            {
+                if (isBuilding)
+                    return Building.TranslatedName.Text;
+                if (isTroop)
+                    return TroopType;
+                if (!isShip && !isOrbital)
+                    return ""; // same guard DisplayText carries: no hull, no name to read
+
+                string name = DisplayName.IsEmpty() ? ShipData.Name : DisplayName;
+                return Goal is FleetGoal fg && fg.Fleet != null ? $"{name} ({fg.Fleet.Name})" : name;
             }
         }
 
