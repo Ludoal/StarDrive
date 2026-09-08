@@ -40,7 +40,8 @@ namespace Ship_Game
         // fixed box geometry - the boxes own their sizes, the columns just stack them.
         // Heights: one-tab strip (~24) + 12 top pad + 26 per row + 12 bottom pad. Each frame's
         // notice line lives in its tab's tooltip, hence 20px less.
-        const float BoxW = 320f, BoxW2 = 450f, BoxW3 = 300f, BoxGap = 10f;
+        // BoxW2 (Trade): 370, not 450 - its widest row is a 300px rail, its value lane and a padlock (bench 617)
+        const float BoxW = 320f, BoxW2 = 370f, BoxW3 = 300f, BoxGap = 10f;
         // Colony carries the two mandates AND the default-plan table: a heading plus one row per
         // governor type that can hold a plan. Written as a count times a row height, so adding a
         // governor type later moves the box by itself instead of needing a new magic number.
