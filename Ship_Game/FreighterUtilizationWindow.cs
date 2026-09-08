@@ -142,7 +142,7 @@ namespace Ship_Game
             // its headers sit a row lower. The left column keeps its first line for its own heading.
             const float HeaderDrop = 25f;
             float headerY = titleOffset + HeaderDrop;
-            Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Gold, GameText.TotalUtilizationTip));
+            Add(new UILabel(new Vector2(win.X + 15, titleOffset), GameText.TotalFreighterUtilization, Fonts.Arial12Bold, Color.Wheat, GameText.TotalUtilizationTip)); // wheat like its column (bench 616)
             Add(new UILabel(new Vector2(win.X + 210, headerY), GameText.CargoDistribution, Fonts.Arial12Bold, Color.White, GameText.CargoDistributionTip));
             Add(new UILabel(new Vector2(win.X + 370, headerY), GameText.Freighters, Fonts.Arial12Bold, Color.White, GameText.TzFreightersTip));
             // these two columns count WORLDS (open import/export slots), not freighters, and are
