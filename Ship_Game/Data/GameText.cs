@@ -6329,8 +6329,6 @@ namespace Ship_Game
         BpSaveAs = 30349,
         /// <summary>Rename this plan. The colonies that adopted it, the governor defaults that name it and the chains that point at it all follow. The plan remembers its former name, so older saves find it again on their own.</summary>
         BpRenameTip = 30138,
-        /// <summary>Overwrite '{0}' as '{1}'? {2} colonies, {3} governor defaults and {4} chains will follow the new name.</summary>
-        BpRenameConfirm = 30139,
         /// <summary>That name cannot be used for a file, or holds a character the game cannot draw.</summary>
         BpRenameBadChars = 30141,
         /// <summary>'{0}' is already carried by another plan, now or in the past.</summary>

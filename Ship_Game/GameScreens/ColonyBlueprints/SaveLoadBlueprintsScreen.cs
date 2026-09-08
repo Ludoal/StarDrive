@@ -62,9 +62,11 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         rename.Tooltip = GameText.BpRenameTip;
     }
 
-    // A rename must not offer to overwrite: the plan under that name would go, and every colony
-    // carrying it would land on this one without being asked. A taken name is a refusal - and a
-    // name that any other plan has carried is taken too, or the reattachment would aim at the wrong plan.
+    // Overwrite as... asks nothing (maintainer feedback): the plan is written under the typed name
+    // and the old one goes, the colonies and chains following. It must not take ANOTHER plan's
+    // name, though - that plan would go and every colony carrying it would land on this one
+    // without being asked - so a taken name is a refusal, and a name any other plan has carried
+    // is taken too, or the reattachment would aim at the wrong plan.
     void TryRename()
     {
         string oldName = BlueprintsToSave.Name;
@@ -79,12 +81,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
 
         if (!RenameRefused(oldName, newName, out string why))
         {
-            int colonies = BlueprintsScreen.Player.CountPlanetsWithBlueprints(oldName);
-            int governors = BlueprintsScreen.Player.CountBlueprintPolicyRows(oldName);
-            int chains = CountChainsTo(oldName);
-            string text = string.Format(Localizer.Token(GameText.BpRenameConfirm),
-                                        oldName, newName, colonies, governors, chains);
-            ScreenManager.AddScreen(new MessageBoxScreen(this, text) { Accepted = () => DoRename(oldName, newName) });
+            DoRename(oldName, newName);
             return;
         }
 
@@ -121,15 +118,6 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
             if (t.Name != oldName && t.KnownAs(newName))
                 return true;
         return false;
-    }
-
-    int CountChainsTo(string name)
-    {
-        int n = 0;
-        foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
-            if (t.LinkTo == name)
-                ++n;
-        return n;
     }
 
     void DoRename(string oldName, string newName)

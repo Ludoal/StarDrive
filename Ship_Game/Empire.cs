@@ -187,15 +187,6 @@ namespace Ship_Game
         // Nothing else sweeps this array: without it a deleted plan leaves its row pointing at a
         // name the catalogue does not know, silently. A rename retargets the rows, a deletion
         // clears them - pass an empty new name for that.
-        public int CountBlueprintPolicyRows(string blueprintName)
-        {
-            int n = 0;
-            for (int i = 0; i < BlueprintPolicyValue.Count; ++i)
-                if (BlueprintPolicyValue[i] == blueprintName)
-                    ++n;
-            return n;
-        }
-
         public void RetargetBlueprintPolicy(string oldName, string newName)
         {
             for (int i = 0; i < BlueprintPolicyValue.Count; ++i)
@@ -2926,15 +2917,6 @@ namespace Ship_Game
 
         // the colonies still hold the OLD name when a rename runs, so the match cannot be made
         // against the renamed template's own name - it has to be told which name to look for
-        public int CountPlanetsWithBlueprints(string blueprintName)
-        {
-            int n = 0;
-            foreach (Planet planet in OwnedPlanets)
-                if (planet.HasBlueprints && planet.Blueprints.Name == blueprintName)
-                    ++n;
-            return n;
-        }
-
         public void RenamePlanetsBlueprints(string oldName, BlueprintsTemplate renamed)
         {
             foreach (Planet planet in OwnedPlanets)
