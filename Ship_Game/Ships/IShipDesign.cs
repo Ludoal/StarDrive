@@ -35,6 +35,7 @@ public interface IShipDesign
 
     ShipCategory ShipCategory  { get; }
     HangarOptions HangarDesignation  { get; }
+    string TroopTemplate { get; }
     CombatState DefaultCombatState { get; }
 
     ModuleGridFlyweight Grid { get; }

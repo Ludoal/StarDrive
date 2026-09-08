@@ -31,5 +31,19 @@ namespace Ship_Game
                 return base.HandleInput(input);
             }
         }
+
+        // (player feedback) the troop the plan embarks: "" = Auto, otherwise a template name
+        class TroopTemplateDropDown : DropOptions<string>
+        {
+            public TroopTemplateDropDown(in Rectangle rect) : base(rect)
+            {
+            }
+            public override bool HandleInput(InputState input)
+            {
+                if (Rect.HitTest(input.CursorPosition))
+                    ToolTip.CreateTooltip(GameText.DesignTroopsTip);
+                return base.HandleInput(input);
+            }
+        }
     }
 }

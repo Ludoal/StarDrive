@@ -59,6 +59,8 @@ namespace Ship_Game.Ships
             sw.Write("DefaultCombatState", DefaultCombatState);
             sw.Write("ShipCategory", ShipCategory);
             sw.Write("HangarDesignation", HangarDesignation);
+            if (!string.IsNullOrEmpty(TroopTemplate)) // Auto is the absence of the key: a file never touched stays as it is
+                sw.Write("TroopTemplate", TroopTemplate);
             sw.Write("IsShipyard", IsShipyard);
             sw.Write("IsOrbitalDefense", IsOrbitalDefense);
             sw.Write("IsCarrierOnly", IsCarrierOnly);
@@ -204,6 +206,7 @@ namespace Ship_Game.Ships
                     else if (key == "DefaultCombatState") DefaultCombatState = Enum.TryParse(value.Text, out CombatState dcs) ? dcs : DefaultCombatState;
                     else if (key == "ShipCategory")       ShipCategory = Enum.TryParse(value.Text, out ShipCategory sc) ? sc : ShipCategory;
                     else if (key == "HangarDesignation")  HangarDesignation = Enum.TryParse(value.Text, out HangarOptions ho) ? ho : HangarDesignation;
+                    else if (key == "TroopTemplate")      TroopTemplate    = value.Text;
                     else if (key == "IsShipyard")         IsShipyard       = value.ToBool();
                     else if (key == "IsOrbitalDefense")   IsOrbitalDefense = value.ToBool();
                     else if (key == "IsCarrierOnly")      IsCarrierOnly    = value.ToBool();

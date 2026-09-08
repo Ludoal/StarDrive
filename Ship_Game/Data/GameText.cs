@@ -7422,6 +7422,10 @@ namespace Ship_Game
         GarrisonTroopCheapest = 30345,
         /// <summary>Auto: best</summary>
         GarrisonTroopBest = 30346,
+        /// <summary>Auto</summary>
+        DesignTroopsAuto = 30347,
+        /// <summary>The troop this design embarks when built.</summary>
+        DesignTroopsTip = 30348,
         /// <summary>Inhibited when Inter Empire Trade is not allowed (enable it in Automation).</summary>
         InterTradeInhibited = 30180,
         /// <summary>Auto-build Explorers</summary>

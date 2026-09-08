@@ -237,6 +237,20 @@ the same pick a new troop ship gets), or any troop the empire can build, by name
 fills itself as techs unlock troops. A named troop that can no longer be built falls back to
 Auto: cheapest. AI empires keep the default.
 
+### A design names the troop it embarks
+`ShipDesign.cs`, `ShipDesign_WriterParser.cs`, `Ship_Troop.cs`, `ShipDesignScreen*.cs` (Shipyard)
+
+**Source: player feedback**, relayed by the maintainer, the second half of the garrison
+request: a troop ship could not be told to carry tanks.
+
+A new troop ship is filled at build time with the strongest anti-infantry troop, and with
+tanks only when its barracks outnumber its troop bays. A **Troops** row in the Shipyard,
+under Hangar Type, now lets a design name the troop it embarks: **Auto** keeps that rule,
+any other entry is a troop the player can build. The pick is read when the ship is built,
+not when it is designed, so a troop that can no longer be built falls back to Auto. The
+design file only carries the key when a troop is named, so untouched files, mods and older
+designs read as Auto.
+
 ### A new colony can rush its first turns
 `3b2a73f2` — `SBProduction.cs`, `Planet_Colonize.cs`, `PoliciesScreen.cs`
 

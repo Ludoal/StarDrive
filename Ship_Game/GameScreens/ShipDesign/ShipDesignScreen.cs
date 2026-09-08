@@ -171,6 +171,7 @@ namespace Ship_Game
         public ShipModule HoveredListModule; // Ludoal fork (spec v4): module under the cursor in the list, feeds the Hover frame
         CategoryDropDown CategoryList;
         HangarDesignationDropDown HangarOptionsList;
+        TroopTemplateDropDown TroopTemplateList;
 
         bool ShowAllArcs;
         bool ShowAllShields;
@@ -1282,7 +1283,7 @@ namespace Ship_Game
             // Ludoal fork: the row reads Carrier Only, Repair, Stance, Hangar Type - the checkbox
             // first because it decides what the two dropdowns even mean. The captions are short
             // enough to fit the row at 1440 wide, each measured in the font that draws it.
-            const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20;
+            const int ddW = 125, ddHangarW = 150, ddH = 18, optGap = 20, optRowGap = 8;
             int lblRepairW = (int)Fonts.Arial12Bold.TextWidth(RepairCaption) + TitleGap;
             int lblHangarW = (int)Fonts.Arial12Bold.TextWidth(HangarCaption) + TitleGap;
             // the checkbox measures itself the same way UICheckBox does: box (12) + padding (4) + text
@@ -1318,6 +1319,13 @@ namespace Ship_Game
             HangarOptionsList = new HangarDesignationDropDown(hangarRect);
             foreach (HangarOptions item in Enum.GetValues(typeof(HangarOptions)).Cast<HangarOptions>())
                 HangarOptionsList.AddOption(HangarOptionText(item), item);
+
+            // (player feedback) the troop the plan embarks, on its own row under Hangar Type: the
+            // same family - what this plan carries - and the same width. Shown whenever a design
+            // is, as Hangar Type is; its entries are filled when a design binds (the player's
+            // unlocked templates), see BindListsToActiveHull.
+            TroopTemplateList = new TroopTemplateDropDown(new Rectangle(hangarRect.X, hangarRect.Y + ddH + optRowGap,
+                                                                        ddHangarW, ddH));
 
             // DESIGN ISSUES sits UNDER the cartouche rather than in a narrow 200px column to its
             // left, so its text gets the full width. Both boxes use the bottom-up geometry

@@ -192,11 +192,17 @@ namespace Ship_Game.Ships
                 troopType    = (troopType == redshirtType) ? tankType : troopType;
             }
 
+            // (player feedback) the plan may name the troop it embarks (Shipyard: Troops). Auto is
+            // the rule above; a named troop the owner can no longer build falls back to it. Read
+            // here, at embarkation, never at design time.
+            string named = ShipData.TroopTemplate;
+            bool useNamed = !string.IsNullOrEmpty(named) && Loyalty?.WeCanBuildTroop(named) == true;
+
             for (int i = 0; i < module.TroopsSupplied; ++i) // TroopLoad (?)
             {
-                string type = troopType;
+                string type = useNamed ? named : troopType;
                 int numHangarsBays = Carrier.AllTroopBays.Length;
-                if (numHangarsBays < OurTroops.Count + 1) //FB: if you have more troop_capacity than hangars, consider adding some tanks
+                if (!useNamed && numHangarsBays < OurTroops.Count + 1) //FB: if you have more troop_capacity than hangars, consider adding some tanks
                 {
                     type = troopType; // ex: "Space Marine"
                     if (OurTroops.Count(troop => troop.Name == tankType) <= numHangarsBays)

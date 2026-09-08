@@ -40,6 +40,7 @@ namespace Ship_Game
             ShipDesign design = CurrentDesign;
             CategoryList.Visible = design != null;
             HangarOptionsList.Visible = design != null;
+            TroopTemplateList.Visible = design != null;
 
             // bind hull editor to current hull
             HullEditor?.Initialize(CurrentHull);
@@ -68,6 +69,17 @@ namespace Ship_Game
 
             HangarOptionsList.PropertyBinding = () => design.HangarDesignation;
             HangarOptionsList.SetActiveValue(design.HangarDesignation);
+
+            // Auto, then every template the player can build, cheapest first - rebuilt at each
+            // bind, so a troop unlocked since the last one is on the list
+            TroopTemplateList.Clear();
+            TroopTemplateList.AddOption(GameText.DesignTroopsAuto, "");
+            foreach (Troop t in ResourceManager.GetTroopTemplatesFor(Player))
+                TroopTemplateList.AddOption(t.Name, t.Name);
+            TroopTemplateList.PropertyBinding = () => design.TroopTemplate;
+            // a troop the player cannot build reads as Auto, which is what the build does with it
+            if (!TroopTemplateList.SetActiveValue(design.TroopTemplate))
+                TroopTemplateList.ActiveIndex = 0;
         }
 
         bool IsGoodDesign()
@@ -154,6 +166,9 @@ namespace Ship_Game
                 return true;
 
             if (HangarOptionsList.HandleInput(input))
+                return true;
+
+            if (TroopTemplateList.HandleInput(input))
                 return true;
 
             if (DesignRoleRect.HitTest(input.CursorPosition))

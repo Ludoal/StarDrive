@@ -45,6 +45,9 @@ public sealed partial class ShipDesign : IShipDesign
 
     [StarData] public ShipCategory ShipCategory { get; set; } = ShipCategory.Unclassified;
     [StarData] public HangarOptions HangarDesignation { get; set; } = HangarOptions.General;
+    // (player feedback) the troop this plan embarks when built, by template name; "" = Auto,
+    // the game's own pick. Absent from a design file or an old save, it reads as Auto.
+    [StarData] public string TroopTemplate { get; set; } = "";
     [StarData] public CombatState DefaultCombatState { get; set; }
 
     public ModuleGridFlyweight Grid { get; private set; }

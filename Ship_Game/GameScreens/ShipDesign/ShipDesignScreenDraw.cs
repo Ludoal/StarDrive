@@ -553,6 +553,7 @@ namespace Ship_Game
         // string DrawTitle paints, so rewording a caption cannot leave the row measured for another.
         public const string RepairCaption = "Repair";
         public const string HangarCaption = "Hangar Type";
+        public const string TroopsCaption = "Troops";
         static void DrawTitle(SpriteBatch batch, in Rectangle dropdown, string title)
         {
             Graphics.Font font = Fonts.Arial12Bold;
@@ -573,6 +574,9 @@ namespace Ship_Game
             DrawTitle(batch, new Rectangle((int)HangarOptionsList.X, (int)HangarOptionsList.Y,
                                           (int)HangarOptionsList.Width, (int)HangarOptionsList.Height), HangarCaption);
             HangarOptionsList.Draw(batch, elapsed);
+            DrawTitle(batch, new Rectangle((int)TroopTemplateList.X, (int)TroopTemplateList.Y,
+                                          (int)TroopTemplateList.Width, (int)TroopTemplateList.Height), TroopsCaption);
+            TroopTemplateList.Draw(batch, elapsed);
 
             // Ludoal fork: the design's identity plates, drawn in the reworked screens' grammar
             // (dark fill, brass rule). They appear at their place rather than sliding in.

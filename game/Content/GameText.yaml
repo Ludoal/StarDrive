@@ -16620,6 +16620,14 @@ GarrisonTroopBest:
  Id: 30346
  ENG: "Auto: best"
  FRA: "Auto : la meilleure"
+DesignTroopsAuto:
+ Id: 30347
+ ENG: "Auto"
+ FRA: "Auto"
+DesignTroopsTip:
+ Id: 30348
+ ENG: "The troop this design embarks when built. Auto: the strongest against infantry, with tanks when barracks outnumber troop bays (base game). A named troop is embarked while you can build it."
+ FRA: "La troupe que ce plan embarque à sa construction. Auto : la plus forte contre l'infanterie, avec des chars si les casernes dépassent les baies (jeu de base). Une troupe nommée est embarquée tant que vous savez la construire."
 InterTradeInhibited:
  Id: 30180
  ENG: "Inhibited when Inter Empire Trade is not allowed (enable it in Policies > Trade)."
