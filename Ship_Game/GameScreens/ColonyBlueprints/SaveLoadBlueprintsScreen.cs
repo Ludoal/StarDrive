@@ -56,7 +56,8 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
         if (Mode != SLMode.Save || BlueprintsScreen == null)
             return;
 
-        var rename = Add(new UIButton(ButtonStyle.WideActive, new Vector2(x, y), Localizer.Token(GameText.BpRename)));
+        // hostile tint (maintainer feedback): the old plan goes, with no question asked
+        var rename = Add(new UIButton(ButtonStyle.WideHostile, new Vector2(x, y), Localizer.Token(GameText.BpRename)));
         rename.OnClick = b => TryRename();
         rename.SetAbsSize(80, 24);
         rename.Tooltip = GameText.BpRenameTip;
