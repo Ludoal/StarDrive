@@ -1213,55 +1213,17 @@ namespace Ship_Game
                 UpdateBlueprintsChanged();
         }
 
-        enum BudgetArea { Civilian, GroundDef, SpaceDef }
-
         bool AnyAreaManual => Planet.ManualCivBudgetOn || Planet.ManualGrdBudgetOn || Planet.ManualSpcBudgetOn;
 
-        float AutoTargetFor(BudgetArea area)
-        {
-            PlanetBudget b = Planet.Budget;
-            if (b == null)
-                return 0f;
+        // the four below now live on the COLONY, so a second page can drive the same rail
+        // without a second mechanic; the panel keeps its own wording over them
+        float AutoTargetFor(BudgetArea area) => Planet.BudgetAutoTarget(area);
 
-            switch (area)
-            {
-                default:
-                case BudgetArea.Civilian:  return b.CivilianAlloc;
-                case BudgetArea.GroundDef: return b.GrdDefAlloc;
-                case BudgetArea.SpaceDef:  return b.SpcDefAlloc;
-            }
-        }
+        bool IsAreaManual(BudgetArea area) => Planet.IsBudgetManual(area);
 
-        bool IsAreaManual(BudgetArea area)
-        {
-            switch (area)
-            {
-                default:
-                case BudgetArea.Civilian:  return Planet.ManualCivBudgetOn;
-                case BudgetArea.GroundDef: return Planet.ManualGrdBudgetOn;
-                case BudgetArea.SpaceDef:  return Planet.ManualSpcBudgetOn;
-            }
-        }
+        void SetAreaAmount(BudgetArea area, float amount) => Planet.SetBudgetAmount(area, amount);
 
-        void SetAreaAmount(BudgetArea area, float amount)
-        {
-            switch (area)
-            {
-                case BudgetArea.Civilian:  Planet.SetManualCivBudget(amount);      break;
-                case BudgetArea.GroundDef: Planet.SetManualGroundDefBudget(amount); break;
-                case BudgetArea.SpaceDef:  Planet.SetManualSpaceDefBudget(amount);  break;
-            }
-        }
-
-        void SetAreaManual(BudgetArea area, bool manual)
-        {
-            switch (area)
-            {
-                case BudgetArea.Civilian:  Planet.SetManualCivBudgetOn(manual);  break;
-                case BudgetArea.GroundDef: Planet.SetManualGrdBudgetOn(manual);  break;
-                case BudgetArea.SpaceDef:  Planet.SetManualSpcBudgetOn(manual);  break;
-            }
-        }
+        void SetAreaManual(BudgetArea area, bool manual) => Planet.SetBudgetManual(area, manual);
 
         // Manual mostly BOOSTS an area, so the room above the auto target is the point of the
         // slider - not headroom to waste. Floor 20 so a small colony still has usable travel

@@ -10,6 +10,11 @@ using Ship_Game.Ships;
 
 namespace Ship_Game
 {
+    // Ludoal fork: the three purses a colony's budget is split into. At namespace scope because
+    // more than one page drives them now - it was nested in the colony panel, which is what kept
+    // every other page from reusing the switches below.
+    public enum BudgetArea { Civilian, GroundDef, SpaceDef }
+
     public partial class Planet 
     {
         [StarData] public byte WantedPlatforms { get; private set; }
@@ -181,6 +186,55 @@ namespace Ship_Game
                 }
             }
             return orbitalList;
+        }
+
+        // ★ Ludoal fork: the three budget areas and the four switches a UI needs to drive them.
+        // They lived inside the colony panel, which meant any OTHER page wanting the same rail had
+        // to copy them - two mechanics for one setting. They belong to the colony.
+        public float BudgetAutoTarget(BudgetArea area)
+        {
+            PlanetBudget b = Budget;
+            if (b == null)
+                return 0f;
+
+            switch (area)
+            {
+                default:
+                case BudgetArea.Civilian:  return b.CivilianAlloc;
+                case BudgetArea.GroundDef: return b.GrdDefAlloc;
+                case BudgetArea.SpaceDef:  return b.SpcDefAlloc;
+            }
+        }
+
+        public bool IsBudgetManual(BudgetArea area)
+        {
+            switch (area)
+            {
+                default:
+                case BudgetArea.Civilian:  return ManualCivBudgetOn;
+                case BudgetArea.GroundDef: return ManualGrdBudgetOn;
+                case BudgetArea.SpaceDef:  return ManualSpcBudgetOn;
+            }
+        }
+
+        public void SetBudgetAmount(BudgetArea area, float amount)
+        {
+            switch (area)
+            {
+                case BudgetArea.Civilian:  SetManualCivBudget(amount);       break;
+                case BudgetArea.GroundDef: SetManualGroundDefBudget(amount); break;
+                case BudgetArea.SpaceDef:  SetManualSpaceDefBudget(amount);  break;
+            }
+        }
+
+        public void SetBudgetManual(BudgetArea area, bool manual)
+        {
+            switch (area)
+            {
+                case BudgetArea.Civilian:  SetManualCivBudgetOn(manual); break;
+                case BudgetArea.GroundDef: SetManualGrdBudgetOn(manual); break;
+                case BudgetArea.SpaceDef:  SetManualSpcBudgetOn(manual); break;
+            }
         }
 
         public int OrbitalsBeingBuilt(RoleName role) => OrbitalsBeingBuilt(role, Owner);
