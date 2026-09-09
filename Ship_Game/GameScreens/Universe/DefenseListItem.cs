@@ -1,3 +1,4 @@
+using System;                // Action, for the button handlers
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using SDGraphics;
@@ -93,7 +94,7 @@ namespace Ship_Game
             Cell(cols[1], P.Name, color);
             // the figure keeps clear of the lane its button rides in, so the two never overlap
             CellIn(Inset(cols[2].Rect), GarrisonText(P, Player), cols[2].Align, color);
-            CallTroops = Action(CallTroops, cols[2].Rect, "<", GameText.CallTroops, () =>
+            CallTroops = ActionButton(CallTroops, cols[2].Rect, "<", GameText.CallTroops, () =>
             {
                 if (Player.GetTroopShipForRebase(out Ship troop, P.Position, P.Name))
                 {
@@ -160,10 +161,10 @@ namespace Ship_Game
             SpaceDef.Greyed = !P.GovernorOn;
 
             CellIn(Inset(cols[6].Rect), PlatformsText(P), cols[6].Align, color);
-            AddPlatform = Action(AddPlatform, cols[6].Rect, "+", GameText.BuildAPlatformTheStrongest,
+            AddPlatform = ActionButton(AddPlatform, cols[6].Rect, "+", GameText.BuildAPlatformTheStrongest,
                                  () => Order(Player.BestPlatformWeCanBuild));
             CellIn(Inset(cols[7].Rect), StationsText(P), cols[7].Align, color);
-            AddStation = Action(AddStation, cols[7].Rect, "+", GameText.BuildAStationTheStrongest,
+            AddStation = ActionButton(AddStation, cols[7].Rect, "+", GameText.BuildAStationTheStrongest,
                                 () => Order(Player.BestStationWeCanBuild));
 
             // the buildings column shows WHICH, not how many - the question it answers is
@@ -210,7 +211,7 @@ namespace Ship_Game
         static Rectangle Inset(Rectangle r) => new Rectangle(r.X, r.Y, r.Width - ActionLane, r.Height);
 
         // ADDED ONCE then only moved, like the switches above
-        UIButton Action(UIButton b, Rectangle cell, string glyph, in LocalizedText tip, Action onClick)
+        UIButton ActionButton(UIButton b, Rectangle cell, string glyph, in LocalizedText tip, Action onClick)
         {
             if (b == null)
             {
