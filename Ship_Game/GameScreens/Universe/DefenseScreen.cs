@@ -93,11 +93,16 @@ namespace Ship_Game
 
             ColoniesSL = Add(new ScrollList<DefenseListItem>(Table.ListRect, RowH));
             ColoniesSL.EnableItemHighlight = true;
+            ColoniesSL.OnClick = OnColonyClicked;
             ColoniesSL.OnDoubleClick = OnColonyDoubleClicked;
             Table.ApplyHighlightTo(ColoniesSL);
 
             FillList();
         }
+
+        // a single click centres the map on the colony at the zoom already chosen, the way the
+        // Colonies tab and the patrol list both behave (maintainer feedback)
+        void OnColonyClicked(DefenseListItem item) => Universe.PanToPlanetKeepZoom(item.P);
 
         // Ludoal fork: the colony a row names opens on a double click, as it does on the Colonies
         // tab - the seat is armed BEFORE the snap so the colony wears this tab as its Esc origin.
@@ -188,6 +193,12 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, garrison);
             UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, platforms);
             UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, stations);
+            // ⚠ each of the three figure columns carries a button at its right end, and AutoSize
+            // only ever saw the figures: the lane is added here, from the row's own constant, or
+            // the button would sit on the number (the same lane the trade zones' padlock takes)
+            Table.Columns[2].Width += DefenseListItem.ActionLane;
+            Table.Columns[6].Width += DefenseListItem.ActionLane;
+            Table.Columns[7].Width += DefenseListItem.ActionLane;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 

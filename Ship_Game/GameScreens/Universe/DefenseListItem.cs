@@ -27,6 +27,13 @@ namespace Ship_Game
         FloatSlider GarrisonRail;
         UICheckBox SpaceDef;
 
+        // ★ the three act on the SAME row but not on the same kind of thing: "<" brings a troop
+        // that already exists here (the colony screen's Call Troops), "+" orders a hull that does
+        // not exist yet. Two signs for two gestures - one sign would read as one gesture
+        // (maintainer feedback).
+        UIButton CallTroops, AddPlatform, AddStation;
+        public const int ActionLane = 22; // kept at each figure column's right end, for its own button
+
         // the defensive buildings drawn in the last column, with the rect each icon occupies so
         // the row can name it on hover. Rebuilt on layout: a colony gains and loses buildings.
         Building[] Defences = Empty<Building>.Array;
@@ -34,6 +41,7 @@ namespace Ship_Game
 
         const int IconSize = 24;
         const int IconGap = 3;
+        const int ActionSize = 16;
 
         public DefenseListItem(DefenseScreen screen, Planet planet, Empire player)
         {
@@ -83,7 +91,20 @@ namespace Ship_Game
 
             Cell(cols[0], P.System.Name, color);
             Cell(cols[1], P.Name, color);
-            Cell(cols[2], GarrisonText(P, Player), color);
+            // the figure keeps clear of the lane its button rides in, so the two never overlap
+            CellIn(Inset(cols[2].Rect), GarrisonText(P, Player), cols[2].Align, color);
+            CallTroops = Action(CallTroops, cols[2].Rect, "<", GameText.CallTroops, () =>
+            {
+                if (Player.GetTroopShipForRebase(out Ship troop, P.Position, P.Name))
+                {
+                    Audio.GameAudio.EchoAffirmative();
+                    Screen.Universe.RunOnSimThread(() => troop.AI.OrderRebase(P, true));
+                }
+                else
+                {
+                    Audio.GameAudio.NegativeClick();
+                }
+            });
 
             // the rail and its switch share one cell: the switch says WHO decides, the rail WHAT
             // it aims for. The rail is greyed while the governor is off the militia, so the
@@ -138,8 +159,12 @@ namespace Ship_Game
             }
             SpaceDef.Greyed = !P.GovernorOn;
 
-            Cell(cols[6], PlatformsText(P), color);
-            Cell(cols[7], StationsText(P), color);
+            CellIn(Inset(cols[6].Rect), PlatformsText(P), cols[6].Align, color);
+            AddPlatform = Action(AddPlatform, cols[6].Rect, "+", GameText.BuildAPlatformTheStrongest,
+                                 () => Order(Player.BestPlatformWeCanBuild));
+            CellIn(Inset(cols[7].Rect), StationsText(P), cols[7].Align, color);
+            AddStation = Action(AddStation, cols[7].Rect, "+", GameText.BuildAStationTheStrongest,
+                                () => Order(Player.BestStationWeCanBuild));
 
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
@@ -173,9 +198,42 @@ namespace Ship_Game
         };
 
         UILabel Cell(UITable.Column c, string text, Color color)
+            => CellIn(c.Rect, text, c.Align, color);
+
+        UILabel CellIn(Rectangle rect, string text, TableAlign align, Color color)
         {
-            return Label(UITable.CellPos(Fonts.Arial12Bold, c.Rect, Y, Height, text, c.Align),
+            return Label(UITable.CellPos(Fonts.Arial12Bold, rect, Y, Height, text, align),
                          text, Fonts.Arial12Bold, color);
+        }
+
+        // the cell minus its button lane: a right-aligned figure would otherwise sit under it
+        static Rectangle Inset(Rectangle r) => new Rectangle(r.X, r.Y, r.Width - ActionLane, r.Height);
+
+        // ADDED ONCE then only moved, like the switches above
+        UIButton Action(UIButton b, Rectangle cell, string glyph, in LocalizedText tip, Action onClick)
+        {
+            if (b == null)
+            {
+                b = Add(new UIButton(ButtonStyle.Default, Vector2.Zero, glyph));
+                b.Tooltip = tip;
+                b.OnClick = _ => onClick();
+            }
+            b.SetAbsPos(cell.Right - ActionLane + 2, (int)(Y + Height / 2 - ActionSize / 2));
+            b.SetAbsSize(ActionSize + 2, ActionSize);
+            return b;
+        }
+
+        // ordering an orbital goes through the planet's own guard: over the limit, nothing happens
+        // and the click says so rather than queueing a hull that would be refused
+        void Order(IShipDesign orbital)
+        {
+            if (orbital == null || P.IsOutOfOrbitalsLimit(orbital))
+            {
+                Audio.GameAudio.NegativeClick();
+                return;
+            }
+            Audio.GameAudio.AffirmativeClick();
+            Screen.Universe.RunOnSimThread(() => P.AddOrbital(orbital));
         }
 
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
