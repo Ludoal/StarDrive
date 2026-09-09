@@ -414,16 +414,35 @@ namespace Ship_Game
                         new Vector2(valueX + Fonts.Arial12Bold.TextWidth(value) + 8, y), suffixColor);
                 y += Fonts.Arial12Bold.LineSpacing + 8;
             }
+            // a store's total says how much the empire holds; what it does NOT say is whether any
+            // one colony is stocked. The average under each store answers that at a glance, and it
+            // rides as a SUB-line - indented, dimmer, tighter - so it reads as a detail of the row
+            // above rather than a sixth figure of its own (maintainer feedback).
+            void SubRow(float perColony)
+            {
+                batch.DrawString(Fonts.Arial12, "per colony:", new Vector2(labelX + 12, y), Color.Gray);
+                batch.DrawString(Fonts.Arial12, perColony.String(0), new Vector2(valueX, y), Color.Gray);
+                y += Fonts.Arial12.LineSpacing + 2;
+            }
+
             Row("Colonies:",   planets.Count.ToString());
             Row("Population:", totalPop.String(1) + "B");
             Row("Growth:",     "+" + totalGrowth.String(2) + "B/turn");
             if (!cyber)
+            {
                 Row("Food stock:", food.String(0),
                     (foodNet >= 0f ? "+" : "") + foodNet.String(1) + "/turn",
                     foodNet >= 0f ? Color.LightGreen : Color.Red);
+                // ⚠ an empire with no colony is a legitimate state (defeated but alive), and it is
+                // exactly the one that would divide by nothing
+                if (planets.Count > 0)
+                    SubRow(food / planets.Count);
+            }
             Row("Prod stock:", prod.String(0),
                 (prodNet >= 0f ? "+" : "") + prodNet.String(1) + "/turn",
                 prodNet >= 0f ? Color.LightGreen : Color.Red);
+            if (planets.Count > 0)
+                SubRow(prod / planets.Count);
         }
 
         void DrawTileIcons(PlanetGridSquare pgs, Rectangle rect)
