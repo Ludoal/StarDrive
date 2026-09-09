@@ -57,13 +57,13 @@ namespace Ship_Game
                 // width because it carries controls rather than a figure
                 new UITable.Column { Title = "Auto-train", Width = 200, Align = TableAlign.Center,
                                      SepColor = MutedSep },
-                // who runs the colony, one bold letter in the governor's own colour - the same
-                // mark the Colonies tab uses, so one glance reads the same thing on both pages
-                new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true },
-                // and whether that governor also runs the ORBIT: the switch is greyed on a colony
-                // that has no governor, since there would be nobody to honour it
-                new UITable.Column { Title = Localizer.Token(GameText.DvDefenseSpaceDef), Width = 60,
-                                     Align = TableAlign.Center, SepColor = MutedSep,
+                // ONE column for one question: who runs this colony, and does he run its orbit
+                // too (maintainer feedback). The governor's type in a bold letter of its own
+                // colour - the mark the Colonies tab uses - and beside it the switch, which is
+                // simply ABSENT where there is no governor: there would be nobody to honour it,
+                // and a greyed box still asks to be read.
+                new UITable.Column { Title = Localizer.Token(GameText.DvDefenseSpaceDef), Width = 90,
+                                     Align = TableAlign.Center, Sortable = true,
                                      Tip = Localizer.Token(GameText.DvDefenseSpaceDefTip) },
                 // ⚠ the shared tokens carry a trailing colon for their own screens; a table header
                 // wears none, and trimming beats a second token saying the same word
@@ -166,8 +166,8 @@ namespace Ship_Game
             {
                 case 2:  return planets.Sorted(ascending, p => p.CountEmpireTroops(Player));
                 case 4:  return planets.Sorted(ascending, p => (int)p.CType);
-                case 6:  return planets.Sorted(ascending, p => p.NumPlatforms);
-                case 7:  return planets.Sorted(ascending, p => p.NumStations);
+                case 5:  return planets.Sorted(ascending, p => p.NumPlatforms);
+                case 6:  return planets.Sorted(ascending, p => p.NumStations);
                 case 1:  return planets.Sorted(ascending, p => p.Name);
                 default: return planets.Sorted(ascending, p => p.System.Name);
             }
@@ -198,14 +198,14 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, names);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, garrison);
-            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, platforms);
-            UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, stations);
+            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, platforms);
+            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, stations);
             // ⚠ each of the three figure columns carries a button at its right end, and AutoSize
             // only ever saw the figures: the lane is added here, from the row's own constant, or
             // the button would sit on the number (the same lane the trade zones' padlock takes)
             Table.Columns[2].Width += DefenseListItem.ActionLane;
+            Table.Columns[5].Width += DefenseListItem.ActionLane;
             Table.Columns[6].Width += DefenseListItem.ActionLane;
-            Table.Columns[7].Width += DefenseListItem.ActionLane;
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 

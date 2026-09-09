@@ -29450,9 +29450,9 @@ DvDefenseGarrison:
  FRA: "Garnison"
 DvDefenseSpaceDef:
  Id: 30370
- ENG: "Sp. Def."
- FRA: "Déf. orb."
+ ENG: "Gov. Sp. Def."
+ FRA: "Gouv. Déf. orb."
 DvDefenseSpaceDefTip:
  Id: 30371
- ENG: "Space Defense: the governor builds and replaces this colony's orbital platforms and stations. Greyed while the colony has no governor."
- FRA: "Défense orbitale : le gouverneur construit et remplace les plateformes et stations de cette colonie. Grisé tant que la colonie n'a pas de gouverneur."
+ ENG: "Governor Manages Space Defense: the letter is the governor's type, the switch hands him this colony's orbital platforms and stations. A colony with no governor shows no switch."
+ FRA: "Le gouverneur gère la défense orbitale : la lettre donne son type, la case lui confie les plateformes et stations de cette colonie. Une colonie sans gouverneur n'affiche pas de case."

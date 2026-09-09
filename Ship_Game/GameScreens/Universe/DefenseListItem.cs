@@ -133,35 +133,37 @@ namespace Ship_Game
             }
             GarrisonRail.Greyed = !P.AutoBuildTroops;
 
-            // one bold letter in the governor's own colour, the mark the Colonies tab already uses
-            Cell(cols[4], GovernorLetter(P), Colors.Governor(P.CType));
+            // ONE cell, one question: the governor's letter, and beside it the switch that hands
+            // him the orbit. No governor, no switch at all - a greyed box still asks to be read.
+            Rectangle gov = cols[4].Rect;
+            string letter = GovernorLetter(P);
+            int letterX = gov.X + gov.Width / 2 - 18;
+            Label(new Vector2(letterX, Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f).ToFloored(),
+                  letter, Fonts.Arial12Bold, Colors.Governor(P.CType));
 
-            // and whether that governor runs the ORBIT too. Greyed without a governor: there would
-            // be nobody to honour the switch, and a live-looking box that changes nothing lies.
-            Rectangle sp = cols[5].Rect;
             int boxY = (int)(Y + Height / 2 - 6);
             if (SpaceDef == null)
             {
-                SpaceDef = Add(new UICheckBox(sp.X + sp.Width / 2 - 6, boxY, () => P.GovOrbitals,
+                SpaceDef = Add(new UICheckBox(gov.X + gov.Width / 2 + 6, boxY, () => P.GovOrbitals,
                                               v => Screen.Universe.RunOnSimThread(() => P.GovOrbitals = v),
                                               Fonts.Arial12Bold, "", GameText.DvDefenseSpaceDefTip));
             }
             else
             {
-                SpaceDef.SetAbsPos(sp.X + sp.Width / 2 - 6, boxY);
+                SpaceDef.SetAbsPos(gov.X + gov.Width / 2 + 6, boxY);
             }
-            SpaceDef.Greyed = !P.GovernorOn;
+            SpaceDef.Visible = P.GovernorOn;
 
-            CellIn(Inset(cols[6].Rect), PlatformsText(P), cols[6].Align, color);
-            AddPlatformRect = GlyphRect(cols[6].Rect);
-            CellIn(Inset(cols[7].Rect), StationsText(P), cols[7].Align, color);
-            AddStationRect = GlyphRect(cols[7].Rect);
+            CellIn(Inset(cols[5].Rect), PlatformsText(P), cols[5].Align, color);
+            AddPlatformRect = GlyphRect(cols[5].Rect);
+            CellIn(Inset(cols[6].Rect), StationsText(P), cols[6].Align, color);
+            AddStationRect = GlyphRect(cols[6].Rect);
 
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
             Defences = P.FilterBuildings(IsDefensive);
             DefenceRects = new Rectangle[Defences.Length];
-            Rectangle band = cols[8].Rect;
+            Rectangle band = cols[7].Rect;
             int lane = band.X + CellPad;
             for (int i = 0; i < Defences.Length; ++i)
             {
