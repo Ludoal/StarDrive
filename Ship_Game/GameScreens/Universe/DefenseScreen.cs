@@ -30,8 +30,9 @@ namespace Ship_Game
         static int LastSortCol = 0;    // session-persistent, like the other Empire tables
         static bool LastSortAsc = true;
 
-        const int RowH = 30;
-        const int RowPitch = 34;
+        // two rails stacked in the budget cell set the row's height: one line each, plus air
+        const int RowH = 42;
+        const int RowPitch = 46;
 
         public DefenseScreen(UniverseScreen parent)
             : base(parent, toPause: parent)
@@ -73,6 +74,11 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Stations).TrimEnd(':', ' '), Align = TableAlign.Number,
                                      Sortable = true, SepColor = MutedSep,
                                      Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
+                // the two purses that pay for what this page shows: the ground troops above,
+                // the orbitals below - stacked, because they answer the same question at two
+                // altitudes and a player reads them together (maintainer feedback)
+                new UITable.Column { Title = Localizer.Token(GameText.Budget), Width = 210,
+                                     Align = TableAlign.Center, SepColor = MutedSep },
                 // WHICH buildings, not how many: the page answers "what is missing here"
                 new UITable.Column { Title = Localizer.Token(GameText.Defense), Width = 220, Align = TableAlign.Center },
             });
@@ -254,6 +260,8 @@ namespace Ship_Game
                 h = h * 31 + p.NumBuildings;
                 h = h * 31 + (int)p.CType;
                 h = h * 31 + (p.GovOrbitals ? 1 : 0);
+                h = h * 31 + (p.IsBudgetManual(BudgetArea.GroundDef) ? 1 : 0);
+                h = h * 31 + (p.IsBudgetManual(BudgetArea.SpaceDef) ? 1 : 0);
             }
             return h;
         }

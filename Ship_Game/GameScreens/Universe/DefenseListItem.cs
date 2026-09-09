@@ -28,6 +28,10 @@ namespace Ship_Game
         FloatSlider GarrisonRail;
         UICheckBox SpaceDef;
 
+        // the two purses, one rail and one Auto box each, stacked in a single cell
+        UICheckBox AutoGrd, AutoSpc;
+        FloatSlider GrdRail, SpcRail;
+
         // ★ the three act on the SAME row but not on the same kind of thing: "<" brings a troop
         // that already exists here (the colony screen's Call Troops), "+" orders a hull that does
         // not exist yet. Two signs for two gestures - one sign would read as one gesture
@@ -159,11 +163,18 @@ namespace Ship_Game
             CellIn(Inset(cols[6].Rect), StationsText(P), cols[6].Align, color);
             AddStationRect = GlyphRect(cols[6].Rect);
 
+            // the two budget rails, one above the other: ground troops first, orbitals under
+            Rectangle purse = cols[7].Rect;
+            int topY    = (int)(Y + Height / 2 - 15);
+            int lowerY  = (int)(Y + Height / 2 + 1);
+            AutoGrd = Purse(AutoGrd, ref GrdRail, purse, topY, BudgetArea.GroundDef);
+            AutoSpc = Purse(AutoSpc, ref SpcRail, purse, lowerY, BudgetArea.SpaceDef);
+
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
             Defences = P.FilterBuildings(IsDefensive);
             DefenceRects = new Rectangle[Defences.Length];
-            Rectangle band = cols[7].Rect;
+            Rectangle band = cols[8].Rect;
             int lane = band.X + CellPad;
             for (int i = 0; i < Defences.Length; ++i)
             {
@@ -201,6 +212,51 @@ namespace Ship_Game
 
         // the cell minus its button lane: a right-aligned figure would otherwise sit under it
         static Rectangle Inset(Rectangle r) => new Rectangle(r.X, r.Y, r.Width - ActionLane, r.Height);
+
+        // ONE rail and its Auto box, seated on the colony's own budget switches - the same
+        // mechanics the colony panel drives, not a copy of them. Ticking Auto hands the purse back
+        // to the governor; unticking takes it over at the allocation it has right now, so the
+        // amount never jumps at the moment the player takes control.
+        UICheckBox Purse(UICheckBox box, ref FloatSlider rail, Rectangle cell, int y, BudgetArea area)
+        {
+            if (box == null)
+            {
+                float seed = P.BudgetAutoTarget(area);
+                rail = Add(new FloatSlider(SliderStyle.Decimal1,
+                                           new Rectangle(cell.X + CellPad + 22, y, cell.Width - CellPad - 30, 12),
+                                           "", 0f, (seed * 2f).LowerBound(20f), seed));
+                rail.TrackYOffset = 0;
+                rail.ValueLane = 34;
+                BudgetArea a = area; // captured once, so the handler never reads a moving local
+                rail.OnChange = sl =>
+                {
+                    float amount = sl.AbsoluteValue;
+                    if (P.IsBudgetManual(a))
+                        Screen.Universe.RunOnSimThread(() => P.SetBudgetAmount(a, amount));
+                };
+                box = Add(new UICheckBox(cell.X + CellPad, y, () => !P.IsBudgetManual(a),
+                                         auto => Screen.Universe.RunOnSimThread(() =>
+                                         {
+                                             bool manual = !auto;
+                                             P.SetBudgetAmount(a, manual ? P.BudgetAutoTarget(a) : 0f);
+                                             P.SetBudgetManual(a, manual);
+                                             if (!manual)
+                                                 P.Budget?.SnapToTarget();
+                                         }),
+                                         Fonts.Arial12Bold, "", GameText.OverrideThisBudgetAndSet));
+            }
+            else
+            {
+                box.SetAbsPos(cell.X + CellPad, y);
+                rail.SetAbsPos(cell.X + CellPad + 22, y);
+                rail.Width = cell.Width - CellPad - 30;
+            }
+            // a governed purse shows what the governor allocates; a taken-over one keeps the
+            // player's number - the rail follows the colony either way
+            if (!P.IsBudgetManual(area))
+                rail.AbsoluteValue = P.BudgetAutoTarget(area);
+            return box;
+        }
 
         // the glyph's own square at a figure column's right end, with air on both sides
         Rectangle GlyphRect(Rectangle cell)
