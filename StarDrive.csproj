@@ -966,6 +966,8 @@
     <Compile Include="Ship_Game\Debug\DebugPrimitives.cs" />
     <Compile Include="Ship_Game\OrbitalAssetsUIElement.cs" />
     <Compile Include="Ship_Game\GameScreens\Universe\ColoniesListItem.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\DefenseListItem.cs" />
+    <Compile Include="Ship_Game\GameScreens\Universe\DefenseScreen.cs" />
     <Compile Include="Ship_Game\StatTracker.cs" />
     <Compile Include="Ship_Game\Snapshot.cs" />
     <Compile Include="Ship_Game\ShipGroup.cs" />

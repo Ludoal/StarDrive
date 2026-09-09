@@ -704,6 +704,14 @@ namespace Ship_Game
             return BuildingList.Count(predicate);
         }
 
+        // Ludoal fork: the buildings themselves, for a page that shows WHICH rather than how many
+        // (the Defense tab lists a colony's protections). The list itself stays protected - a
+        // caller gets a copy it cannot use to add or remove.
+        public Building[] FilterBuildings(Predicate<Building> predicate)
+        {
+            return BuildingList.Filter(predicate);
+        }
+
         public float SumBuildings(Func<Building, float> selector)
         {
             return BuildingList.Sum(selector);

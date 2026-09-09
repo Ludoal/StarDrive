@@ -158,13 +158,14 @@ namespace Ship_Game.GameScreens
         // Ludoal fork: the third group of the unified top bar. Same frame and tab row again.
         public static readonly LocalizedText[] EmpireTabTitles =
         {
-            "Colonies", "Economy", "Research", "Automation", "Policies"
+            "Colonies", "Economy", "Defense", "Research", "Automation", "Policies"
         };
 
         public static readonly string[] EmpireTabTips =
         {
             Localizer.Token(GameText.DvEmpireTabTipColonies),
             Localizer.Token(GameText.DvEmpireTabTipEconomy),
+            Localizer.Token(GameText.DvEmpireTabTipDefense),
             Localizer.Token(GameText.DvEmpireTabTipResearch),
             Localizer.Token(GameText.DvEmpireTabTipAutomation),
             Localizer.Token(GameText.DvEmpireTabTipPolicies),
@@ -173,7 +174,7 @@ namespace Ship_Game.GameScreens
         // read off the top bar's own tooltips and each screen's closing key, not guessed
         // Automation ships unbound and Policies holds H (maintainer feedback) - the standing
         // orders are opened far more often. An empty entry means "no key" here, as in the group row.
-        public static readonly string[] EmpireTabKeys = { "U", "T", "R", "", "H" };
+        public static readonly string[] EmpireTabKeys = { "U", "T", "", "R", "", "H" };
 
         // Ludoal fork: ONE factory and ONE switch for the Empire group, as in the Galaxy group.
         // ⚠ a per-screen copy of this switch is how two default cases end up disagreeing, and a
@@ -182,10 +183,11 @@ namespace Ship_Game.GameScreens
         {
             0 => new EmpireManagementScreen(u, u.EmpireUI),
             1 => Economy(u),
-            2 => new ResearchScreenNew(u, u, u.EmpireUI),
+            2 => new DefenseScreen(u),
+            3 => new ResearchScreenNew(u, u, u.EmpireUI),
             // Ludoal fork: Automation carries its OWN case. ⚠ a default that swallows every
             // unknown index silently opens the wrong screen the day a tab is added.
-            3 => new AutomationScreen(u),
+            4 => new AutomationScreen(u),
             _ => new PoliciesScreen(u),
         };
 
@@ -673,8 +675,8 @@ namespace Ship_Game.GameScreens
 
         static readonly Type[] EmpireTabScreens =
         {
-            typeof(EmpireManagementScreen), typeof(BudgetScreen), typeof(ResearchScreenNew),
-            typeof(AutomationScreen), typeof(PoliciesScreen),
+            typeof(EmpireManagementScreen), typeof(BudgetScreen), typeof(DefenseScreen),
+            typeof(ResearchScreenNew), typeof(AutomationScreen), typeof(PoliciesScreen),
         };
 
         // -1 for a screen that is not one of the tabs: never equal to a real index, so a
