@@ -773,20 +773,25 @@ namespace Ship_Game
             double len = a.Distance(b);
             if (len < 1.0)
                 return;
-            // bench 455: a 3px breath between dashes so neighbouring slots never touch;
-            // the stroke is the map's route width (maintainer feedback: 1 px, a lighter map)
-            const double Slot = 14.0, Dash = 11.0, Period = Slot * 3;
+            // ⚠ the dash cycle used to reserve two slots in three for the OTHER goods, because
+            // the three shared one line: eleven pixels of dash for thirty-one of gap. Now that each
+            // goods has its own lane, it no longer yields anything - it dashes on its own rail, and
+            // a short gap keeps it reading as a line at one pixel (maintainer feedback, bench 620).
+            const double Slot = 5.0, Dash = 11.0, Period = 16.0;
             Vector2d dir = (b - a) / len;
-            // ★ a line is stretched from its start on ONE side of its axis, the side depending on
-            // which way it was drawn. Two runs between the same pair in opposite senses - food out,
-            // production back - therefore land either side of the axis instead of sharing it, and
-            // at one pixel the gap is no longer covered by the stroke (bench 620). Half a stroke
-            // back puts the dash astride its own axis, so a pair of opposite runs interleaves again.
-            Vector2d astride = new Vector2d(dir.Y, -dir.X) * (RouteLineWidth * 0.5);
+            // ★ EACH GOODS RIDES ITS OWN LANE, a fixed offset to the side of the shared axis
+            // (maintainer feedback, bench 620). The colours used to fall apart by accident: a line
+            // is stretched from its start on ONE side of its axis, so a run drawn A to B and one
+            // drawn B to A landed either side of it - readable while the stroke was two pixels,
+            // gone at one, where the two colours collapse onto each other. The separation is now
+            // asked for rather than inherited, so it holds whatever the stroke and whichever way
+            // each run happens to be traced.
+            const double Lane = 2.0; // between two lanes, at a one pixel stroke
+            Vector2d lane = new Vector2d(-dir.Y, dir.X) * ((slot - 1) * Lane);
             for (double t = slot * Slot; t < len; t += Period)
             {
                 double t2 = Math.Min(t + Dash, len);
-                DrawLine(a + dir * t + astride, a + dir * t2 + astride, color, RouteLineWidth);
+                DrawLine(a + dir * t + lane, a + dir * t2 + lane, color, RouteLineWidth);
             }
         }
 
