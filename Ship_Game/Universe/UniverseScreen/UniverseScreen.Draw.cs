@@ -736,7 +736,15 @@ namespace Ship_Game
                         // bench 454: WIDE DASHES on a shared 3-slot cycle - each goods owns
                         // one dash in three, so overlapping routes interleave instead of
                         // blending their colors
-                        DrawDashedRouteProjected(from.Position, to.Position, RouteColor(g.Trade.Goods), RouteSlot(g.Trade.Goods));
+                        // ★ and every colour must count its slot from the SAME end of the trail
+                        // (bench 620): a pair of worlds trading both ways is TWO entries, keyed on
+                        // an ORDERED pair, so one of them would start its dash at the far end - and
+                        // the gap between two colours becomes a function of the route's LENGTH
+                        // rather than the fixed step, clean on one route and overlapped on the next.
+                        // The pair is ordered here, so both senses lay their dashes on one trail.
+                        Planet head = from.Id <= to.Id ? from : to;
+                        Planet tail = from.Id <= to.Id ? to : from;
+                        DrawDashedRouteProjected(head.Position, tail.Position, RouteColor(g.Trade.Goods), RouteSlot(g.Trade.Goods));
                     }
                 }
             }
