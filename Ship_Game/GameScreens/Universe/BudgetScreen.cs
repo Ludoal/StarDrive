@@ -42,7 +42,7 @@ namespace Ship_Game.GameScreens
 
         public UITable Table;    // the shared table charte owns geometry, headers and rules
         // static: the sort survives the screen for the session
-        static int SortCol = 6;  // NET by default
+        static int SortCol = 4;  // NET by default (its index moved when the derived columns went)
         static bool SortDesc = true;
         static bool SortByName;
 
@@ -182,20 +182,21 @@ namespace Ship_Game.GameScreens
                     => Cell(col, ColorText(cols[col].Coloring, getValue, f => f.MoneyString()));
 
                 Cell(1, l => { l.Color = UITable.ValueColor(TableColor.Plain, Planet.PopulationBillion); return $"{Planet.PopulationBillion:0.00}"; });
-                ValueCell(2, () => PopIncome(Planet));
-                ValueCell(3, () => BldgIncome(Planet));
-                var gross = ValueCell(4, () => Planet.Money.GrossRevenue);
+                var gross = ValueCell(2, () => Planet.Money.GrossRevenue);
                 // the tax rate is already baked into the income columns; the derivation
                 // lives in the tooltip
                 float baseRate = Planet.Owner != null ? Planet.Owner.data.TaxRate * 100f : 0f;
                 gross.Tooltip = $"pop {PopIncome(Planet).MoneyString()} + buildings {BldgIncome(Planet).MoneyString()}" +
                                 $" — effective tax {Planet.Money.TaxRate * 100f:0.#}% (empire {baseRate:0.#}% × local bonus)";
-                ValueCell(5, () => -Planet.Money.Maintenance);
-                ValueCell(6, () => -Planet.Money.TroopMaint);
-                ValueCell(7, () => NetIncome(Planet));
-                Cell(8, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
-                ValueCell(9, () => GovExpense(Planet));
-                ValueCell(10, () => BudgetLeft(Planet));
+                ValueCell(3, () => -Planet.Money.Maintenance);
+                ValueCell(4, () => -Planet.Money.TroopMaint);
+                ValueCell(5, () => NetIncome(Planet));
+                // what is LEFT of the allocation rides in the budget's own tooltip: it is the
+                // allocation minus what the governor spends, and a derived figure does not need
+                // a column of its own (maintainer feedback)
+                var budget = Cell(6, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
+                budget.Tooltip = $"Allocated by the governor - {BudgetLeft(Planet).MoneyString()} still unspent";
+                ValueCell(7, () => GovExpense(Planet));
 
                 base.PerformLayout();
             }
@@ -207,15 +208,12 @@ namespace Ship_Game.GameScreens
         static readonly Func<Planet, float>[] ColValue =
         {
             p => p.PopulationBillion,
-            EconColonyItem.PopIncome,
-            EconColonyItem.BldgIncome,
             p => p.Money.GrossRevenue,
             p => -p.Money.Maintenance,
             p => -p.Money.TroopMaint,
             EconColonyItem.NetIncome,
             EconColonyItem.BudgetAlloc,
             EconColonyItem.GovExpense,
-            EconColonyItem.BudgetLeft,
         };
 
         public override void LoadContent()
@@ -242,15 +240,18 @@ namespace Ship_Game.GameScreens
             {
                 new UITable.Column { Title = "Colony", Sortable = true },
                 new UITable.Column { Title = "Pop",       Align = TableAlign.Number, Sortable = true, Tip = "Population, in billions" },
-                new UITable.Column { Title = "Pop Inc",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the colonists" },
-                new UITable.Column { Title = "Bldg Inc",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Tax income from the buildings" },
+                // ⚠ the two halves of Gross - what the colonists pay and what the buildings pay -
+                // are a DERIVATION, and they were also a false friend: the buildings' half was
+                // posed as "gross minus colonists", so it never matched the per-building figures
+                // the Colony list shows, which are net of upkeep. The split lives in the tooltip
+                // now, where a reader looks for it and cannot mistake it for a sum (maintainer
+                // feedback).
                 new UITable.Column { Title = "Gross",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Gross tax revenue (colonists + buildings)" },
                 new UITable.Column { Title = "Bldg Upk",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
                 new UITable.Column { Title = "Troop Upk", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 new UITable.Column { Title = "Budget",    Align = TableAlign.Number, Sortable = true, Tip = "Budget allocated by the governor" },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
-                new UITable.Column { Title = "Left",      Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Tip = "Budget left after the governor's spending" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon
             // lane); a numeric column takes its own title or a money figure, whichever is wider
