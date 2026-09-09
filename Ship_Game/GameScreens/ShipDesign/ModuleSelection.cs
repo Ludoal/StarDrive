@@ -254,7 +254,12 @@ namespace Ship_Game
 
         // ===== Ludoal fork: comparator v2 =====
         // Stats start at a fixed offset from the panel top so both panels align.
-        const float StatsStartRel = 195f;
+        // ⚠ this offset IS the description's height: the header keeps a fixed slot, and what is
+        // left of it above the stats is what the description may use. Four lines were given back
+        // to it (maintainer feedback) - most module texts were being cut mid-sentence while the
+        // panel's foot stood empty.
+        const float StatsStartRel = 195f + 4 * DescLine;
+        const float DescLine = 15f; // Arial12's line spacing, the description's own font
 
         // A stat row captured by collect-mode instead of being drawn. The existing
         // Draw* stat methods stay the single source of stat expressions; with
@@ -673,6 +678,14 @@ namespace Ship_Game
             DrawModuleData(batch, mod, ActiveModSubMenu);
         }
 
+        // the block the description occupies, for the hover that hands back the full text
+        bool DescriptionHover(Submenu panel, Vector2 at, string shown)
+        {
+            int lines = shown.Split('\n').Length;
+            var block = new RectF(at.X, at.Y, panel.Width - 20, lines * Fonts.Arial12.LineSpacing);
+            return block.HitTest(Screen.Input.CursorPosition);
+        }
+
         // Ludoal fork: rendering extracted from DrawActiveModuleData and parameterized by
         // panel so the comparison window can reuse it verbatim.
         void DrawModuleData(SpriteBatch batch, ShipModule mod, Submenu panel)
@@ -821,6 +834,10 @@ namespace Ship_Game
                 txt = string.Join("\n", descLines, 0, maxLines) + "...";
 
             batch.DrawString(Fonts.Arial12, txt, modTitlePos, Color.White);
+            // ★ a description that was cut hands the whole of itself back on hover, and ONLY when
+            // it was cut - an untouched text would give a tooltip repeating what is on screen.
+            if (txt.EndsWith("...") && DescriptionHover(panel, modTitlePos, txt))
+                ToolTip.CreateTooltip(moduleTemplate.DescriptionText.Text, maxWidth: panel.Width);
             modTitlePos.Y = panel.Y + StatsStartRel;
             float starty = modTitlePos.Y;
             // Ludoal fork: same origin as the comparison union, so the numbers hold their place
