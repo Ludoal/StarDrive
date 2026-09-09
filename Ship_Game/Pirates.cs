@@ -232,8 +232,8 @@ namespace Ship_Game
         // multiplier on top, untouched from the base game.
         float TributeModifier => Universe.P.PirateStrength switch
         {
-            PirateStrengthSetting.Pitiful => 0.5f,
-            PirateStrengthSetting.Weak    => 0.75f,
+            PirateStrengthSetting.Pitiful => 0.6f,
+            PirateStrengthSetting.Weak    => 0.8f,
             _                             => 1f,
         };
 
@@ -245,11 +245,13 @@ namespace Ship_Game
         // first, raising this one would tune a term the game may never reach.
         float BiteModifier => Universe.P.PirateStrength switch
         {
-            // the bottom of the player's own scale, so the notch slopes the same way at the low
-            // end of all three settings; the top stays flat at 1, a raid never rising above the
-            // defence already on site
+            // ★ ONE scale for the whole notch: the low end slopes the same way here, on the type
+            // die and on the tribute, so a player learns a single ladder. ⚠ the top stays FLAT at
+            // 1 - a raid never rises above the defence already on site, since it spawns with no
+            // reaction time. It may take 1.2 and 1.4 later, once the bench has told us whether the
+            // hull limit of ten per level is the ceiling that really bites.
             PirateStrengthSetting.Pitiful => 0.6f,
-            PirateStrengthSetting.Weak    => 0.75f,
+            PirateStrengthSetting.Weak    => 0.8f,
             _                             => 1f,
         };
 
