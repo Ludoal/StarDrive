@@ -32,8 +32,10 @@ namespace Ship_Game
         // that already exists here (the colony screen's Call Troops), "+" orders a hull that does
         // not exist yet. Two signs for two gestures - one sign would read as one gesture
         // (maintainer feedback).
-        UIButton CallTroops, AddPlatform, AddStation;
-        public const int ActionLane = 22; // kept at each figure column's right end, for its own button
+        // ⚠ drawn as flat GLYPHS, not buttons: a round plate on every figure of every row turns a
+        // table into a control panel, and the eye stops finding the numbers (maintainer feedback).
+        Rectangle CallTroopsRect, AddPlatformRect, AddStationRect;
+        public const int ActionLane = 26; // each figure column's right end: the glyph plus its air
 
         // the defensive buildings drawn in the last column, with the rect each icon occupies so
         // the row can name it on hover. Rebuilt on layout: a colony gains and loses buildings.
@@ -43,6 +45,7 @@ namespace Ship_Game
         const int IconSize = 24;
         const int IconGap = 3;
         const int ActionSize = 16;
+        const int CellPad = 10;   // air at a cell's left edge, so nothing starts on the rule
 
         public DefenseListItem(DefenseScreen screen, Planet planet, Empire player)
         {
@@ -92,20 +95,9 @@ namespace Ship_Game
 
             Cell(cols[0], P.System.Name, color);
             Cell(cols[1], P.Name, color);
-            // the figure keeps clear of the lane its button rides in, so the two never overlap
+            // the figure keeps clear of the lane its glyph rides in, so the two never touch
             CellIn(Inset(cols[2].Rect), GarrisonText(P, Player), cols[2].Align, color);
-            CallTroops = ActionButton(CallTroops, cols[2].Rect, "<", GameText.CallTroops, () =>
-            {
-                if (Player.GetTroopShipForRebase(out Ship troop, P.Position, P.Name))
-                {
-                    Audio.GameAudio.EchoAffirmative();
-                    Screen.Universe.RunOnSimThread(() => troop.AI.OrderRebase(P, true));
-                }
-                else
-                {
-                    Audio.GameAudio.NegativeClick();
-                }
-            });
+            CallTroopsRect = GlyphRect(cols[2].Rect);
 
             // the rail and its switch share one cell: the switch says WHO decides, the rail WHAT
             // it aims for. The rail is greyed while the governor is off the militia, so the
@@ -114,11 +106,11 @@ namespace Ship_Game
             int railY = (int)(Y + Height / 2 - 9);
             if (AutoTrain == null)
             {
-                AutoTrain = Add(new UICheckBox(auto.X + 4, railY, () => P.AutoBuildTroops,
+                AutoTrain = Add(new UICheckBox(auto.X + CellPad, railY, () => P.AutoBuildTroops,
                                                v => Screen.Universe.RunOnSimThread(() => P.AutoBuildTroops = v),
                                                Fonts.Arial12Bold, "", GameText.TheGovernorWillCreateA));
                 GarrisonRail = Add(new FloatSlider(SliderStyle.Decimal,
-                                                   new Rectangle(auto.X + 26, railY, auto.Width - 34, 18),
+                                                   new Rectangle(auto.X + CellPad + 22, railY, auto.Width - CellPad - 30, 18),
                                                    "", 0, MaxGarrison, P.GarrisonSize));
                 // the track rides at the slider's own mid-height, so no offset on a row this
                 // short; and the value sits nearer its rail than the default lane, which is cut
@@ -133,9 +125,9 @@ namespace Ship_Game
             }
             else
             {
-                AutoTrain.SetAbsPos(auto.X + 4, railY);
-                GarrisonRail.SetAbsPos(auto.X + 26, railY);
-                GarrisonRail.Width = auto.Width - 34;
+                AutoTrain.SetAbsPos(auto.X + CellPad, railY);
+                GarrisonRail.SetAbsPos(auto.X + CellPad + 22, railY);
+                GarrisonRail.Width = auto.Width - CellPad - 30;
                 // the rail follows the colony while the page is open: the governor moves it too
                 GarrisonRail.AbsoluteValue = P.GarrisonSize;
             }
@@ -161,18 +153,16 @@ namespace Ship_Game
             SpaceDef.Greyed = !P.GovernorOn;
 
             CellIn(Inset(cols[6].Rect), PlatformsText(P), cols[6].Align, color);
-            AddPlatform = ActionButton(AddPlatform, cols[6].Rect, "+", GameText.BuildAPlatformTheStrongest,
-                                 () => Order(Player.BestPlatformWeCanBuild));
+            AddPlatformRect = GlyphRect(cols[6].Rect);
             CellIn(Inset(cols[7].Rect), StationsText(P), cols[7].Align, color);
-            AddStation = ActionButton(AddStation, cols[7].Rect, "+", GameText.BuildAStationTheStrongest,
-                                () => Order(Player.BestStationWeCanBuild));
+            AddStationRect = GlyphRect(cols[7].Rect);
 
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
             Defences = P.FilterBuildings(IsDefensive);
             DefenceRects = new Rectangle[Defences.Length];
             Rectangle band = cols[8].Rect;
-            int lane = band.X + 4;
+            int lane = band.X + CellPad;
             for (int i = 0; i < Defences.Length; ++i)
             {
                 DefenceRects[i] = new Rectangle(lane, (int)(Y + Height / 2 - IconSize / 2), IconSize, IconSize);
@@ -210,18 +200,46 @@ namespace Ship_Game
         // the cell minus its button lane: a right-aligned figure would otherwise sit under it
         static Rectangle Inset(Rectangle r) => new Rectangle(r.X, r.Y, r.Width - ActionLane, r.Height);
 
-        // ADDED ONCE then only moved, like the switches above
-        UIButton ActionButton(UIButton b, Rectangle cell, string glyph, in LocalizedText tip, Action onClick)
+        // the glyph's own square at a figure column's right end, with air on both sides
+        Rectangle GlyphRect(Rectangle cell)
+            => new Rectangle(cell.Right - ActionLane + 5, (int)(Y + Height / 2 - ActionSize / 2),
+                             ActionSize, ActionSize);
+
+        void DrawGlyph(SpriteBatch batch, Rectangle at, string glyph)
         {
-            if (b == null)
+            bool hot = at.HitTest(Screen.Input.CursorPosition);
+            var pos = new Vector2(at.X + (at.Width - Fonts.Arial12Bold.TextWidth(glyph)) / 2f,
+                                  at.Y + (at.Height - Fonts.Arial12Bold.LineSpacing) / 2f);
+            batch.DrawString(Fonts.Arial12Bold, glyph, pos.ToFloored(), hot ? Color.White : Colors.Cream);
+        }
+
+        void CallTroopsHere()
+        {
+            if (Player.GetTroopShipForRebase(out Ship troop, P.Position, P.Name))
             {
-                b = Add(new UIButton(ButtonStyle.Default, Vector2.Zero, glyph));
-                b.Tooltip = tip;
-                b.OnClick = _ => onClick();
+                Audio.GameAudio.EchoAffirmative();
+                Screen.Universe.RunOnSimThread(() => troop.AI.OrderRebase(P, true));
             }
-            b.SetAbsPos(cell.Right - ActionLane + 2, (int)(Y + Height / 2 - ActionSize / 2));
-            b.SetAbsSize(ActionSize + 2, ActionSize);
-            return b;
+            else
+            {
+                Audio.GameAudio.NegativeClick();
+            }
+        }
+
+        // a glyph names itself on hover and acts on a left click; it swallows the click so the
+        // row underneath does not also pan the map
+        bool Glyph(InputState input, Rectangle at, in LocalizedText tip, Action onClick)
+        {
+            if (!at.HitTest(input.CursorPosition))
+                return false;
+
+            ToolTip.CreateTooltip(tip);
+            if (input.LeftMouseClick)
+            {
+                onClick();
+                return true;
+            }
+            return false;
         }
 
         // ordering an orbital goes through the planet's own guard: over the limit, nothing happens
@@ -242,10 +260,19 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
             for (int i = 0; i < Defences.Length && i < DefenceRects.Length; ++i)
                 batch.Draw(Defences[i].IconTex, DefenceRects[i], Color.White);
+
+            DrawGlyph(batch, CallTroopsRect, "<");
+            DrawGlyph(batch, AddPlatformRect, "+");
+            DrawGlyph(batch, AddStationRect, "+");
         }
 
         public override bool HandleInput(InputState input)
         {
+            if (Glyph(input, CallTroopsRect, GameText.CallTroops, CallTroopsHere)
+             || Glyph(input, AddPlatformRect, GameText.BuildAPlatformTheStrongest, () => Order(Player.BestPlatformWeCanBuild))
+             || Glyph(input, AddStationRect, GameText.BuildAStationTheStrongest, () => Order(Player.BestStationWeCanBuild)))
+                return true;
+
             for (int i = 0; i < Defences.Length && i < DefenceRects.Length; ++i)
             {
                 if (DefenceRects[i].HitTest(input.CursorPosition))
