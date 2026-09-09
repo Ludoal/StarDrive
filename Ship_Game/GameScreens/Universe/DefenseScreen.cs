@@ -42,6 +42,9 @@ namespace Ship_Game
             TransitionOffTime = 0.25f;
             IsPopup = true;
 
+            // the muted in-block separator, the same gray the Colonies tab uses to sub-group its
+            // columns: a warm rule says "new subject", a gray one says "same subject, next figure"
+            Color MutedSep = new Color(70, 70, 70);
             Table = new UITable(new[]
             {
                 new UITable.Column { Title = Localizer.Token(GameText.System), Sortable = true },
@@ -52,20 +55,24 @@ namespace Ship_Game
                                      Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
                 // the switch says WHO decides the garrison, the rail WHAT it aims for; a fixed
                 // width because it carries controls rather than a figure
-                new UITable.Column { Title = "Auto-train", Width = 200, Align = TableAlign.Center },
+                new UITable.Column { Title = "Auto-train", Width = 200, Align = TableAlign.Center,
+                                     SepColor = MutedSep },
                 // who runs the colony, one bold letter in the governor's own colour - the same
                 // mark the Colonies tab uses, so one glance reads the same thing on both pages
                 new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true },
                 // and whether that governor also runs the ORBIT: the switch is greyed on a colony
                 // that has no governor, since there would be nobody to honour it
                 new UITable.Column { Title = Localizer.Token(GameText.DvDefenseSpaceDef), Width = 60,
-                                     Align = TableAlign.Center, Tip = Localizer.Token(GameText.DvDefenseSpaceDefTip) },
+                                     Align = TableAlign.Center, SepColor = MutedSep,
+                                     Tip = Localizer.Token(GameText.DvDefenseSpaceDefTip) },
                 // ⚠ the shared tokens carry a trailing colon for their own screens; a table header
                 // wears none, and trimming beats a second token saying the same word
                 new UITable.Column { Title = Localizer.Token(GameText.Platforms).TrimEnd(':', ' '), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
+                                     Sortable = true, SepColor = MutedSep,
+                                     Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
                 new UITable.Column { Title = Localizer.Token(GameText.Stations).TrimEnd(':', ' '), Align = TableAlign.Number,
-                                     Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
+                                     Sortable = true, SepColor = MutedSep,
+                                     Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
                 // WHICH buildings, not how many: the page answers "what is missing here"
                 new UITable.Column { Title = Localizer.Token(GameText.Defense), Width = 220, Align = TableAlign.Center },
             });
