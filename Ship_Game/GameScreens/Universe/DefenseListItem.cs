@@ -25,6 +25,7 @@ namespace Ship_Game
         // carries for its own switches).
         UICheckBox AutoTrain;
         FloatSlider GarrisonRail;
+        UICheckBox SpaceDef;
 
         // the defensive buildings drawn in the last column, with the rect each icon occupies so
         // the row can name it on hover. Rebuilt on layout: a colony gains and loses buildings.
@@ -97,6 +98,11 @@ namespace Ship_Game
                 GarrisonRail = Add(new FloatSlider(SliderStyle.Decimal,
                                                    new Rectangle(auto.X + 26, railY, auto.Width - 34, 18),
                                                    "", 0, MaxGarrison, P.GarrisonSize));
+                // the track rides at the slider's own mid-height, so no offset on a row this
+                // short; and the value sits nearer its rail than the default lane, which is cut
+                // for four-figure numbers rather than a garrison of at most two
+                GarrisonRail.TrackYOffset = 0;
+                GarrisonRail.ValueLane = 24;
                 GarrisonRail.OnChange = s =>
                 {
                     int wanted = (int)s.AbsoluteValue;
@@ -113,14 +119,33 @@ namespace Ship_Game
             }
             GarrisonRail.Greyed = !P.AutoBuildTroops;
 
-            Cell(cols[4], PlatformsText(P), color);
-            Cell(cols[5], StationsText(P), color);
+            // one bold letter in the governor's own colour, the mark the Colonies tab already uses
+            Cell(cols[4], GovernorLetter(P), Colors.Governor(P.CType));
+
+            // and whether that governor runs the ORBIT too. Greyed without a governor: there would
+            // be nobody to honour the switch, and a live-looking box that changes nothing lies.
+            Rectangle sp = cols[5].Rect;
+            int boxY = (int)(Y + Height / 2 - 6);
+            if (SpaceDef == null)
+            {
+                SpaceDef = Add(new UICheckBox(sp.X + sp.Width / 2 - 6, boxY, () => P.GovOrbitals,
+                                              v => Screen.Universe.RunOnSimThread(() => P.GovOrbitals = v),
+                                              Fonts.Arial12Bold, "", GameText.DvDefenseSpaceDefTip));
+            }
+            else
+            {
+                SpaceDef.SetAbsPos(sp.X + sp.Width / 2 - 6, boxY);
+            }
+            SpaceDef.Greyed = !P.GovernorOn;
+
+            Cell(cols[6], PlatformsText(P), color);
+            Cell(cols[7], StationsText(P), color);
 
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
             Defences = P.FilterBuildings(IsDefensive);
             DefenceRects = new Rectangle[Defences.Length];
-            Rectangle band = cols[6].Rect;
+            Rectangle band = cols[8].Rect;
             int lane = band.X + 4;
             for (int i = 0; i < Defences.Length; ++i)
             {
@@ -134,6 +159,18 @@ namespace Ship_Game
         // the rail's ceiling is the colony screen's own, so the two never promise a different
         // garrison for the same world
         public const int MaxGarrison = 25;
+
+        // the governor's type in one letter, as the Colonies tab draws it (bench 407)
+        public static string GovernorLetter(Planet p) => p.CType switch
+        {
+            Planet.ColonyType.Colony       => "--",
+            Planet.ColonyType.TradeHub     => "T",
+            Planet.ColonyType.Industrial   => "I",
+            Planet.ColonyType.Agricultural => "A",
+            Planet.ColonyType.Research     => "R",
+            Planet.ColonyType.Military     => "M",
+            _                              => "C", // Core
+        };
 
         UILabel Cell(UITable.Column c, string text, Color color)
         {

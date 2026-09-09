@@ -6357,6 +6357,12 @@ namespace Ship_Game
         PirateRaidFreqFrequent = 30367,
         /// <summary>Incessant</summary>
         PirateRaidFreqIncessant = 30368,
+        /// <summary>Garrison</summary>
+        DvDefenseGarrison = 30369,
+        /// <summary>Sp. Def.</summary>
+        DvDefenseSpaceDef = 30370,
+        /// <summary>Space Defense: the governor builds and replaces orbital platforms.</summary>
+        DvDefenseSpaceDefTip = 30371,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>

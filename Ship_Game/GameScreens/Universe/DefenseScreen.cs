@@ -48,14 +48,23 @@ namespace Ship_Game
                 new UITable.Column { Title = Localizer.Token(GameText.Planet), MinWidth = 150, Sortable = true },
                 // the three counts share ONE reading: what stands here, and in brackets what is
                 // on its way to it - so the column tip is the same for all three
-                new UITable.Column { Title = Localizer.Token(GameText.GarrisonSize), Align = TableAlign.Number,
+                new UITable.Column { Title = Localizer.Token(GameText.DvDefenseGarrison), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
                 // the switch says WHO decides the garrison, the rail WHAT it aims for; a fixed
                 // width because it carries controls rather than a figure
                 new UITable.Column { Title = "Auto-train", Width = 200, Align = TableAlign.Center },
-                new UITable.Column { Title = Localizer.Token(GameText.Platforms), Align = TableAlign.Number,
+                // who runs the colony, one bold letter in the governor's own colour - the same
+                // mark the Colonies tab uses, so one glance reads the same thing on both pages
+                new UITable.Column { Title = "Gov.", Width = 40, Align = TableAlign.Center, Sortable = true },
+                // and whether that governor also runs the ORBIT: the switch is greyed on a colony
+                // that has no governor, since there would be nobody to honour it
+                new UITable.Column { Title = Localizer.Token(GameText.DvDefenseSpaceDef), Width = 60,
+                                     Align = TableAlign.Center, Tip = Localizer.Token(GameText.DvDefenseSpaceDefTip) },
+                // ⚠ the shared tokens carry a trailing colon for their own screens; a table header
+                // wears none, and trimming beats a second token saying the same word
+                new UITable.Column { Title = Localizer.Token(GameText.Platforms).TrimEnd(':', ' '), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
-                new UITable.Column { Title = Localizer.Token(GameText.Stations), Align = TableAlign.Number,
+                new UITable.Column { Title = Localizer.Token(GameText.Stations).TrimEnd(':', ' '), Align = TableAlign.Number,
                                      Sortable = true, Tip = Localizer.Token(GameText.DvDefenseHereAndComingTip) },
                 // WHICH buildings, not how many: the page answers "what is missing here"
                 new UITable.Column { Title = Localizer.Token(GameText.Defense), Width = 220, Align = TableAlign.Center },
@@ -144,8 +153,9 @@ namespace Ship_Game
             switch (col)
             {
                 case 2:  return planets.Sorted(ascending, p => p.CountEmpireTroops(Player));
-                case 4:  return planets.Sorted(ascending, p => p.NumPlatforms);
-                case 5:  return planets.Sorted(ascending, p => p.NumStations);
+                case 4:  return planets.Sorted(ascending, p => (int)p.CType);
+                case 6:  return planets.Sorted(ascending, p => p.NumPlatforms);
+                case 7:  return planets.Sorted(ascending, p => p.NumStations);
                 case 1:  return planets.Sorted(ascending, p => p.Name);
                 default: return planets.Sorted(ascending, p => p.System.Name);
             }
@@ -176,8 +186,8 @@ namespace Ship_Game
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, sys);
             UITable.AutoSize(Table.Columns[1], Fonts.Arial12Bold, names);
             UITable.AutoSize(Table.Columns[2], Fonts.Arial12Bold, garrison);
-            UITable.AutoSize(Table.Columns[4], Fonts.Arial12Bold, platforms);
-            UITable.AutoSize(Table.Columns[5], Fonts.Arial12Bold, stations);
+            UITable.AutoSize(Table.Columns[6], Fonts.Arial12Bold, platforms);
+            UITable.AutoSize(Table.Columns[7], Fonts.Arial12Bold, stations);
             Table.FitToWidth((int)(Math.Min(ScreenWidth, ScreenGroups.MaxFrameWidth) - 2 * ScreenGroups.FrameMargin) - 66);
         }
 
@@ -224,6 +234,8 @@ namespace Ship_Game
                 h = h * 31 + p.GarrisonSize;
                 h = h * 31 + (p.AutoBuildTroops ? 1 : 0);
                 h = h * 31 + p.NumBuildings;
+                h = h * 31 + (int)p.CType;
+                h = h * 31 + (p.GovOrbitals ? 1 : 0);
             }
             return h;
         }
