@@ -155,7 +155,11 @@ namespace Ship_Game.UI
         {
             if (text.IsEmpty() || font.TextWidth(text) <= room)
                 return text;
-            int len = Math.Max(1, (int)(text.Length * (room / font.TextWidth(text))));
+            // ⚠ the ratio is a FLOAT one: room and TextWidth are both int, so an integer division
+            // here yields 0 for every text wider than the room - the first guess becomes one
+            // character, "F...", which then fits and stops the loop before it can do better. Every
+            // cut in the game came out as a single letter (bench 621).
+            int len = Math.Max(1, (int)(text.Length * ((float)room / font.TextWidth(text))));
             string t = text.Substring(0, len).TrimEnd() + "...";
             while (len > 1 && font.TextWidth(t) > room)
                 t = text.Substring(0, --len).TrimEnd() + "...";
