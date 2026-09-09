@@ -205,13 +205,26 @@ namespace Ship_Game
             => new Rectangle(cell.Right - ActionLane + 5, (int)(Y + Height / 2 - ActionSize / 2),
                              ActionSize, ActionSize);
 
-        void DrawGlyph(SpriteBatch batch, Rectangle at, string glyph)
+        // ★ the game's OWN marks, not glyphs of my own (maintainer feedback): the build queues'
+        // plus, and the folding lists' arrow - one asset turned a quarter turn, exactly as the list
+        // headers turn it to point right while folded. A second dialect for a mark the game
+        // already has is how two screens stop looking like one game.
+        void DrawPlus(SpriteBatch batch, Rectangle at)
         {
-            bool hot = at.HitTest(Screen.Input.CursorPosition);
-            var pos = new Vector2(at.X + (at.Width - Fonts.Arial12Bold.TextWidth(glyph)) / 2f,
-                                  at.Y + (at.Height - Fonts.Arial12Bold.LineSpacing) / 2f);
-            batch.DrawString(Fonts.Arial12Bold, glyph, pos.ToFloored(), hot ? Color.White : Colors.Cream);
+            SubTexture plus = ResourceManager.Texture("NewUI/icon_build_add");
+            batch.Draw(plus, at, Tint(at));
         }
+
+        void DrawCallHere(SpriteBatch batch, Rectangle at)
+        {
+            SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
+            // +90 degrees points it LEFT - "to here" - where the headers use -90 to point right
+            batch.Draw(arrow, new RectF(at.CenterX(), at.CenterY(), arrow.Width, arrow.Height),
+                       Tint(at), 1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
+                       SpriteEffects.None, 1f);
+        }
+
+        Color Tint(Rectangle at) => at.HitTest(Screen.Input.CursorPosition) ? Color.White : Colors.Cream;
 
         void CallTroopsHere()
         {
@@ -261,9 +274,9 @@ namespace Ship_Game
             for (int i = 0; i < Defences.Length && i < DefenceRects.Length; ++i)
                 batch.Draw(Defences[i].IconTex, DefenceRects[i], Color.White);
 
-            DrawGlyph(batch, CallTroopsRect, "<");
-            DrawGlyph(batch, AddPlatformRect, "+");
-            DrawGlyph(batch, AddStationRect, "+");
+            DrawCallHere(batch, CallTroopsRect);
+            DrawPlus(batch, AddPlatformRect);
+            DrawPlus(batch, AddStationRect);
         }
 
         public override bool HandleInput(InputState input)
