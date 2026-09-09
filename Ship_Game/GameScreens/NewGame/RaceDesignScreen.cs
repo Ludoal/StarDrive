@@ -748,15 +748,30 @@ namespace Ship_Game
             P.RemnantStrength = P.RemnantStrength.IncrementWithWrap(OptionIncrement);
         }
 
+        // ★ the order the BUTTON walks, mildest to harshest - not the declaration order, which
+        // belongs to the save file. Two orders because they answer two questions: what rank is
+        // written to a save, and what the player sees next.
+        static readonly PirateStrengthSetting[] PirateStrengthOrder =
+        {
+            PirateStrengthSetting.Pitiful, PirateStrengthSetting.Weak, PirateStrengthSetting.Default,
+            PirateStrengthSetting.Strong,  PirateStrengthSetting.Brutal,
+        };
+
         void OnPirateStrengthClicked(UIButton b)
         {
-            P.PirateStrength = P.PirateStrength.IncrementWithWrap(OptionIncrement);
+            int at = 0;
+            for (int i = 0; i < PirateStrengthOrder.Length; ++i)
+                if (PirateStrengthOrder[i] == P.PirateStrength) { at = i; break; }
+
+            int n = PirateStrengthOrder.Length;
+            P.PirateStrength = PirateStrengthOrder[(at + OptionIncrement + n) % n];
         }
 
         // Default shares the Remnant strength's word: it is a plain "Default", and a second
         // token saying the same thing would be a dialect, not a translation.
         static string PirateStrengthText(PirateStrengthSetting s) => s switch
         {
+            PirateStrengthSetting.Pitiful => Localizer.Token(GameText.PirateStrengthPitiful),
             PirateStrengthSetting.Weak   => Localizer.Token(GameText.PirateStrengthWeak),
             PirateStrengthSetting.Strong => Localizer.Token(GameText.PirateStrengthStrong),
             PirateStrengthSetting.Brutal => Localizer.Token(GameText.PirateStrengthBrutal),
@@ -1137,6 +1152,10 @@ namespace Ship_Game
         Weak,
         Brutal,
         Strong,
+        // ⚠ DECLARED LAST although it is the mildest notch: a setting is saved by its RANK, so a
+        // notch inserted in the middle would shift every game in progress in silence. The scale
+        // the player walks is PirateStrengthOrder, which is a separate list.
+        Pitiful,
     }
 
     // Ludoal fork: how fast piracy escalates. No Off notch here: the

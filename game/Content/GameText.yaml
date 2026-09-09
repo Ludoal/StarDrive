@@ -29416,3 +29416,7 @@ DvEmpireTabTipDefense:
  Id: 30361
  ENG: "Every colony and what holds it: garrison, orbital platforms and stations, defensive buildings."
  FRA: "Chaque colonie et ce qui la tient : garnison, plateformes et stations orbitales, bâtiments défensifs."
+PirateStrengthPitiful:
+ Id: 30362
+ ENG: "Pitiful"
+ FRA: "Dérisoire"

@@ -6343,6 +6343,8 @@ namespace Ship_Game
         DvDefenseHereAndComingTip = 30360,
         /// <summary>Every colony and what holds it: garrison, orbitals, defensive buildings.</summary>
         DvEmpireTabTipDefense = 30361,
+        /// <summary>Pitiful</summary>
+        PirateStrengthPitiful = 30362,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>

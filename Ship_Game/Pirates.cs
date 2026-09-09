@@ -230,7 +230,12 @@ namespace Ship_Game
         // The tribute rides on the strength notch and only ever SOFTENS: only the cheap end acts,
         // turning a prohibitive ransom into an affordable one. Difficulty keeps its own
         // multiplier on top, untouched from the base game.
-        float TributeModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.5f : 1f;
+        float TributeModifier => Universe.P.PirateStrength switch
+        {
+            PirateStrengthSetting.Pitiful => 0.5f,
+            PirateStrengthSetting.Weak    => 0.75f,
+            _                             => 1f,
+        };
 
         // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot, so
         // a raid above the local defence leaves the player no reaction time (player feedback).
@@ -238,7 +243,12 @@ namespace Ship_Game
         // ⚠ NOT merged with RaidTypeModifier yet, on purpose: the size is bounded by the hull
         // limit of ten per level as well, and until we have measured which of the two bites
         // first, raising this one would tune a term the game may never reach.
-        float BiteModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.75f : 1f;
+        float BiteModifier => Universe.P.PirateStrength switch
+        {
+            PirateStrengthSetting.Pitiful => 0.5f,
+            PirateStrengthSetting.Weak    => 0.75f,
+            _                             => 1f,
+        };
 
         // ★ WHAT a raid comes to do, as opposed to how much it brings (player feedback). The type
         // die is bounded by the pirates' level and by the threat they hold over the victim; this
@@ -249,6 +259,7 @@ namespace Ship_Game
         // 8), so past 8 a wider die redistributes between them rather than unlocking anything.
         public float RaidTypeModifier => Universe.P.PirateStrength switch
         {
+            PirateStrengthSetting.Pitiful => 0.6f,
             PirateStrengthSetting.Weak   => 0.8f,
             PirateStrengthSetting.Strong => 1.2f,
             PirateStrengthSetting.Brutal => 1.4f,
@@ -266,8 +277,9 @@ namespace Ship_Game
         // limiter. The starting level on the same notch is what makes the ceiling reachable.
         public float RaidThreatFactor => Universe.P.PirateStrength switch
         {
-            PirateStrengthSetting.Weak   => 0.7f,
-            PirateStrengthSetting.Strong => 1.4f,
+            PirateStrengthSetting.Pitiful => 0.5f,
+            PirateStrengthSetting.Weak   => 0.8f,
+            PirateStrengthSetting.Strong => 1.25f,
             PirateStrengthSetting.Brutal => 2f,
             _                            => 1f,
         };
