@@ -196,7 +196,40 @@ namespace Ship_Game.GameScreens
                 // a column of its own (maintainer feedback)
                 var budget = Cell(6, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
                 budget.Tooltip = $"Allocated by the governor - {BudgetLeft(Planet).MoneyString()} still unspent";
-                ValueCell(7, () => GovExpense(Planet));
+
+                // the civilian rail and its Auto box, on the colony's OWN budget switches - the
+                // same mechanics the colony panel drives, not a copy. Auto hands the purse back to
+                // the governor; taking it over starts at the current allocation, so nothing jumps.
+                Rectangle civ = cols[7].Rect;
+                // ⚠ a purse taken over seats on the amount the PLAYER stored, not on what the
+                // governor would allocate: seeded on the target, the rail would spring back to the
+                // governor's figure at the next layout and undo the drag
+                float seed = Planet.IsBudgetManual(BudgetArea.Civilian)
+                           ? Planet.ManualCivilianBudget
+                           : Planet.BudgetAutoTarget(BudgetArea.Civilian);
+                var rail = new FloatSlider(SliderStyle.Decimal1,
+                                           new Rectangle(civ.X + 24, y + 6, civ.Width - 32, 12),
+                                           "", 0f, (seed * 2f).LowerBound(20f), seed)
+                           { TrackYOffset = 0, ValueLane = 34 };
+                rail.OnChange = sl =>
+                {
+                    float amount = sl.AbsoluteValue;
+                    if (Planet.IsBudgetManual(BudgetArea.Civilian))
+                        Planet.Universe.Screen?.RunOnSimThread(() => Planet.SetBudgetAmount(BudgetArea.Civilian, amount));
+                };
+                Add(rail);
+                Add(new UICheckBox(civ.X + 4, y + 4, () => !Planet.IsBudgetManual(BudgetArea.Civilian),
+                                   auto => Planet.Universe.Screen?.RunOnSimThread(() =>
+                                   {
+                                       bool manual = !auto;
+                                       Planet.SetBudgetAmount(BudgetArea.Civilian, manual ? Planet.BudgetAutoTarget(BudgetArea.Civilian) : 0f);
+                                       Planet.SetBudgetManual(BudgetArea.Civilian, manual);
+                                       if (!manual)
+                                           Planet.Budget?.SnapToTarget();
+                                   }),
+                                   Fonts.Arial12Bold, "", GameText.OverrideThisBudgetAndSet));
+
+                ValueCell(8, () => GovExpense(Planet));
 
                 base.PerformLayout();
             }
@@ -213,6 +246,9 @@ namespace Ship_Game.GameScreens
             p => -p.Money.TroopMaint,
             EconColonyItem.NetIncome,
             EconColonyItem.BudgetAlloc,
+            // the civilian rail's column: not clickable to sort, but the array is indexed by
+            // column so it keeps its slot rather than shifting every entry after it
+            p => p.BudgetAutoTarget(BudgetArea.Civilian),
             EconColonyItem.GovExpense,
         };
 
@@ -251,6 +287,10 @@ namespace Ship_Game.GameScreens
                 new UITable.Column { Title = "Troop Upk", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 new UITable.Column { Title = "Budget",    Align = TableAlign.Number, Sortable = true, Tip = "Budget allocated by the governor" },
+                // the civilian purse, set from here: the rail beside the allocation it feeds, so
+                // a colony's budget is read and changed in one place (maintainer feedback). Ground
+                // and orbital defence have their own rails on the Defense tab.
+                new UITable.Column { Title = "Civ. Bldg", Width = 150, Align = TableAlign.Center },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon
