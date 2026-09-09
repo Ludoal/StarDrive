@@ -29420,3 +29420,27 @@ PirateStrengthPitiful:
  Id: 30362
  ENG: "Pitiful"
  FRA: "Dérisoire"
+PirateRaidFreqLabel:
+ Id: 30363
+ ENG: "Raid Frequency"
+ FRA: "Fréquence des raids"
+PirateRaidFreqTip:
+ Id: 30364
+ ENG: "How often a pirate raid may start against you. It bites hardest early: once the pirates have levels behind them, their own level rules the pace. Separate from Pirate Strength, which says what they are rather than how often they come."
+ FRA: "À quelle fréquence un raid pirate peut se déclencher contre vous. C'est en début de partie que le réglage mord le plus : une fois les pirates montés en niveau, c'est leur niveau qui commande la cadence. Distinct de Pirate Strength, qui dit ce qu'ils sont et non à quelle fréquence ils viennent."
+PirateRaidFreqRare:
+ Id: 30365
+ ENG: "Rare"
+ FRA: "Rare"
+PirateRaidFreqOccasional:
+ Id: 30366
+ ENG: "Occasional"
+ FRA: "Occasionnelle"
+PirateRaidFreqFrequent:
+ Id: 30367
+ ENG: "Frequent"
+ FRA: "Fréquente"
+PirateRaidFreqIncessant:
+ Id: 30368
+ ENG: "Incessant"
+ FRA: "Incessante"

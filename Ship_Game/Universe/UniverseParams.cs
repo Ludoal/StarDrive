@@ -160,6 +160,11 @@ public class UniverseParams
     // at, and the fraction of the local defence a raid aims for.
     [StarData(DefaultValue=PirateStrengthSetting.Default)]
     public PirateStrengthSetting PirateStrength = PirateStrengthSetting.Default;
+
+    // Ludoal fork (player feedback): how often a raid may start, split off the strength notch -
+    // one dial, one idea. A save that predates it reads Default, which is the base game's rate.
+    [StarData(DefaultValue=PirateRaidFrequencySetting.Default)]
+    public PirateRaidFrequencySetting PirateRaidFrequency = PirateRaidFrequencySetting.Default;
     [StarData] public bool FixedPlayerCreditCharge;
     [StarData] public bool DisableResearchStations;
     [StarData] public bool DisableMiningOps;

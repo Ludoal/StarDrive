@@ -6345,6 +6345,18 @@ namespace Ship_Game
         DvEmpireTabTipDefense = 30361,
         /// <summary>Pitiful</summary>
         PirateStrengthPitiful = 30362,
+        /// <summary>Raid Frequency</summary>
+        PirateRaidFreqLabel = 30363,
+        /// <summary>How often a pirate raid may start against you.</summary>
+        PirateRaidFreqTip = 30364,
+        /// <summary>Rare</summary>
+        PirateRaidFreqRare = 30365,
+        /// <summary>Occasional</summary>
+        PirateRaidFreqOccasional = 30366,
+        /// <summary>Frequent</summary>
+        PirateRaidFreqFrequent = 30367,
+        /// <summary>Incessant</summary>
+        PirateRaidFreqIncessant = 30368,
         /// <summary>Checked: freighters choose their assignments the game's own way.</summary>
         PolFreighterPriorityAutoTip = 30354,
         /// <summary>The share of the turn's free freighters this pass may take first.</summary>

@@ -414,6 +414,9 @@ namespace Ship_Game
             AddOption(FactionsOptions, Localizer.Token(GameText.PirateStrengthLabel) + " : ",
                 OnPirateStrengthClicked, _ => PirateStrengthText(P.PirateStrength),
                 tip:GameText.PirateStrengthTip);
+            AddOption(FactionsOptions, Localizer.Token(GameText.PirateRaidFreqLabel) + " : ",
+                OnPirateRaidFreqClicked, _ => PirateRaidFreqText(P.PirateRaidFrequency),
+                tip:GameText.PirateRaidFreqTip);
 
             // row 2 RIGHT: two tabs over one area - the points summary, and the race description.
             // Same rect for both; OnTabChange flips which one is visible.
@@ -528,6 +531,7 @@ namespace Ship_Game
                 Localizer.Token(GameText.PirateFactionsLabel) + " : " + PirateFactionsText(p.PirateFactionChoice),
                 Localizer.Token(GameText.PiratePaceLabel) + " : " + PiratePaceText(p.PiratePace),
                 Localizer.Token(GameText.PirateStrengthLabel) + " : " + PirateStrengthText(p.PirateStrength),
+                Localizer.Token(GameText.PirateRaidFreqLabel) + " : " + PirateRaidFreqText(p.PirateRaidFrequency),
             };
             return string.Join(", ", rows);
         }
@@ -776,6 +780,34 @@ namespace Ship_Game
             PirateStrengthSetting.Strong => Localizer.Token(GameText.PirateStrengthStrong),
             PirateStrengthSetting.Brutal => Localizer.Token(GameText.PirateStrengthBrutal),
             _                            => Localizer.Token(GameText.RmStrengthDefault),
+        };
+
+        // same two-orders trick as the strength notch: the save keeps the rank, the button walks
+        // the scale from rarest to most relentless
+        static readonly PirateRaidFrequencySetting[] PirateRaidFreqOrder =
+        {
+            PirateRaidFrequencySetting.Rare,     PirateRaidFrequencySetting.Occasional,
+            PirateRaidFrequencySetting.Default,  PirateRaidFrequencySetting.Frequent,
+            PirateRaidFrequencySetting.Incessant,
+        };
+
+        void OnPirateRaidFreqClicked(UIButton b)
+        {
+            int at = 0;
+            for (int i = 0; i < PirateRaidFreqOrder.Length; ++i)
+                if (PirateRaidFreqOrder[i] == P.PirateRaidFrequency) { at = i; break; }
+
+            int n = PirateRaidFreqOrder.Length;
+            P.PirateRaidFrequency = PirateRaidFreqOrder[(at + OptionIncrement + n) % n];
+        }
+
+        static string PirateRaidFreqText(PirateRaidFrequencySetting f) => f switch
+        {
+            PirateRaidFrequencySetting.Rare       => Localizer.Token(GameText.PirateRaidFreqRare),
+            PirateRaidFrequencySetting.Occasional => Localizer.Token(GameText.PirateRaidFreqOccasional),
+            PirateRaidFrequencySetting.Frequent   => Localizer.Token(GameText.PirateRaidFreqFrequent),
+            PirateRaidFrequencySetting.Incessant  => Localizer.Token(GameText.PirateRaidFreqIncessant),
+            _                                     => Localizer.Token(GameText.RmStrengthDefault),
         };
 
         void OnPiratePaceClicked(UIButton b)
@@ -1156,6 +1188,18 @@ namespace Ship_Game
         // notch inserted in the middle would shift every game in progress in silence. The scale
         // the player walks is PirateStrengthOrder, which is a separate list.
         Pitiful,
+    }
+
+    // Ludoal fork (player feedback): how OFTEN a raid may start, on its own dial. It used to ride
+    // the strength notch, which meant one control for two ideas - what the pirates are, and how
+    // often they come. Default first so a save that predates the setting reads as Default.
+    public enum PirateRaidFrequencySetting
+    {
+        Default,
+        Rare,
+        Occasional,
+        Frequent,
+        Incessant,
     }
 
     // Ludoal fork: how fast piracy escalates. No Off notch here: the

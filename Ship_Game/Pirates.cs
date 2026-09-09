@@ -278,13 +278,13 @@ namespace Ship_Game
         // than a fixed cap early, harder once the threat has climbed (player feedback).
         // ⚠ IT SCALES A CEILING, IT DOES NOT SET A RATE: the pirates' own level is the other
         // limiter. The starting level on the same notch is what makes the ceiling reachable.
-        public float RaidThreatFactor => Universe.P.PirateStrength switch
+        public float RaidThreatFactor => Universe.P.PirateRaidFrequency switch
         {
-            PirateStrengthSetting.Pitiful => 0.5f,
-            PirateStrengthSetting.Weak   => 0.8f,
-            PirateStrengthSetting.Strong => 1.25f,
-            PirateStrengthSetting.Brutal => 2f,
-            _                            => 1f,
+            PirateRaidFrequencySetting.Rare       => 0.5f,
+            PirateRaidFrequencySetting.Occasional => 0.8f,
+            PirateRaidFrequencySetting.Frequent   => 1.25f,
+            PirateRaidFrequencySetting.Incessant  => 2f,
+            _                                     => 1f,
         };
 
         // How many levels they are handed at galaxy creation. ⚠ a level is NEVER a number one
