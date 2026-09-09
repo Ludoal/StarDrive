@@ -777,10 +777,16 @@ namespace Ship_Game
             // the stroke is the map's route width (maintainer feedback: 1 px, a lighter map)
             const double Slot = 14.0, Dash = 11.0, Period = Slot * 3;
             Vector2d dir = (b - a) / len;
+            // ★ a line is stretched from its start on ONE side of its axis, the side depending on
+            // which way it was drawn. Two runs between the same pair in opposite senses - food out,
+            // production back - therefore land either side of the axis instead of sharing it, and
+            // at one pixel the gap is no longer covered by the stroke (bench 620). Half a stroke
+            // back puts the dash astride its own axis, so a pair of opposite runs interleaves again.
+            Vector2d astride = new Vector2d(dir.Y, -dir.X) * (RouteLineWidth * 0.5);
             for (double t = slot * Slot; t < len; t += Period)
             {
                 double t2 = Math.Min(t + Dash, len);
-                DrawLine(a + dir * t, a + dir * t2, color, RouteLineWidth);
+                DrawLine(a + dir * t + astride, a + dir * t2 + astride, color, RouteLineWidth);
             }
         }
 
