@@ -245,7 +245,10 @@ namespace Ship_Game
         // first, raising this one would tune a term the game may never reach.
         float BiteModifier => Universe.P.PirateStrength switch
         {
-            PirateStrengthSetting.Pitiful => 0.5f,
+            // the bottom of the player's own scale, so the notch slopes the same way at the low
+            // end of all three settings; the top stays flat at 1, a raid never rising above the
+            // defence already on site
+            PirateStrengthSetting.Pitiful => 0.6f,
             PirateStrengthSetting.Weak    => 0.75f,
             _                             => 1f,
         };
