@@ -217,9 +217,17 @@ namespace Ship_Game
             }
             float rushX = CancelProductionRect.Right - RushBox.Width;
             RushBox.SetAbsPos(rushX, QueueRect.Y + QueueRect.Height / 2 - 30);
-            // the name starts 40px past the icon at QueueRect.X + 10, and stops 6 short of the box
-            QueueNameRect = new Rectangle(QueueRect.X + 50, QueueRect.Y + QueueRect.Height / 2 - 30,
-                                          (int)(rushX - (QueueRect.X + 50) - 6), Fonts.Arial12Bold.LineSpacing);
+            // ⚠ the name's lane is a CONSTANT off the column's right edge, never the switch's own
+            // position: a control sizes itself from its text at ITS layout, so a lane derived from
+            // it is a lane that can collapse - and a collapsed lane cuts every name to one letter
+            // (bench 620). The floor is the second guard: whatever the column does, a name keeps
+            // enough room to be read.
+            const int NameInset = 50;  // the item icon, then the name's own start
+            const int RushLane = 46;   // the CR switch plus its breathing room
+            const int NameFloor = 80;  // a name is never cut below this, column or no column
+            int nameRoom = Math.Max(NameFloor, QueueRect.Width - NameInset - RushLane);
+            QueueNameRect = new Rectangle(QueueRect.X + NameInset, QueueRect.Y + QueueRect.Height / 2 - 30,
+                                          nameRoom, Fonts.Arial12Bold.LineSpacing);
 
             base.PerformLayout();
         }
