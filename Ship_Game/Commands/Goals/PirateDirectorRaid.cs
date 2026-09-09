@@ -70,7 +70,10 @@ namespace Ship_Game.Commands.Goals
 
         GoalType GetRaid()
         {
-            int raid = Owner.Random.RollDie(Pirates.Level.UpperBound(Pirates.ThreatLevelFor(TargetEmpire)));
+            // the notch widens the threat side of the die; a floor of 1 because a threat of one
+            // softened below unity would roll in the void
+            int threat = (int)(Pirates.ThreatLevelFor(TargetEmpire) * Pirates.RaidTypeModifier);
+            int raid = Owner.Random.RollDie(Pirates.Level.UpperBound(threat.LowerBound(1)));
 
             switch (raid)
             {

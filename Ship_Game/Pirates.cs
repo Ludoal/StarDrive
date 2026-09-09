@@ -235,7 +235,25 @@ namespace Ship_Game
         // How hard a raid hits, and it only ever SOFTENS. A raid fleet is spawned on the spot, so
         // a raid above the local defence leaves the player no reaction time (player feedback).
         // Hardening happens through how OFTEN raids come; see RaidThreatFactor.
+        // ⚠ NOT merged with RaidTypeModifier yet, on purpose: the size is bounded by the hull
+        // limit of ten per level as well, and until we have measured which of the two bites
+        // first, raising this one would tune a term the game may never reach.
         float BiteModifier => Universe.P.PirateStrength == PirateStrengthSetting.Weak ? 0.75f : 1f;
+
+        // ★ WHAT a raid comes to do, as opposed to how much it brings (player feedback). The type
+        // die is bounded by the pirates' level and by the threat they hold over the victim; this
+        // widens the threat side of that, so the notch reaches the nastier raids sooner. It needs
+        // no cap of its own - the level is already one - and it never commands a single hull, so
+        // it hardens the game without ever sending a raid above the local defence.
+        // ⚠ the types are NOT a soft-to-hard ladder: each unlocks at its own die value (1, 3, 6,
+        // 8), so past 8 a wider die redistributes between them rather than unlocking anything.
+        public float RaidTypeModifier => Universe.P.PirateStrength switch
+        {
+            PirateStrengthSetting.Weak   => 0.8f,
+            PirateStrengthSetting.Strong => 1.2f,
+            PirateStrengthSetting.Brutal => 1.4f,
+            _                            => 1f,
+        };
 
         // ★ HOW RARE A RAID MAY BE, and this is the notch that actually makes pirates dangerous.
         // The chance a raid starts is capped by the victim's THREAT level, which begins at 1 - so
