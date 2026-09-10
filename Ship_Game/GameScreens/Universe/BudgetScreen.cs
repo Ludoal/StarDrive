@@ -306,7 +306,7 @@ namespace Ship_Game.GameScreens
                 // at construction is overwritten and the cell collapses to its title (bench 625).
                 // The floor is what the control needs: the caption lane, the track, and the value
                 // lane the slider reserves on its right.
-                new UITable.Column { Title = "Civ. Bldg", MinWidth = 230, Align = TableAlign.Center,
+                new UITable.Column { Title = "Civilian Budget", MinWidth = 230, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
