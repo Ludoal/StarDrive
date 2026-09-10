@@ -113,6 +113,16 @@ namespace Ship_Game.AI.Budget
             CivilianAlloc = P.ManualCivBudgetOn ? P.ManualCivilianBudget + P.TerraformBudget
                           : SnapSpentTail(ExponentialMovingAverage(CivilianAlloc, civBudget));
 
+            RecomputeDerived();
+        }
+
+        // Ludoal fork: everything the panels read - the remainders and the two totals - is
+        // DERIVED from the three allocations, so it is recomputed wherever an allocation moves.
+        // ⚠ ONE owner: a manual change that only touched its own area left the totals reading
+        // the governor's last turn, and a panel showing an allocation beside its total showed
+        // two different moments (maintainer feedback).
+        void RecomputeDerived()
+        {
             RemainingGroundDef = (GrdDefAlloc - P.GroundDefMaintenance).RoundToFractionOf10();
             RemainingSpaceDef  = (SpcDefAlloc - P.SpaceDefMaintenance).RoundToFractionOf10();
             RemainingCivilian  = (CivilianAlloc - P.CivilianBuildingsMaintenance).RoundToFractionOf10();
@@ -139,6 +149,7 @@ namespace Ship_Game.AI.Budget
             if (P.ManualGrdBudgetOn) GrdDefAlloc   = P.ManualGrdDefBudget;
             if (P.ManualSpcBudgetOn) SpcDefAlloc   = P.ManualSpcDefBudget;
             if (P.ManualCivBudgetOn) CivilianAlloc = P.ManualCivilianBudget + P.TerraformBudget;
+            RecomputeDerived();
         }
 
         /// <summary>

@@ -245,6 +245,9 @@ namespace Ship_Game
                 case BudgetArea.GroundDef: SetManualGroundDefBudget(amount); break;
                 case BudgetArea.SpaceDef:  SetManualSpaceDefBudget(amount);  break;
             }
+            // the allocation follows the figure at once: a panel that shows both an area and
+            // the colony's total must not show them a turn apart (maintainer feedback)
+            Budget?.UpdateManualUI();
         }
 
         public void SetBudgetManual(BudgetArea area, bool manual)
@@ -255,6 +258,7 @@ namespace Ship_Game
                 case BudgetArea.GroundDef: SetManualGrdBudgetOn(manual); break;
                 case BudgetArea.SpaceDef:  SetManualSpcBudgetOn(manual); break;
             }
+            Budget?.UpdateManualUI(); // taking an area over, or handing it back, moves the total too
         }
 
         public int OrbitalsBeingBuilt(RoleName role) => OrbitalsBeingBuilt(role, Owner);
