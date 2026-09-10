@@ -77,7 +77,7 @@ namespace Ship_Game
                 // the two purses that pay for what this page shows: the ground troops above,
                 // the orbitals below - stacked, because they answer the same question at two
                 // altitudes and a player reads them together (maintainer feedback)
-                new UITable.Column { Title = Localizer.Token(GameText.Budget), Width = 210,
+                new UITable.Column { Title = Localizer.Token(GameText.Budget), Width = 260,
                                      Align = TableAlign.Center, SepColor = MutedSep },
                 // WHICH buildings, not how many: the page answers "what is missing here"
                 new UITable.Column { Title = Localizer.Token(GameText.Defense), Width = 220, Align = TableAlign.Center },

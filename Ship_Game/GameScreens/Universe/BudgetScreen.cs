@@ -207,8 +207,14 @@ namespace Ship_Game.GameScreens
                 float seed = Planet.IsBudgetManual(BudgetArea.Civilian)
                            ? Planet.ManualCivilianBudget
                            : Planet.BudgetAutoTarget(BudgetArea.Civilian);
+                // the rail says WHICH purse it is, as the two Defense rails do - one word, on the
+                // track's own line (maintainer feedback)
+                int civTagX  = civ.X + 24;
+                int civRailX = civTagX + UITable.PurseTagLane;
+                Label(new Vector2(civTagX, y + 12 - Fonts.Arial12.LineSpacing / 2),
+                      "Civilian", Fonts.Arial12, Color.Gray);
                 var rail = new FloatSlider(SliderStyle.Decimal1,
-                                           new Rectangle(civ.X + 24, y + 6, civ.Width - 32, 12),
+                                           new Rectangle(civRailX, y + 6, civ.Right - 8 - civRailX, 12),
                                            "", 0f, (seed * 2f).LowerBound(20f), seed)
                            { TrackYOffset = 0, ValueLane = 34 };
                 rail.OnChange = sl =>
@@ -290,7 +296,7 @@ namespace Ship_Game.GameScreens
                 // the civilian purse, set from here: the rail beside the allocation it feeds, so
                 // a colony's budget is read and changed in one place (maintainer feedback). Ground
                 // and orbital defence have their own rails on the Defense tab.
-                new UITable.Column { Title = "Civ. Bldg", Width = 150, Align = TableAlign.Center },
+                new UITable.Column { Title = "Civ. Bldg", Width = 190, Align = TableAlign.Center },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon

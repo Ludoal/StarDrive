@@ -83,6 +83,10 @@ namespace Ship_Game.UI
 
         public const int SideMargin = 15; // off the frame border; the selection box needs the room on the left
         public const int PadX = 8;        // one character of cell padding
+        // the caption lane ahead of a budget rail sat in a cell. ⚠ ONE owner for it: two screens
+        // draw the same idiom, and a lane declared twice is a lane that drifts apart. A CONSTANT,
+        // sized on the longest word it carries - the rail takes the remainder, never a share.
+        public const int PurseTagLane = 50;
         // Ludoal fork: the lane after the last column IS the scrollbar's lane. ⚠ ONE theme value
         // for it (Theme.yaml, ScrollbarLane) - a second number here and in ScrollListBase gives
         // one margin two widths.

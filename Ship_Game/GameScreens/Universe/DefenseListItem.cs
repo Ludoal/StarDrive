@@ -31,6 +31,9 @@ namespace Ship_Game
         // the two purses, one rail and one Auto box each, stacked in a single cell
         UICheckBox AutoGrd, AutoSpc;
         FloatSlider GrdRail, SpcRail;
+        // ⚠ two rails in ONE cell need a word each: the column header says "Budget" for both, so
+        // without them nothing on the row says which purse is which (maintainer feedback).
+        UILabel GrdTag, SpcTag;
 
         // ★ the three act on the SAME row but not on the same kind of thing: "<" brings a troop
         // that already exists here (the colony screen's Call Troops), "+" orders a hull that does
@@ -167,8 +170,8 @@ namespace Ship_Game
             Rectangle purse = cols[7].Rect;
             int topY    = (int)(Y + Height / 2 - 15);
             int lowerY  = (int)(Y + Height / 2 + 1);
-            AutoGrd = Purse(AutoGrd, ref GrdRail, purse, topY, BudgetArea.GroundDef);
-            AutoSpc = Purse(AutoSpc, ref SpcRail, purse, lowerY, BudgetArea.SpaceDef);
+            AutoGrd = Purse(AutoGrd, ref GrdRail, ref GrdTag, "Ground", purse, topY, BudgetArea.GroundDef);
+            AutoSpc = Purse(AutoSpc, ref SpcRail, ref SpcTag, "Space",  purse, lowerY, BudgetArea.SpaceDef);
 
             // the buildings column shows WHICH, not how many - the question it answers is
             // "what is missing here", and a count cannot answer that
@@ -217,16 +220,23 @@ namespace Ship_Game
         // mechanics the colony panel drives, not a copy of them. Ticking Auto hands the purse back
         // to the governor; unticking takes it over at the allocation it has right now, so the
         // amount never jumps at the moment the player takes control.
-        UICheckBox Purse(UICheckBox box, ref FloatSlider rail, Rectangle cell, int y, BudgetArea area)
+        UICheckBox Purse(UICheckBox box, ref FloatSlider rail, ref UILabel tag, string caption,
+                         Rectangle cell, int y, BudgetArea area)
         {
+            int tagX  = cell.X + CellPad + 22;
+            int railX = tagX + UITable.PurseTagLane;
+            int railW = cell.Right - 8 - railX;   // the rail's right edge, unchanged
+            // the caption sits on the track's own line, not above it: the row is 12px tall
+            int tagY  = y + 6 - Fonts.Arial12.LineSpacing / 2;
             if (box == null)
             {
                 // ⚠ same rule as the colony panel: a purse already taken over seats on the
                 // amount the player stored, or the rail springs back at the next layout
                 float seed = P.IsBudgetManual(area) ? StoredAmount(area) : P.BudgetAutoTarget(area);
                 rail = Add(new FloatSlider(SliderStyle.Decimal1,
-                                           new Rectangle(cell.X + CellPad + 22, y, cell.Width - CellPad - 30, 12),
+                                           new Rectangle(railX, y, railW, 12),
                                            "", 0f, (seed * 2f).LowerBound(20f), seed));
+                tag = Label(new Vector2(tagX, tagY), caption, Fonts.Arial12, Color.Gray);
                 rail.TrackYOffset = 0;
                 rail.ValueLane = 34;
                 BudgetArea a = area; // captured once, so the handler never reads a moving local
@@ -250,8 +260,9 @@ namespace Ship_Game
             else
             {
                 box.SetAbsPos(cell.X + CellPad, y);
-                rail.SetAbsPos(cell.X + CellPad + 22, y);
-                rail.Width = cell.Width - CellPad - 30;
+                tag.SetAbsPos(tagX, tagY);
+                rail.SetAbsPos(railX, y);
+                rail.Width = railW;
             }
             // a governed purse shows what the governor allocates; a taken-over one keeps the
             // player's number - the rail follows the colony either way
