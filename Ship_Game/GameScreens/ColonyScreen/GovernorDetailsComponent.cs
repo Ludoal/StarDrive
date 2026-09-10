@@ -1406,9 +1406,9 @@ namespace Ship_Game
 
             if (BudgetTabView)
             {
-                if      (CivBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(GovernorOn ? GameText.CivilianBuildingsExpenditurebudgetInByc : GameText.CivilianBuildingsExpenditureInByc);
-                else if (GrdBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(GovernorOn ? GameText.GroundDefenseBuildingsExpenditurebudgetIn : GameText.GroundDefenseBuildingsExpenditureIn);
-                else if (SpcBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(GovernorOn ? GameText.OrbitalsExpenditurebudgetInByc : GameText.OrbitalsExpenditureInByc);
+                if      (CivBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(BudgetAreaText.Tip(BudgetArea.Civilian,  GovernorOn));
+                else if (GrdBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(BudgetAreaText.Tip(BudgetArea.GroundDef, GovernorOn));
+                else if (SpcBudgetIconRect.HitTest(input.CursorPosition)) ToolTip.CreateTooltip(BudgetAreaText.Tip(BudgetArea.SpaceDef,  GovernorOn));
             }
 
             return base.HandleInput(input);

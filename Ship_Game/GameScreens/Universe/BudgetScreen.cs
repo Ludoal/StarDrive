@@ -211,12 +211,14 @@ namespace Ship_Game.GameScreens
                 // track's own line (maintainer feedback)
                 int civTagX  = civ.X + 24;
                 int civRailX = civTagX + UITable.PurseTagLane;
-                Label(new Vector2(civTagX, y + 12 - Fonts.Arial12.LineSpacing / 2),
-                      "Civilian", Fonts.Arial12, Color.Gray);
+                var civTag = Label(new Vector2(civTagX, y + 12 - Fonts.Arial12.LineSpacing / 2),
+                                   "Civilian", Fonts.Arial12, Color.Gray);
+                civTag.Tooltip = BudgetAreaText.Tip(BudgetArea.Civilian, Planet.GovernorOn);
                 var rail = new FloatSlider(SliderStyle.Decimal1,
                                            new Rectangle(civRailX, y + 6, civ.Right - 8 - civRailX, 12),
                                            "", 0f, (seed * 2f).LowerBound(20f), seed)
-                           { TrackYOffset = 0, ValueLane = 34 };
+                           { TrackYOffset = 0, ValueLane = 34,
+                             Tip = BudgetAreaText.Tip(BudgetArea.Civilian, Planet.GovernorOn) };
                 rail.OnChange = sl =>
                 {
                     float amount = sl.AbsoluteValue;
@@ -296,7 +298,11 @@ namespace Ship_Game.GameScreens
                 // the civilian purse, set from here: the rail beside the allocation it feeds, so
                 // a colony's budget is read and changed in one place (maintainer feedback). Ground
                 // and orbital defence have their own rails on the Defense tab.
-                new UITable.Column { Title = "Civ. Bldg", Width = 190, Align = TableAlign.Center },
+                // the header abbreviates like the rail under it; the hover spells both out. ⚠ a
+                // column tip is empire-wide, so it takes the ungoverned wording - the governed
+                // variant is a per-colony statement and belongs on the row
+                new UITable.Column { Title = "Civ. Bldg", Width = 190, Align = TableAlign.Center,
+                                     Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon

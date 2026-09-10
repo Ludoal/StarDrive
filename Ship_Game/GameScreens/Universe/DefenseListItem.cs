@@ -264,6 +264,13 @@ namespace Ship_Game
                 rail.SetAbsPos(railX, y);
                 rail.Width = railW;
             }
+            // one word on the row, its full denomination on hover - and the rail says the same,
+            // so the two halves of one control never answer differently. ⚠ re-set on EVERY layout,
+            // not in the build-once branch: a colony that gains or loses a governor changes which
+            // of the two wordings is true, and the row itself is never rebuilt
+            tag.Tooltip = BudgetAreaText.Tip(area, P.GovernorOn);
+            rail.Tip    = BudgetAreaText.Tip(area, P.GovernorOn);
+
             // a governed purse shows what the governor allocates; a taken-over one keeps the
             // player's number - the rail follows the colony either way
             if (!P.IsBudgetManual(area))

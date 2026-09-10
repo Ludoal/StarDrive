@@ -15,6 +15,26 @@ namespace Ship_Game
     // every other page from reusing the switches below.
     public enum BudgetArea { Civilian, GroundDef, SpaceDef }
 
+    // Ludoal fork: ONE wording per purse, wherever it is shown. The colony panel decodes its
+    // three budget icons by hover; the Economy and Defense tables abbreviate the same purses to
+    // one word each and decode them the same way (maintainer feedback). ⚠ the tokens live here
+    // rather than in any one screen: three pages naming the same thing three ways is how a
+    // player ends up believing there are three things.
+    public static class BudgetAreaText
+    {
+        // governed = a governor runs this colony, so the figure is an expenditure AGAINST a
+        // budget; without one there is no budget to be against - the colony panel's own split
+        public static GameText Tip(BudgetArea area, bool governed) => area switch
+        {
+            BudgetArea.GroundDef => governed ? GameText.GroundDefenseBuildingsExpenditurebudgetIn
+                                             : GameText.GroundDefenseBuildingsExpenditureIn,
+            BudgetArea.SpaceDef  => governed ? GameText.OrbitalsExpenditurebudgetInByc
+                                             : GameText.OrbitalsExpenditureInByc,
+            _                    => governed ? GameText.CivilianBuildingsExpenditurebudgetInByc
+                                             : GameText.CivilianBuildingsExpenditureInByc,
+        };
+    }
+
     public partial class Planet 
     {
         [StarData] public byte WantedPlatforms { get; private set; }
