@@ -29081,8 +29081,8 @@ PirateStrengthLabel:
  FRA: "Force des pirates"
 PirateStrengthTip:
  Id: 30152
- ENG: "How much trouble pirates are. Higher settings start them at a higher level and let raids happen more often even when you refuse to pay. Paying tribute keeps them off your back but funds their growth; refusing keeps them small and angry, and the Weak setting halves what they ask so peace is worth buying. A raid is sized against the defence already there and never beyond it in proportion, but high level pirates always field a minimum force, so a bare colony is never safe."
- FRA: "À quel point les pirates sont un problème. Les crans élevés les font démarrer à un niveau plus haut et rendent les raids plus fréquents même si vous refusez de payer. Payer le tribut les tient à distance mais finance leur croissance ; refuser les garde petits et hargneux, et le cran Weak divise par deux ce qu'ils réclament pour que la paix vaille son prix. Un raid se dimensionne sur la défense déjà présente et ne la dépasse jamais en proportion, mais des pirates de haut niveau alignent toujours une force minimale : une colonie nue n'est jamais à l'abri."
+ ENG: "How serious the targets of a raid are (freighters first, then warships), and what level pirates start the game at. Weaker settings also send smaller raids; it never changes how often pirates raid or how fast they level."
+ FRA: "Sérieux des cibles d'un raid (les cargos d'abord, puis les vaisseaux de guerre) et niveau de départ des pirates. Les réglages faibles envoient aussi des raids plus petits ; ce réglage ne change ni la cadence des raids ni la vitesse de montée en niveau."
 PirateStrengthWeak:
  Id: 30153
  ENG: "Weak"
@@ -29325,8 +29325,8 @@ PiratePaceLabel:
  FRA: "Rythme des pirates"
 PiratePaceTip:
  Id: 30326
- ENG: "How quickly pirates gain levels. Each level adds a base and stronger raids. Slower stretches the climb."
- FRA: "Vitesse à laquelle les pirates gagnent des niveaux. Chaque niveau ajoute une base et des raids plus forts. Plus lent : l'escalade s'étire."
+ ENG: "How likely pirates are to gain a level after a successful raid. A faster pace means more levels per raid."
+ FRA: "Probabilité pour les pirates de gagner un niveau après un raid réussi. Un rythme plus rapide donne plus de niveaux par raid."
 RmStrengthDefault:
  Id: 30327
  ENG: "Default"
@@ -29426,8 +29426,8 @@ PirateRaidFreqLabel:
  FRA: "Fréquence des raids"
 PirateRaidFreqTip:
  Id: 30364
- ENG: "How often a pirate raid may start against you. It bites hardest early: once the pirates have levels behind them, their own level rules the pace. Separate from Pirate Strength, which says what they are rather than how often they come."
- FRA: "À quelle fréquence un raid pirate peut se déclencher contre vous. C'est en début de partie que le réglage mord le plus : une fois les pirates montés en niveau, c'est leur niveau qui commande la cadence. Distinct de Pirate Strength, qui dit ce qu'ils sont et non à quelle fréquence ils viennent."
+ ENG: "How often pirates raid. More raids also means more chances to gain a level, so this compounds with Pace."
+ FRA: "Cadence des raids pirates. Plus de raids, c'est aussi plus d'occasions de gagner un niveau : ce réglage se cumule avec le rythme."
 PirateRaidFreqRare:
  Id: 30365
  ENG: "Rare"
