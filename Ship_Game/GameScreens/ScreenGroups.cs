@@ -720,7 +720,7 @@ namespace Ship_Game.GameScreens
                 // ⚠ every Empire tab belongs in this list: a screen missing from it is invisible
                 // to "which group is open" - no viewport shift, no lit group button, and it does
                 // not close a page from another group on the way in.
-                or AutomationScreen or PoliciesScreen
+                or AutomationScreen or PoliciesScreen or DefenseScreen
                 => Group.Empire,
 
             InfiltrationScreen
