@@ -358,18 +358,19 @@ namespace Ship_Game.GameScreens
             void FooterMoney(int col, Func<float> getValue) => FooterCell(col, DynamicText(getValue, f => f.MoneyString()));
             void FooterPlain(int col, Func<float> getValue) => FooterCell(col, NeutralText(getValue, f => f.MoneyString()));
 
+            // ⚠ a footer index is the COLUMN's, not the reading order: when a column goes, every
+            // footer after it shifts by one. A stale index here is an out-of-range crash on opening
+            // the tab, never a compile error (maintainer feedback, bench 624).
             FooterCell(1, l => { l.Color = Color.White; return $"{Player.GetPlanets().Sum(p => p.PopulationBillion):0.00}"; });
-            FooterPlain(2, () => Player.GetPlanets().Sum(EconColonyItem.PopIncome));
-            FooterPlain(3, () => Player.GetPlanets().Sum(EconColonyItem.BldgIncome));
-            FooterPlain(4, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
-            FooterPlain(5, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
-            FooterPlain(6, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
-            FooterMoney(7, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
-            var budgetTot = FooterCell(8, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            FooterPlain(2, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
+            FooterPlain(3, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
+            FooterPlain(4, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
+            FooterMoney(5, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
+            var budgetTot = FooterCell(6, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
             budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
                                 " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
-            FooterPlain(9, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
-            FooterMoney(10, () => Player.GetPlanets().Sum(EconColonyItem.BudgetLeft));
+            // column 7 is the civilian rail - a control, not a figure: it carries no total
+            FooterPlain(8, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
 
             // ---- RIGHT 1/3: the synthesis, causal order ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
