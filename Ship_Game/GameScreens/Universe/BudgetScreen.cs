@@ -208,7 +208,7 @@ namespace Ship_Game.GameScreens
                       DefenseListItem.GovernorLetter(Planet), Fonts.Arial12Bold,
                       Colors.Governor(Planet.CType));
 
-                var budget = Cell(8, l = { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
+                var budget = Cell(8, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
                 budget.Tooltip = $"Allocated by the governor - {BudgetLeft(Planet).MoneyString()} still unspent";
 
                 // THE THREE PURSES, one under the other, on the colony's OWN budget switches -
@@ -437,7 +437,7 @@ namespace Ship_Game.GameScreens
             FooterPlain(5, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
             FooterMoney(6, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
             // column 6 is the governor's mark - a letter has no total
-            var budgetTot = FooterCell(8, l = { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            var budgetTot = FooterCell(8, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
             budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
                                 " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
             // columns 7 and 9 are the governor's mark and the rails: a letter and a control
