@@ -119,8 +119,9 @@ namespace Ship_Game
                     new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Defense)));
             setDef.Tooltip = "Give every colony the same defense orders at once, then refine them here.";
 
-            var setBud = Button(ButtonStyle.Low100, Table.Columns[7].Rect.X, (int)Client.Y + 2,
-                "Set all budgets",
+            Rectangle budHead = Table.Columns[7].Rect;
+            var setBud = Button(ButtonStyle.Low100, budHead.X + (budHead.Width - 100) / 2,
+                (int)Client.Y + 2, "Set all budgets",
                 click: _ => ScreenManager.AddScreen(
                     new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)));
             setBud.Tooltip = "Give every colony the same budgets at once, then refine them here.";

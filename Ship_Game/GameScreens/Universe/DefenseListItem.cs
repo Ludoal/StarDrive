@@ -273,6 +273,9 @@ namespace Ship_Game
 
             // a governed purse shows what the governor allocates; a taken-over one keeps the
             // player's number - the rail follows the colony either way
+            // a governed rail shows what the governor allocates and must not be draggable: the drag
+            // would be swallowed and the figure spring back (maintainer feedback)
+            rail.Enabled = P.IsBudgetManual(area);
             if (!P.IsBudgetManual(area))
                 rail.AbsoluteValue = P.BudgetAutoTarget(area);
             return box;

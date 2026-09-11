@@ -22707,24 +22707,24 @@ BgtWithheld:
  FRA: "Retenu par ce réglage"
 BgtCivilBuildings:
  Id: 30130
- ENG: "Civilian Budget (Governors)"
- FRA: "Budget civil (gouverneurs)"
+ ENG: "Civilian (Governors)"
+ FRA: "Civil (gouverneurs)"
 BgtCivilBuildingsTip:
  Id: 30131
  ENG: "Share spent by governors on civil buildings: food, population, production, research. Terraforming is funded separately."
  FRA: "Part dépensée par les gouverneurs en bâtiments civils : nourriture, population, production, recherche. Le terraformage est financé à part."
 BgtDefenseStations:
  Id: 30132
- ENG: "Defense Budget (Governors)"
- FRA: "Budget de défense (gouverneurs)"
+ ENG: "Defense (Governors)"
+ FRA: "Défense (gouverneurs)"
 BgtDefenseStationsTip:
  Id: 30133
  ENG: "Share spent by governors on ground defenses and on the shipyard, stations and platforms orbiting their planet. Fleets are funded elsewhere."
  FRA: "Part dépensée par les gouverneurs en défenses au sol et en chantier, stations et plateformes en orbite de leur planète. Les flottes sont financées ailleurs."
 BgtProjectors:
  Id: 30134
- ENG: "Subspace Projectors (Empire)"
- FRA: "Projecteurs subspatiaux (empire)"
+ ENG: "Subspace Proj. (Empire)"
+ FRA: "Proj. subspatiaux (empire)"
 BgtProjectorsTip:
  Id: 30135
  ENG: "Share spent by the empire on building and maintaining the projector network. Not limited by Governor Allowance."

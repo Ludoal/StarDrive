@@ -143,6 +143,10 @@ namespace Ship_Game.GameScreens
             }
             public static float BldgIncome(Planet p) => p.Money.GrossRevenue - PopIncome(p);
 
+            // the purse's word beside its rail, as the Defense tab names its two
+            static string PurseWord(BudgetArea a) => a == BudgetArea.Civilian ? "Civilian"
+                                                   : a == BudgetArea.GroundDef ? "Ground" : "Space";
+
             public static float BudgetAlloc(Planet p) => p.Budget?.TotalAlloc ?? 0f;
             public static float BudgetLeft(Planet p) => p.Budget == null ? 0f
                 : p.Budget.RemainingCivilian + p.Budget.RemainingSpaceDef + p.Budget.RemainingGroundDef;
@@ -209,7 +213,11 @@ namespace Ship_Game.GameScreens
                 // split, and a live control over a dead figure invites a click that does nothing.
                 Rectangle civ = cols[8].Rect;
                 int railW = UITable.PurseRailWidth;
-                int railX = civ.X + (civ.Width - railW) / 2;
+                // the cell reads left to right: switch, word, rail. The word lane is a CONSTANT
+                // sized on the longest of the three, never a share of the cell.
+                const int WordLane = 58;
+                int wordX = civ.X + 26;
+                int railX = wordX + WordLane;
                 bool governed = Planet.GovernorOn;
                 BudgetArea[] areas = { BudgetArea.Civilian, BudgetArea.GroundDef, BudgetArea.SpaceDef };
                 for (int a = 0; a < areas.Length; ++a)
@@ -221,6 +229,7 @@ namespace Ship_Game.GameScreens
                     // the governor's figure at the next layout and undo the drag
                     float seed = Planet.IsBudgetManual(area) ? Planet.ManualBudgetAmount(area)
                                                              : Planet.BudgetAutoTarget(area);
+                    Label(new Vector2(wordX, ry - 1), PurseWord(area), Fonts.Arial12, Color.Gray);
                     var rail = new FloatSlider(SliderStyle.Decimal1,
                                                new Rectangle(railX, ry, railW, 12),
                                                "", 0f, (seed * 2f).LowerBound(20f), seed)
@@ -232,7 +241,9 @@ namespace Ship_Game.GameScreens
                         if (Planet.IsBudgetManual(area))
                             Planet.Universe.Screen?.RunOnSimThread(() => Planet.SetBudgetAmount(area, amount));
                     };
-                    rail.Enabled = governed;
+                    // a rail on Auto shows what the governor allocates and must not be draggable:
+                    // the drag would be swallowed and the figure spring back (maintainer feedback)
+                    rail.Enabled = governed && Planet.IsBudgetManual(area);
                     Add(rail);
                     var box = Add(new UICheckBox(civ.X + 4, ry - 2, () => !Planet.IsBudgetManual(area),
                                        auto => Planet.Universe.Screen?.RunOnSimThread(() =>
@@ -244,7 +255,9 @@ namespace Ship_Game.GameScreens
                                                Planet.Budget?.SnapToTarget();
                                        }),
                                        Fonts.Arial12Bold, "", BudgetAreaText.Tip(area, governed)));
-                    box.Enabled = governed;
+                    // no governor, no switch at all - a greyed box still asks to be read, the same
+                    // rule the Defense tab follows for its own
+                    box.Visible = governed;
                 }
 
                 ValueCell(9, () => GovExpense(Planet));
@@ -303,14 +316,14 @@ namespace Ship_Game.GameScreens
                 // now, where a reader looks for it and cannot mistake it for a sum (maintainer
                 // feedback).
                 new UITable.Column { Title = "Gross",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Gross tax revenue (colonists + buildings)" },
-                new UITable.Column { Title = "Bldg Upk",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
-                new UITable.Column { Title = "Troop Upk", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
+                new UITable.Column { Title = "Bldgs",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
+                new UITable.Column { Title = "Troops",    Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 // the governor's own mark, as the Colonies tab draws it: the allowance and the
                 // three purses beside it are HIS, so the reader wants to know who holds them
                 new UITable.Column { Title = "Gov.", Width = 60, Align = TableAlign.Center, Sortable = true,
                                      Tip = "Which governor runs this colony" },
-                new UITable.Column { Title = "Allowance", Align = TableAlign.Number, Sortable = true, Tip = "The colony's share of the Governor Allowance" },
+                new UITable.Column { Title = "Allow.",    Align = TableAlign.Number, Sortable = true, Tip = "Allowance - the colony's share of the Governor Allowance" },
                 // the civilian purse, set from here: the rail beside the allocation it feeds, so
                 // a colony's budget is read and changed in one place (maintainer feedback). Ground
                 // and orbital defence have their own rails on the Defense tab.
@@ -322,7 +335,7 @@ namespace Ship_Game.GameScreens
                 // at construction is overwritten and the cell collapses to its title (bench 625).
                 // The floor is what the control needs: the caption lane, the track, and the value
                 // lane the slider reserves on its right.
-                new UITable.Column { Title = "Budget", MinWidth = 230, Align = TableAlign.Center,
+                new UITable.Column { Title = "Budget", MinWidth = 280, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
@@ -360,7 +373,8 @@ namespace Ship_Game.GameScreens
             // mark instead - "Set all?" is what the bench read (maintainer feedback). Plain ASCII.
             // Seated over the column it fills, not in the far corner where it went unnoticed.
             Rectangle budgetHead = Table.Columns[8].Rect;
-            var setAll = Button(ButtonStyle.Low100, budgetHead.X, (int)client.Y + 2, "Set all budgets",
+            var setAll = Button(ButtonStyle.Low100, budgetHead.X + (budgetHead.Width - 100) / 2,
+                (int)client.Y + 2, "Set all budgets",
                 click: _ => ScreenManager.AddScreen(
                     new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)));
             setAll.Tooltip = "Give every colony the same budgets at once, then refine them here.";
@@ -374,7 +388,12 @@ namespace Ship_Game.GameScreens
             // ONE row-pitch above the table foot, leaving exactly that lane for the TOTAL
             // footer just below it.
             var listRect = Table.ListRect;
-            listRect.H -= Table.RowPitch;
+            // ⚠ a LINE, not a row pitch: the TOTAL row needs the height of its text, and sizing
+            // its lane on the pitch wasted most of a colony the day the rows grew to 60px
+            // (maintainer feedback: room left at the foot for one more). A reservation belongs to
+            // what fills it.
+            const int FooterLane = 26;
+            listRect.H -= FooterLane;
             ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 56));
             ColonySL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColonySL);
@@ -383,7 +402,7 @@ namespace Ship_Game.GameScreens
             // TOTAL footer sits in the lane freed just below the list - CENTRED in that lane.
             // The lane runs from listRect.Bottom to the table foot (client.Bottom - 10),
             // one RowPitch tall.
-            int totalY = (int)listRect.Bottom + (Table.RowPitch - Fonts.Arial12Bold.LineSpacing) / 2;
+            int totalY = (int)listRect.Bottom + (FooterLane - Fonts.Arial12Bold.LineSpacing) / 2;
             var footerLabels = new Array<UILabel>(); // the whole row can nudge onto the net line below
             var totalLbl = Label(new Vector2(Table.Columns[0].Rect.X + UITable.PadX + 28, totalY), Localizer.Token(GameText.Total2).ToUpper(), Fonts.Arial12Bold);
             totalLbl.Color = Color.Wheat;
@@ -421,8 +440,8 @@ namespace Ship_Game.GameScreens
             // ---- RIGHT 1/3: the synthesis, causal order ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
             // goal) → vertical arithmetic Income − Expenditure = Net Gain
-            int rx = (int)RightMenu.X + 12; // tighter margins
-            int rw = (int)RightMenu.Width - 24;
+            int rx = (int)RightMenu.X + 6;  // margins pared back again, to give the rails their room
+            int rw = (int)RightMenu.Width - 12;
             var taxRect    = new Rectangle(rx, (int)RightMenu.Y + 42, rw, 114); // top rhythm = the left table's headerY, checkbox first; the height is trimmed under the goal slider so Net Gain breathes at the foot, and the three blocks below hang off this bottom
 
             SummaryPanel tax = Add(new SummaryPanel("", taxRect, new Color(17, 21, 28)));
