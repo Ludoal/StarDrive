@@ -209,7 +209,13 @@ namespace Ship_Game
             GarrisonTroopDropDown.OnValueChange = v => SetGarrisonTroop(player, v);
             troops.ReverseZOrder();
 
-            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH), "Freighters");
+            // ⚠ Policies carries a box of the same name: this one is what the empire DOES by
+            // itself, that one the rules the freighters obey. Two halves of one subject, and each
+            // title says which half it holds (maintainer feedback).
+            UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH),
+                                  "Freighters",
+                                  "What the empire builds, upgrades and scraps by itself. The rules "
+                                  + "freighters follow live in Policies > Freighters.");
             // The picker names the shared Freighter Model that Auto-build and Auto-upgrade both
             // use; its Auto Pick box picks the best model when checked, or reveals the manual
             // list when unchecked.
@@ -254,9 +260,11 @@ namespace Ship_Game
         }
 
         // one category box: a one-tab frame bearing the category's name, with its rows inside
-        UIList NewBox(in RectF r, LocalizedText title)
+        UIList NewBox(in RectF r, LocalizedText title, LocalizedText tooltip = default)
         {
             var box = Add(new Submenu(r, new[] { title }));
+            if (tooltip.IsValid)
+                box.Tabs[0].Tooltip = tooltip;
             box.PerformLayout();
             UIList list = AddList(new Vector2(box.ClientArea.X + 12, box.ClientArea.Y + 12));
             list.Padding = new Vector2(2f, 10f);

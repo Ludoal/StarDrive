@@ -163,7 +163,11 @@ namespace Ship_Game
 
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Freighters", GameText.PolTradeNotice);
+            // ⚠ Automation carries a box of the same name: that one is what the empire DOES by
+            // itself, this one the rules the freighters obey.
+            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Freighters",
+                                  "The rules freighters follow. What the empire builds, upgrades "
+                                  + "and scraps by itself lives in Automation > Freighters.");
             // the RIGHT is read before the doctrine that uses it (bench 538), so the permission
             // to trade abroad heads the frame. Its own tooltip says out loud that this one is a
             // GAME rule, not an empire order - it is stored with the game setup, so it does not
