@@ -54,6 +54,11 @@ namespace Ship_Game
 
         readonly List<Entry> Basket = new();
 
+        // ⚠ an ORDER, not a setting: the toggle is born false at every opening, because the window
+        // is built anew each time. A "Head of queue" left ticked from one session to the next would
+        // push a building to the front that was meant for the back, and say nothing (spec).
+        bool HeadOfQueue;
+
         ScrollList<SourceItem> SourceList;
         ScrollList<BasketItem> BasketList;
         UIButton ApplyButton;
@@ -171,6 +176,13 @@ namespace Ship_Game
             targetList.Pos = new Vector2(Rect.X + 150, pickerY);
             targetList.OnValueChange = t => { Target = t; RefreshSource(); };
 
+            // it holds for every add of THIS opening - that is what it has over a second button
+            Add(new UICheckBox(Rect.X + 390, pickerY - 2, () => HeadOfQueue, v => HeadOfQueue = v,
+                               Fonts.Arial12Bold, "Head of queue",
+                               "Puts what this order adds at the FRONT of each colony's queue "
+                               + "instead of the back. It holds for every add of this opening, and "
+                               + "starts off again next time the window is opened."));
+
             RefreshSource();
         }
 
@@ -247,6 +259,7 @@ namespace Ship_Game
             {
                 foreach (Planet p in targets)
                 {
+                    int wasCount = p.Construction.Count;
                     foreach (Entry e in Basket)
                     {
                         if (e.Building != null)
@@ -273,6 +286,17 @@ namespace Ship_Game
                             else
                                 p.Construction.Enqueue(e.Ship, QueueItem.PlayerQueueTypeFor(e.Ship));
                         }
+                    }
+
+                    // ⚠ moved AFTER the basket rather than enqueued at the front one by one: each
+                    // move walks one place further so the basket keeps its own order at the head
+                    // instead of arriving reversed. What the colony refused was never queued, so
+                    // the count delta is the honest list of what actually landed.
+                    if (HeadOfQueue)
+                    {
+                        int added = p.Construction.Count - wasCount;
+                        for (int i = 0; i < added; ++i)
+                            p.Construction.MoveTo(i, wasCount + i);
                     }
                 }
 
