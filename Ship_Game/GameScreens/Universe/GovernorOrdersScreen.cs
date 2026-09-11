@@ -32,8 +32,8 @@ namespace Ship_Game
 
         FloatSlider CivRail, GrdRail, SpcRail, GarrisonRail;
 
-        const int PopupW = 520, BudgetH = 280, DefenseH = 340;
-        const int RowH = 34, RailW = UITable.PurseRailWidth, LabelW = 150;
+        const int PopupW = 700, BudgetH = 260, DefenseH = 340;
+        const int RowH = 40, RailW = UITable.PurseRailWidth, LabelW = 150;
 
         public GovernorOrdersScreen(GameScreen summoner, UniverseScreen u, Mode kind)
             : base(summoner, PopupW, kind == Mode.Budget ? BudgetH : DefenseH)
@@ -70,15 +70,41 @@ namespace Ship_Game
         // one row: its name and its rail. ⚠ NO tally beside it: three grey figures without a
         // word read as noise, and the window now centres on the table that says the same thing
         // properly (maintainer feedback).
-        FloatSlider Row(string name, float y, float max, float seed)
+        FloatSlider Row(string name, float y, float max, float seed, bool whole = false)
         {
             Add(new UILabel(new Vector2(Rect.X + 20, y + 2), name, Fonts.Arial12Bold, Colors.Cream));
-            var rail = Add(new FloatSlider(SliderStyle.Decimal1,
+            var rail = Add(new FloatSlider(whole ? SliderStyle.Decimal : SliderStyle.Decimal1,
                                            new Rectangle(Rect.X + 20 + LabelW, (int)y, RailW, 12),
                                            "", 0f, max, seed));
             rail.TrackYOffset = 0;
             rail.ValueLane = 34;
+            if (whole)
+                rail.Step = 1; // a count of troops has no halves (maintainer feedback)
             return rail;
+        }
+
+        // ⚠ ONE PAIR PER PURSE, not one pair for the three: the three areas are set at different
+        // moments and for different reasons, and a single Set forced the player to accept three
+        // levels to change one (maintainer feedback).
+        void PurseButtons(BudgetArea area, FloatSlider rail, float y)
+        {
+            int bx = Rect.X + 20 + LabelW + RailW + 14;
+            Button(ButtonStyle.Low80, bx, (int)y - 4, "Set",
+                   click: _ =>
+                   {
+                       float v = rail.AbsoluteValue;
+                       ForEachColony(p => { p.SetBudgetAmount(area, v); p.SetBudgetManual(area, true); });
+                   })
+                .Tooltip = "Applies this level to every colony and takes this purse off Auto. Taking "
+                         + "manual control restarts from what the governor was allocating, so a level "
+                         + "set while on Auto would be lost.";
+            Button(ButtonStyle.Low80, bx + 88, (int)y - 4, "Auto",
+                   click: _ => ForEachColony(p =>
+                   {
+                       p.SetBudgetManual(area, false);
+                       p.Budget?.SnapToTarget();
+                   }))
+                .Tooltip = "Hands this purse back to the governors, on every colony.";
         }
 
         public override void LoadContent()
@@ -92,34 +118,16 @@ namespace Ship_Game
             if (Kind == Mode.Budget)
             {
                 CivRail = Row("Civilian", y, RailMax(BudgetArea.Civilian), 0f);
+                PurseButtons(BudgetArea.Civilian, CivRail, y);
                 GrdRail = Row("Ground Defense", y += RowH, RailMax(BudgetArea.GroundDef), 0f);
+                PurseButtons(BudgetArea.GroundDef, GrdRail, y);
                 SpcRail = Row("Space Defense", y += RowH, RailMax(BudgetArea.SpaceDef), 0f);
+                PurseButtons(BudgetArea.SpaceDef, SpcRail, y);
 
-                float by = y + RowH + 14;
-                const int BtnW = 170, Gap = 14;
-                int bx = (int)(Rect.X + (PopupW - (2 * BtnW + Gap)) / 2);
-                // ⚠ "Set" says (manual) out loud because it does two things: taking a purse over
-                // RESTARTS it from what the governor was allocating, so a level posed on a colony
-                // still on Auto would be wiped the moment it goes manual. The button cannot pose
-                // one without the other and stay honest.
-                var set = Button(ButtonStyle.DefaultActive, bx, by, "Set all (manual)",
-                                 click: _ => ApplyBudgets());
-                set.Tooltip = "Applies this level to every colony and takes it off Auto. Taking manual "
-                            + "control restarts from what the governor was allocating, so a level set "
-                            + "while on Auto would be lost.";
-                var auto = Button(ButtonStyle.Default, bx + BtnW + Gap, by, "Auto all",
-                                  click: _ => ForEachColony(p =>
-                                  {
-                                      p.SetBudgetManual(BudgetArea.Civilian, false);
-                                      p.SetBudgetManual(BudgetArea.GroundDef, false);
-                                      p.SetBudgetManual(BudgetArea.SpaceDef, false);
-                                      p.Budget?.SnapToTarget();
-                                  }));
-                auto.Tooltip = "Hands all three purses back to the governors, on every colony.";
             }
             else
             {
-                GarrisonRail = Row("Garrison", y, DefenseListItem.MaxGarrison, 0f);
+                GarrisonRail = Row("Garrison", y, DefenseListItem.MaxGarrison, 0f, whole: true);
 
                 // ⚠ three orders, one grandeur each, no overlap: a garrison level is simply stored
                 // and serves when auto-training is on, so unlike a purse it can be posed without
@@ -155,18 +163,5 @@ namespace Ship_Game
             }
         }
 
-        void ApplyBudgets()
-        {
-            float civ = CivRail.AbsoluteValue, grd = GrdRail.AbsoluteValue, spc = SpcRail.AbsoluteValue;
-            ForEachColony(p =>
-            {
-                p.SetBudgetAmount(BudgetArea.Civilian, civ);
-                p.SetBudgetManual(BudgetArea.Civilian, true);
-                p.SetBudgetAmount(BudgetArea.GroundDef, grd);
-                p.SetBudgetManual(BudgetArea.GroundDef, true);
-                p.SetBudgetAmount(BudgetArea.SpaceDef, spc);
-                p.SetBudgetManual(BudgetArea.SpaceDef, true);
-            });
-        }
     }
 }

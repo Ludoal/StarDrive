@@ -298,8 +298,11 @@ namespace Ship_Game.GameScreens
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
             float rowsNeed = 60 + Player.GetPlanets().Count * 56 + 90; // header lane + rows + footer/margins
-            float contentH = fullAvail <= h900 ? fullAvail
-                           : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
+            // ⚠ the frame takes the FULL height available, always: it was capped at the 900p
+            // footprint unless the rows asked for more, which left the table short while the
+            // synthesis beside it had nothing to do with that height (maintainer feedback).
+            // The two halves share a frame; only the table decides how tall it must be.
+            float contentH = fullAvail;
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
                                                     OnEmpireTabChanged, contentW, contentH);
             RectF client = EmpireTabs.ClientArea;
@@ -321,7 +324,7 @@ namespace Ship_Game.GameScreens
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 // the governor's own mark, as the Colonies tab draws it: the allowance and the
                 // three purses beside it are HIS, so the reader wants to know who holds them
-                new UITable.Column { Title = "Gov.", Width = 60, Align = TableAlign.Center, Sortable = true,
+                new UITable.Column { Title = "Gov.", Width = 38, Align = TableAlign.Center, Sortable = true,
                                      Tip = "Which governor runs this colony" },
                 new UITable.Column { Title = "Allow.",    Align = TableAlign.Number, Sortable = true, Tip = "Allowance - the colony's share of the Governor Allowance" },
                 // the civilian purse, set from here: the rail beside the allocation it feeds, so
@@ -335,7 +338,7 @@ namespace Ship_Game.GameScreens
                 // at construction is overwritten and the cell collapses to its title (bench 625).
                 // The floor is what the control needs: the caption lane, the track, and the value
                 // lane the slider reserves on its right.
-                new UITable.Column { Title = "Budget", MinWidth = 280, Align = TableAlign.Center,
+                new UITable.Column { Title = "Budget", MinWidth = 258, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });

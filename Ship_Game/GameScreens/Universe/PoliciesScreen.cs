@@ -158,7 +158,8 @@ namespace Ship_Game
             SliderRow(colony, "Garrison Size", "How many troops a new colony aims to keep. Zero "
                       + "leaves it to you, which is the game's own default.",
                       0, DefenseListItem.MaxGarrison, player.NewColonyGarrison, "none",
-                      v => Universe.RunOnSimThread(() => player.NewColonyGarrison = v));
+                      v => Universe.RunOnSimThread(() => player.NewColonyGarrison = v),
+                      railW: 150f); // a 0-25 count needs no page-wide rail (maintainer feedback)
             colony.AddCheckbox(() => player.NewColonyGovOrbitals,
                                title: "Governor Manages Space Defense",
                                tooltip: GameText.DvDefenseSpaceDefTip);
@@ -439,10 +440,11 @@ namespace Ship_Game
         // a word gives up track for it, and the column still lines up on the last digit.
         void SliderRow(UIList box, in LocalizedText title, in LocalizedText tooltip, float min, float max,
                        int current, LocalizedText zeroText, Action<int> onChange, string suffix = "",
-                       LocalizedText maxText = default, int valueLane = FloatSlider.DefaultValueLane)
+                       LocalizedText maxText = default, int valueLane = FloatSlider.DefaultValueLane,
+                       float railW = SliderRailW)
         {
             box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
-            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(SliderRailW, 28),
+            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(railW, 28),
                                                "", min, max, current)
             {
                 Step = 1,

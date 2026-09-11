@@ -203,10 +203,7 @@ namespace Ship_Game
 
             // (player feedback) the troop the governor rebuilds a garrison with - the same family
             // as the model pickers above: what the machine takes when it builds for you.
-            // Ludoal fork (maintainer feedback): Troops moves to the first column, under
-            // Notifications - the second column carries three boxes and had grown top-heavy since
-            // the freighter rails arrived. Its width is the FIRST column's, not the second's.
-            UIList troops = NewBox(new RectF(x0, top + NotificationsBoxH + BoxGap, BoxW, TroopsBoxH), "Troops");
+            UIList troops = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap + TradeBoxH + BoxGap, BoxW2, TroopsBoxH), "Troops");
             GarrisonTroopDropDown = troops.Add(new LabeledDropdown<string>())
                 .Create(GameText.GarrisonTroop, GameText.GarrisonTroopTip);
             GarrisonTroopDropDown.OnValueChange = v => SetGarrisonTroop(player, v);
