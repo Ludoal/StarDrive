@@ -121,7 +121,7 @@ namespace Ship_Game
         // tab - the seat is armed BEFORE the snap so the colony wears this tab as its Esc origin.
         void OnColonyDoubleClicked(DefenseListItem item)
         {
-            Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this));
+            Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this), govTab: 2);
             Universe.SnapViewColony(item.P, combatView: false);
             // the colony inherits this page's automatic pause: consulting a colony from a paused
             // list must not restart the simulation

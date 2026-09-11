@@ -126,7 +126,11 @@ namespace Ship_Game
             ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
         }
 
-        public void HostColonyTab(Planet p, GameScreens.ScreenGroups.Group group, int originTab)
+        // Ludoal fork: govTab says which tab of the colony's governor panel opens - 0 Governor,
+        // 1 Budget, 2 Defense. A page that sends the player to a colony sends him to the SUBJECT
+        // he was reading, not to the front door (maintainer feedback).
+        public void HostColonyTab(Planet p, GameScreens.ScreenGroups.Group group, int originTab,
+                                  int govTab = 0)
         {
             if (group == GameScreens.ScreenGroups.Group.Empire)
                 EmpireColonyPlanet = p; // the permanent tab follows the last colony viewed
@@ -138,7 +142,7 @@ namespace Ship_Game
             OpenHostedTabPanel = () =>
             {
                 SetSelectedPlanet(p); // stays selected - the cartouche shows through
-                ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
+                ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI, govTab));
             };
         }
 
