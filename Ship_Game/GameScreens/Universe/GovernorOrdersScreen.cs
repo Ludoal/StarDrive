@@ -67,35 +67,10 @@ namespace Ship_Game
             return (top * 2f).LowerBound(20f);
         }
 
-        string BudgetCount(BudgetArea area)
-        {
-            var owned = Player.GetPlanets();
-            int manual = 0;
-            for (int i = 0; i < owned.Count; ++i)
-                if (owned[i].IsBudgetManual(area)) ++manual;
-            return $"Colonies: {owned.Count - manual} Auto · {manual} manual";
-        }
-
-        string GarrisonCount()
-        {
-            var owned = Player.GetPlanets();
-            int auto = 0;
-            for (int i = 0; i < owned.Count; ++i)
-                if (owned[i].AutoBuildTroops) ++auto;
-            return $"Colonies: {auto} Auto · {owned.Count - auto} manual";
-        }
-
-        string GovOrbitalsCount()
-        {
-            var owned = Player.GetPlanets();
-            int on = 0;
-            for (int i = 0; i < owned.Count; ++i)
-                if (owned[i].GovOrbitals) ++on;
-            return $"Colonies: {on} on · {owned.Count - on} off";
-        }
-
-        // one row: its name, its rail, and what the colonies say right now
-        FloatSlider Row(string name, float y, float max, float seed, Func<string> count)
+        // one row: its name and its rail. ⚠ NO tally beside it: three grey figures without a
+        // word read as noise, and the window now centres on the table that says the same thing
+        // properly (maintainer feedback).
+        FloatSlider Row(string name, float y, float max, float seed)
         {
             Add(new UILabel(new Vector2(Rect.X + 20, y + 2), name, Fonts.Arial12Bold, Colors.Cream));
             var rail = Add(new FloatSlider(SliderStyle.Decimal1,
@@ -103,9 +78,6 @@ namespace Ship_Game
                                            "", 0f, max, seed));
             rail.TrackYOffset = 0;
             rail.ValueLane = 34;
-            var tally = Add(new UILabel(l => count(), Fonts.Arial12));
-            tally.Pos = new Vector2(Rect.X + 20 + LabelW + RailW + 12, y + 2);
-            tally.Color = Color.Gray;
             return rail;
         }
 
@@ -119,12 +91,9 @@ namespace Ship_Game
             float y = BodyTop + 14;
             if (Kind == Mode.Budget)
             {
-                CivRail = Row("Civilian", y, RailMax(BudgetArea.Civilian), 0f,
-                              () => BudgetCount(BudgetArea.Civilian));
-                GrdRail = Row("Ground Defense", y += RowH, RailMax(BudgetArea.GroundDef), 0f,
-                              () => BudgetCount(BudgetArea.GroundDef));
-                SpcRail = Row("Space Defense", y += RowH, RailMax(BudgetArea.SpaceDef), 0f,
-                              () => BudgetCount(BudgetArea.SpaceDef));
+                CivRail = Row("Civilian", y, RailMax(BudgetArea.Civilian), 0f);
+                GrdRail = Row("Ground Defense", y += RowH, RailMax(BudgetArea.GroundDef), 0f);
+                SpcRail = Row("Space Defense", y += RowH, RailMax(BudgetArea.SpaceDef), 0f);
 
                 float by = y + RowH + 14;
                 const int BtnW = 170, Gap = 14;
@@ -150,7 +119,7 @@ namespace Ship_Game
             }
             else
             {
-                GarrisonRail = Row("Garrison", y, DefenseListItem.MaxGarrison, 0f, GarrisonCount);
+                GarrisonRail = Row("Garrison", y, DefenseListItem.MaxGarrison, 0f);
 
                 // ⚠ three orders, one grandeur each, no overlap: a garrison level is simply stored
                 // and serves when auto-training is on, so unlike a purse it can be posed without
@@ -175,9 +144,6 @@ namespace Ship_Game
                 float gy = by + 46;
                 Add(new UILabel(new Vector2(Rect.X + 20, gy + 2), "Gov. Manages Space Defense",
                                 Fonts.Arial12Bold, Colors.Cream));
-                var tally = Add(new UILabel(l => GovOrbitalsCount(), Fonts.Arial12));
-                tally.Pos = new Vector2(Rect.X + 20 + LabelW + RailW + 14, gy + 2);
-                tally.Color = Color.Gray;
 
                 float ty = gy + 26;
                 Button(ButtonStyle.Default, bx, ty, "Toggle all On",
