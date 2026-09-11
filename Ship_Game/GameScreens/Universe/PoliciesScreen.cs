@@ -163,7 +163,7 @@ namespace Ship_Game
 
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
-            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
+            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Freighters", GameText.PolTradeNotice);
             // the RIGHT is read before the doctrine that uses it (bench 538), so the permission
             // to trade abroad heads the frame. Its own tooltip says out loud that this one is a
             // GAME rule, not an empire order - it is stored with the game setup, so it does not
