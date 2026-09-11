@@ -73,7 +73,7 @@ namespace Ship_Game
             int manual = 0;
             for (int i = 0; i < owned.Count; ++i)
                 if (owned[i].IsBudgetManual(area)) ++manual;
-            return $"{owned.Count - manual} Auto · {manual} manual";
+            return $"Colonies: {owned.Count - manual} Auto · {manual} manual";
         }
 
         string GarrisonCount()
@@ -82,7 +82,7 @@ namespace Ship_Game
             int auto = 0;
             for (int i = 0; i < owned.Count; ++i)
                 if (owned[i].AutoBuildTroops) ++auto;
-            return $"{auto} Auto · {owned.Count - auto} manual";
+            return $"Colonies: {auto} Auto · {owned.Count - auto} manual";
         }
 
         string GovOrbitalsCount()
@@ -91,7 +91,7 @@ namespace Ship_Game
             int on = 0;
             for (int i = 0; i < owned.Count; ++i)
                 if (owned[i].GovOrbitals) ++on;
-            return $"{on} on · {owned.Count - on} off";
+            return $"Colonies: {on} on · {owned.Count - on} off";
         }
 
         // one row: its name, its rail, and what the colonies say right now
