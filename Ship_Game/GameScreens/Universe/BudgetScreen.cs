@@ -42,7 +42,7 @@ namespace Ship_Game.GameScreens
 
         public UITable Table;    // the shared table charte owns geometry, headers and rules
         // static: the sort survives the screen for the session
-        static int SortCol = 4;  // NET by default (its index moved when the derived columns went)
+        static int SortCol = 5;  // NET by default - it moved again when Spc took its place before Troops
         static bool SortDesc = true;
         static bool SortByName;
 
@@ -131,7 +131,11 @@ namespace Ship_Game.GameScreens
             readonly UITable Table;
             public EconColonyItem(UITable table, Planet p) { Table = table; Planet = p; }
 
-            public static float NetIncome(Planet p) => p.Money.NetRevenue - p.Money.TroopMaint;
+            // ⚠ the core's NetRevenue subtracts BUILDING upkeep only: the orbital bill has to be
+            // taken here or this screen shows a net the colony's own Stats+ contradicts, and by
+            // exactly that amount (maintainer feedback).
+            public static float NetIncome(Planet p) =>
+                p.Money.NetRevenue - p.SpaceDefMaintenance - p.Money.TroopMaint;
 
             // GrossRevenue = (Pop×IncomePerColonist + IncomeFromBuildings) × TaxRate —
             // shares are proportional so the two columns always sum to GROSS
@@ -193,17 +197,18 @@ namespace Ship_Game.GameScreens
                 gross.Tooltip = $"pop {PopIncome(Planet).MoneyString()} + buildings {BldgIncome(Planet).MoneyString()}" +
                                 $" — effective tax {Planet.Money.TaxRate * 100f:0.#}% (empire {baseRate:0.#}% × local bonus)";
                 ValueCell(3, () => -Planet.Money.Maintenance);
-                ValueCell(4, () => -Planet.Money.TroopMaint);
-                ValueCell(5, () => NetIncome(Planet));
+                ValueCell(4, () => -Planet.SpaceDefMaintenance);
+                ValueCell(5, () => -Planet.Money.TroopMaint);
+                ValueCell(6, () => NetIncome(Planet));
                 // what is LEFT of the allocation rides in the budget's own tooltip: it is the
                 // allocation minus what the governor spends, and a derived figure does not need
                 // a column of its own (maintainer feedback)
                 // the governor's mark, the Colonies tab's own letter and colour
-                Label(new Vector2(cols[6].Rect.X + cols[6].Rect.Width / 2 - 8, y + 4),
+                Label(new Vector2(cols[7].Rect.X + cols[7].Rect.Width / 2 - 8, y + 4),
                       DefenseListItem.GovernorLetter(Planet), Fonts.Arial12Bold,
                       Colors.Governor(Planet.CType));
 
-                var budget = Cell(7, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
+                var budget = Cell(8, l = { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
                 budget.Tooltip = $"Allocated by the governor - {BudgetLeft(Planet).MoneyString()} still unspent";
 
                 // THE THREE PURSES, one under the other, on the colony's OWN budget switches -
@@ -211,7 +216,7 @@ namespace Ship_Game.GameScreens
                 // them covers all three, which is why they are read together (maintainer feedback).
                 // ⚠ greyed whole where there is no governor: an allowance nobody holds cannot be
                 // split, and a live control over a dead figure invites a click that does nothing.
-                Rectangle civ = cols[8].Rect;
+                Rectangle civ = cols[9].Rect;
                 int railW = UITable.PurseRailWidth;
                 // the cell reads left to right: switch, word, rail. The word lane is a CONSTANT
                 // sized on the longest of the three, never a share of the cell.
@@ -260,8 +265,6 @@ namespace Ship_Game.GameScreens
                     box.Visible = governed;
                 }
 
-                ValueCell(9, () => GovExpense(Planet));
-
                 base.PerformLayout();
             }
         }
@@ -274,15 +277,14 @@ namespace Ship_Game.GameScreens
             p => p.PopulationBillion,
             p => p.Money.GrossRevenue,
             p => -p.Money.Maintenance,
+            p => -p.SpaceDefMaintenance,
             p => -p.Money.TroopMaint,
             EconColonyItem.NetIncome,
             // the governor column sorts by his type, so colonies of a kind gather
             p => (float)p.CType,
             EconColonyItem.BudgetAlloc,
-            // the civilian rail's column: not clickable to sort, but the array is indexed by
-            // column so it keeps its slot rather than shifting every entry after it
+            // the budget rails' column: indexed by column so it keeps its slot
             p => p.BudgetAutoTarget(BudgetArea.Civilian),
-            EconColonyItem.GovExpense,
         };
 
         public override void LoadContent()
@@ -320,6 +322,7 @@ namespace Ship_Game.GameScreens
                 // feedback).
                 new UITable.Column { Title = "Gross",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Gross tax revenue (colonists + buildings)" },
                 new UITable.Column { Title = "Bldgs",     Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
+                new UITable.Column { Title = "Spc",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Space defense upkeep - the orbitals this colony keeps" },
                 new UITable.Column { Title = "Troops",    Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
                 // the governor's own mark, as the Colonies tab draws it: the allowance and the
@@ -340,7 +343,6 @@ namespace Ship_Game.GameScreens
                 // lane the slider reserves on its right.
                 new UITable.Column { Title = "Budget", MinWidth = 258, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
-                new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
             // widths from the data: the planet names size the Colony column (plus its icon
             // lane); a numeric column takes its own title or a money figure, whichever is wider
@@ -375,7 +377,7 @@ namespace Ship_Game.GameScreens
             // ⚠ NO ellipsis in a button label: the sprite font has no "…" and draws a question
             // mark instead - "Set all?" is what the bench read (maintainer feedback). Plain ASCII.
             // Seated over the column it fills, not in the far corner where it went unnoticed.
-            Rectangle budgetHead = Table.Columns[8].Rect;
+            Rectangle budgetHead = Table.Columns[9].Rect;
             var setAll = Button(ButtonStyle.Low100, budgetHead.X + (budgetHead.Width - 100) / 2,
                 (int)client.Y + 2, "Set all budgets",
                 click: _ => ScreenManager.AddScreen(
@@ -431,14 +433,15 @@ namespace Ship_Game.GameScreens
             FooterCell(1, l => { l.Color = Color.White; return $"{Player.GetPlanets().Sum(p => p.PopulationBillion):0.00}"; });
             FooterPlain(2, () => Player.GetPlanets().Sum(p => p.Money.GrossRevenue));
             FooterPlain(3, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
-            FooterPlain(4, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
-            FooterMoney(5, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
+            FooterPlain(4, () => -Player.GetPlanets().Sum(p => p.SpaceDefMaintenance));
+            FooterPlain(5, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
+            FooterMoney(6, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
             // column 6 is the governor's mark - a letter has no total
-            var budgetTot = FooterCell(7, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            var budgetTot = FooterCell(8, l = { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
             budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
                                 " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
-            // column 8 holds the three rails - controls, not figures: they carry no total
-            FooterPlain(9, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
+            // columns 7 and 9 are the governor's mark and the rails: a letter and a control
+            // carry no total
 
             // ---- RIGHT 1/3: the synthesis, causal order ----
             // auto-tax mode + sliders → governor budget (derived from the treasury
@@ -813,6 +816,9 @@ namespace Ship_Game.GameScreens
                                         + Player.MoneySpendOnProductionThisTurn + Player.MoneySpendOnProductionNow);
             costs.Spacer();
             costs.AddItem("Building Upkeep", () => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes));
+            // ⚠ the orbitals were nowhere in this block: the colony's own Stats+ counts them
+            // against its net, this panel did not (maintainer feedback)
+            costs.AddItem("Space Defense Upkeep", () => -Player.GetPlanets().Sum(p => p.SpaceDefMaintenance));
             costs.AddItem("Troop Upkeep", () => -Player.TroopCostOnPlanets);
             costs.AddItem(GameText.ProductionFees, () => -(Player.MoneySpendOnProductionThisTurn+Player.MoneySpendOnProductionNow)); // "production costs."
             costs.Spacer();
