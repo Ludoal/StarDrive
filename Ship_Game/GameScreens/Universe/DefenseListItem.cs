@@ -225,7 +225,7 @@ namespace Ship_Game
         {
             int tagX  = cell.X + CellPad + 22;
             int railX = tagX + UITable.PurseTagLane;
-            int railW = cell.Right - 8 - railX;   // the rail's right edge, unchanged
+            int railW = UITable.PurseRailWidth;   // one width for every purse rail (maintainer feedback)
             // the caption sits on the track's own line, not above it: the row is 12px tall
             int tagY  = y + 6 - Fonts.Arial12.LineSpacing / 2;
             if (box == null)

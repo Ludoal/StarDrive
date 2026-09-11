@@ -210,9 +210,13 @@ namespace Ship_Game.GameScreens
                 // ⚠ no caption on this rail: the column header names the purse, and a word
                 // repeating it would only take the track's room (maintainer feedback). The
                 // Defense cell keeps its two, having two rails under one header.
-                int civRailX = civ.X + 24;
+                // ⚠ the rail is the WIDTH OF A PURSE RAIL, not the width of its cell: the Defense
+                // tab draws the same control, and two screens sizing one control from their own
+                // leftovers is how they drift apart (maintainer feedback). Centred in the cell.
+                int civRailW = UITable.PurseRailWidth;
+                int civRailX = civ.X + (civ.Width - civRailW) / 2;
                 var rail = new FloatSlider(SliderStyle.Decimal1,
-                                           new Rectangle(civRailX, y + 6, civ.Right - 8 - civRailX, 12),
+                                           new Rectangle(civRailX, y + 6, civRailW, 12),
                                            "", 0f, (seed * 2f).LowerBound(20f), seed)
                            { TrackYOffset = 0, ValueLane = 34,
                              Tip = BudgetAreaText.Tip(BudgetArea.Civilian, Planet.GovernorOn) };
@@ -303,7 +307,7 @@ namespace Ship_Game.GameScreens
                 // at construction is overwritten and the cell collapses to its title (bench 625).
                 // The floor is what the control needs: the caption lane, the track, and the value
                 // lane the slider reserves on its right.
-                new UITable.Column { Title = "Civilian", MinWidth = 230, Align = TableAlign.Center,
+                new UITable.Column { Title = "Civilian Budget", MinWidth = 230, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
@@ -476,7 +480,7 @@ namespace Ship_Game.GameScreens
             GameAudio.AcceptClick();
             // Ludoal fork: armed before the panel - the colony wears the EMPIRE row,
             // Economy (3) as the Esc origin.
-            Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this));
+            Universe.HostColonyTab(item.Planet, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this), govTab: 1);
             // a stacked page like every tab: exit + open in the same frame, the fresh ctor
             // claims the pause before any tick can run
             ExitScreen();
