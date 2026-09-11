@@ -773,7 +773,13 @@ namespace Ship_Game
         };
 
         // bench 454: a projected line drawn as wide dashes; `slot` phases the dash inside
-        // a three-slot period so different goods never paint the same pixels
+        // a three-slot period so different goods never paint the same pixels.
+        // ⚠ THE SPACING IS A WORLD DISTANCE, THE DASH A SCREEN LENGTH, and the two must not be
+        // swapped: with the spacing measured in pixels, every dash sat a fixed number of PIXELS
+        // from a fixed WORLD point, so zooming slid the whole pattern along the route - dashes
+        // crawling forward on zoom in, back on zoom out (maintainer feedback). Anchored in world
+        // units, a dash keeps the piece of space it marks whatever the zoom; kept at a screen
+        // length, it stays legible instead of growing into a bar.
         void DrawDashedRouteProjected(Vector2 startWorld, Vector2 endWorld, Color color, int slot)
         {
             Vector2d a = ProjectToScreenPosition(startWorld);
@@ -781,13 +787,24 @@ namespace Ship_Game
             double len = a.Distance(b);
             if (len < 1.0)
                 return;
-            // bench 455: a 3px breath between dashes so neighbouring slots never touch;
-            // the stroke is the map's route width (maintainer feedback: 1 px, a lighter map)
-            const double Slot = 14.0, Dash = 11.0, Period = Slot * 3;
             Vector2d dir = (b - a) / len;
-            for (double t = slot * Slot; t < len; t += Period)
+            // the spacing follows the galaxy rather than a pixel count, so it means the same
+            // thing on a small map and a large one. The divisor is the tuning knob.
+            double slotPx = ProjectToScreenSize(UState.UniverseRadius / 300.0);
+            double periodPx = slotPx * 3;
+            // zoomed far enough out the three slots collapse onto each other: a dotted line at
+            // that distance is noise, and a loop over thousands of dashes is worse - draw the
+            // trail whole. No phase, so nothing to crawl.
+            if (slotPx < 3.0)
             {
-                double t2 = Math.Min(t + Dash, len);
+                DrawLine(a, b, color, RouteLineWidth);
+                return;
+            }
+            // bench 455: a breath between dashes so neighbouring slots never touch
+            double dash = Math.Min(11.0, slotPx - 3.0);
+            for (double t = slot * slotPx; t < len; t += periodPx)
+            {
+                double t2 = Math.Min(t + dash, len);
                 DrawLine(a + dir * t, a + dir * t2, color, RouteLineWidth);
             }
         }
