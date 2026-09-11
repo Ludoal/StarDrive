@@ -194,51 +194,60 @@ namespace Ship_Game.GameScreens
                 // what is LEFT of the allocation rides in the budget's own tooltip: it is the
                 // allocation minus what the governor spends, and a derived figure does not need
                 // a column of its own (maintainer feedback)
-                var budget = Cell(6, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
+                // the governor's mark, the Colonies tab's own letter and colour
+                Label(new Vector2(cols[6].Rect.X + cols[6].Rect.Width / 2 - 8, y + 4),
+                      DefenseListItem.GovernorLetter(Planet), Fonts.Arial12Bold,
+                      Colors.Governor(Planet.CType));
+
+                var budget = Cell(7, l => { float v = BudgetAlloc(Planet); l.Color = v > 0f ? Color.Wheat : Color.Gray; return v.MoneyString(); });
                 budget.Tooltip = $"Allocated by the governor - {BudgetLeft(Planet).MoneyString()} still unspent";
 
-                // the civilian rail and its Auto box, on the colony's OWN budget switches - the
-                // same mechanics the colony panel drives, not a copy. Auto hands the purse back to
-                // the governor; taking it over starts at the current allocation, so nothing jumps.
-                Rectangle civ = cols[7].Rect;
-                // ⚠ a purse taken over seats on the amount the PLAYER stored, not on what the
-                // governor would allocate: seeded on the target, the rail would spring back to the
-                // governor's figure at the next layout and undo the drag
-                float seed = Planet.IsBudgetManual(BudgetArea.Civilian)
-                           ? Planet.ManualCivilianBudget
-                           : Planet.BudgetAutoTarget(BudgetArea.Civilian);
-                // ⚠ no caption on this rail: the column header names the purse, and a word
-                // repeating it would only take the track's room (maintainer feedback). The
-                // Defense cell keeps its two, having two rails under one header.
-                // ⚠ the rail is the WIDTH OF A PURSE RAIL, not the width of its cell: the Defense
-                // tab draws the same control, and two screens sizing one control from their own
-                // leftovers is how they drift apart (maintainer feedback). Centred in the cell.
-                int civRailW = UITable.PurseRailWidth;
-                int civRailX = civ.X + (civ.Width - civRailW) / 2;
-                var rail = new FloatSlider(SliderStyle.Decimal1,
-                                           new Rectangle(civRailX, y + 6, civRailW, 12),
-                                           "", 0f, (seed * 2f).LowerBound(20f), seed)
-                           { TrackYOffset = 0, ValueLane = 34,
-                             Tip = BudgetAreaText.Tip(BudgetArea.Civilian, Planet.GovernorOn) };
-                rail.OnChange = sl =>
+                // THE THREE PURSES, one under the other, on the colony's OWN budget switches -
+                // the same mechanics the colony panel drives, not a copy. The allowance beside
+                // them covers all three, which is why they are read together (maintainer feedback).
+                // ⚠ greyed whole where there is no governor: an allowance nobody holds cannot be
+                // split, and a live control over a dead figure invites a click that does nothing.
+                Rectangle civ = cols[8].Rect;
+                int railW = UITable.PurseRailWidth;
+                int railX = civ.X + (civ.Width - railW) / 2;
+                bool governed = Planet.GovernorOn;
+                BudgetArea[] areas = { BudgetArea.Civilian, BudgetArea.GroundDef, BudgetArea.SpaceDef };
+                for (int a = 0; a < areas.Length; ++a)
                 {
-                    float amount = sl.AbsoluteValue;
-                    if (Planet.IsBudgetManual(BudgetArea.Civilian))
-                        Planet.Universe.Screen?.RunOnSimThread(() => Planet.SetBudgetAmount(BudgetArea.Civilian, amount));
-                };
-                Add(rail);
-                Add(new UICheckBox(civ.X + 4, y + 4, () => !Planet.IsBudgetManual(BudgetArea.Civilian),
-                                   auto => Planet.Universe.Screen?.RunOnSimThread(() =>
-                                   {
-                                       bool manual = !auto;
-                                       Planet.SetBudgetAmount(BudgetArea.Civilian, manual ? Planet.BudgetAutoTarget(BudgetArea.Civilian) : 0f);
-                                       Planet.SetBudgetManual(BudgetArea.Civilian, manual);
-                                       if (!manual)
-                                           Planet.Budget?.SnapToTarget();
-                                   }),
-                                   Fonts.Arial12Bold, "", GameText.OverrideThisBudgetAndSet));
+                    BudgetArea area = areas[a];       // captured once: the handlers must not read a moving local
+                    int ry = y + 4 + a * 17;
+                    // ⚠ a purse taken over seats on the amount the PLAYER stored, not on what the
+                    // governor would allocate: seeded on the target, the rail would spring back to
+                    // the governor's figure at the next layout and undo the drag
+                    float seed = Planet.IsBudgetManual(area) ? Planet.ManualBudgetAmount(area)
+                                                             : Planet.BudgetAutoTarget(area);
+                    var rail = new FloatSlider(SliderStyle.Decimal1,
+                                               new Rectangle(railX, ry, railW, 12),
+                                               "", 0f, (seed * 2f).LowerBound(20f), seed)
+                               { TrackYOffset = 0, ValueLane = 34,
+                                 Tip = BudgetAreaText.Tip(area, governed) };
+                    rail.OnChange = sl =>
+                    {
+                        float amount = sl.AbsoluteValue;
+                        if (Planet.IsBudgetManual(area))
+                            Planet.Universe.Screen?.RunOnSimThread(() => Planet.SetBudgetAmount(area, amount));
+                    };
+                    rail.Enabled = governed;
+                    Add(rail);
+                    var box = Add(new UICheckBox(civ.X + 4, ry - 2, () => !Planet.IsBudgetManual(area),
+                                       auto => Planet.Universe.Screen?.RunOnSimThread(() =>
+                                       {
+                                           bool manual = !auto;
+                                           Planet.SetBudgetAmount(area, manual ? Planet.BudgetAutoTarget(area) : 0f);
+                                           Planet.SetBudgetManual(area, manual);
+                                           if (!manual)
+                                               Planet.Budget?.SnapToTarget();
+                                       }),
+                                       Fonts.Arial12Bold, "", BudgetAreaText.Tip(area, governed)));
+                    box.Enabled = governed;
+                }
 
-                ValueCell(8, () => GovExpense(Planet));
+                ValueCell(9, () => GovExpense(Planet));
 
                 base.PerformLayout();
             }
@@ -254,6 +263,8 @@ namespace Ship_Game.GameScreens
             p => -p.Money.Maintenance,
             p => -p.Money.TroopMaint,
             EconColonyItem.NetIncome,
+            // the governor column sorts by his type, so colonies of a kind gather
+            p => (float)p.CType,
             EconColonyItem.BudgetAlloc,
             // the civilian rail's column: not clickable to sort, but the array is indexed by
             // column so it keeps its slot rather than shifting every entry after it
@@ -273,7 +284,7 @@ namespace Ship_Game.GameScreens
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
             float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float rowsNeed = 60 + Player.GetPlanets().Count * 24 + 90; // header lane + rows + footer/margins
+            float rowsNeed = 60 + Player.GetPlanets().Count * 56 + 90; // header lane + rows + footer/margins
             float contentH = fullAvail <= h900 ? fullAvail
                            : Math.Min(fullAvail, Math.Max(h900, rowsNeed));
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe), ScreenGroups.TabIndexOf(this),
@@ -295,6 +306,10 @@ namespace Ship_Game.GameScreens
                 new UITable.Column { Title = "Bldg Upk",  Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Building upkeep paid by the colony" },
                 new UITable.Column { Title = "Troop Upk", Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "Troop upkeep paid by the colony" },
                 new UITable.Column { Title = "Net",       Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Signed, Bold = true, Tip = "Net income of the colony" },
+                // the governor's own mark, as the Colonies tab draws it: the allowance and the
+                // three purses beside it are HIS, so the reader wants to know who holds them
+                new UITable.Column { Title = "Gov.", Width = 60, Align = TableAlign.Center, Sortable = true,
+                                     Tip = "Which governor runs this colony" },
                 new UITable.Column { Title = "Allowance", Align = TableAlign.Number, Sortable = true, Tip = "The colony's share of the Governor Allowance" },
                 // the civilian purse, set from here: the rail beside the allocation it feeds, so
                 // a colony's budget is read and changed in one place (maintainer feedback). Ground
@@ -307,7 +322,7 @@ namespace Ship_Game.GameScreens
                 // at construction is overwritten and the cell collapses to its title (bench 625).
                 // The floor is what the control needs: the caption lane, the track, and the value
                 // lane the slider reserves on its right.
-                new UITable.Column { Title = "Civilian Budget", MinWidth = 230, Align = TableAlign.Center,
+                new UITable.Column { Title = "Budget", MinWidth = 230, Align = TableAlign.Center,
                                      Tip = BudgetAreaText.Tip(BudgetArea.Civilian, false) },
                 new UITable.Column { Title = "Gov Exp",   Align = TableAlign.Number, Sortable = true, Coloring = TableColor.Neutral, Tip = "What the governor actually spends: building upkeep plus SPACE defense - the delta against Bldg Mnt is the orbital defense bill" },
             });
@@ -325,7 +340,7 @@ namespace Ship_Game.GameScreens
             else            Table.Columns[1 + SortCol].Sorted = true;
 
             int headerY = (int)client.Y + 24;
-            Table.RowPitch = 28; // the 24px econ row plus the list's item padding
+            Table.RowPitch = 60; // three stacked purse rails plus the list's item padding
             // Ludoal fork: the table runs down to 10px off the frame's foot,
             // like the Ships list that falls cleanly.
             // ONE floor for the table and for the TOTAL row beneath it. The table's own rect is
@@ -341,15 +356,13 @@ namespace Ship_Game.GameScreens
             // Ludoal fork: the order is given where its effect is read - eighteen lines change
             // under the button (maintainer feedback). The window is posed over the synthesis
             // column rather than centred, so the table stays legible while the order is given.
-            var setAll = Button(ButtonStyle.Low80, (int)client.X + 12, (int)client.Y + 2, "Set all…",
-                click: _ =>
-                {
-                    var w = new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)
-                    {
-                        CenterOn = new Vector2(RightMenu.X + RightMenu.Width / 2f, RightMenu.Y + 220)
-                    };
-                    ScreenManager.AddScreen(w);
-                });
+            // ⚠ NO ellipsis in a button label: the sprite font has no "…" and draws a question
+            // mark instead - "Set all?" is what the bench read (maintainer feedback). Plain ASCII.
+            // Seated over the column it fills, not in the far corner where it went unnoticed.
+            Rectangle budgetHead = Table.Columns[8].Rect;
+            var setAll = Button(ButtonStyle.Low100, budgetHead.X, (int)client.Y + 2, "Set all budgets",
+                click: _ => ScreenManager.AddScreen(
+                    new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)));
             setAll.Tooltip = "Give every colony the same budgets at once, then refine them here.";
 
             // the unit note of the money charte, centred over the table's reserved first line
@@ -362,7 +375,7 @@ namespace Ship_Game.GameScreens
             // footer just below it.
             var listRect = Table.ListRect;
             listRect.H -= Table.RowPitch;
-            ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 24));
+            ColonySL = Add(new ScrollList<EconColonyItem>(listRect, 56));
             ColonySL.EnableItemHighlight = true;
             Table.ApplyHighlightTo(ColonySL);
             FillList();
@@ -398,11 +411,12 @@ namespace Ship_Game.GameScreens
             FooterPlain(3, () => -Player.GetPlanets().Sum(p => p.Money.Maintenance));
             FooterPlain(4, () => -Player.GetPlanets().Sum(p => p.Money.TroopMaint));
             FooterMoney(5, () => Player.GetPlanets().Sum(EconColonyItem.NetIncome));
-            var budgetTot = FooterCell(6, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
+            // column 6 is the governor's mark - a letter has no total
+            var budgetTot = FooterCell(7, l => { l.Color = Color.Wheat; return Player.GetPlanets().Sum(EconColonyItem.BudgetAlloc).MoneyString(); });
             budgetTot.Tooltip = "Per-planet allocations are EMA-smoothed slices of the empire pots, plus each colony's" +
                                 " initial tolerance and terraform budget — so this sum drifts a few BC from the pots panel by design.";
-            // column 7 is the civilian rail - a control, not a figure: it carries no total
-            FooterPlain(8, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
+            // column 8 holds the three rails - controls, not figures: they carry no total
+            FooterPlain(9, () => Player.GetPlanets().Sum(EconColonyItem.GovExpense));
 
             // ---- RIGHT 1/3: the synthesis, causal order ----
             // auto-tax mode + sliders → governor budget (derived from the treasury

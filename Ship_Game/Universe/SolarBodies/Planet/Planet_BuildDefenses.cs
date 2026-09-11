@@ -250,6 +250,18 @@ namespace Ship_Game
             Budget?.UpdateManualUI();
         }
 
+        // what the PLAYER stored for an area, whatever the mode. Two screens seat their rails on
+        // it, so it is read from one place rather than switched over in each of them.
+        public float ManualBudgetAmount(BudgetArea area)
+        {
+            switch (area)
+            {
+                case BudgetArea.GroundDef: return ManualGrdDefBudget;
+                case BudgetArea.SpaceDef:  return ManualSpcDefBudget;
+                default:                   return ManualCivilianBudget;
+            }
+        }
+
         public void SetBudgetManual(BudgetArea area, bool manual)
         {
             switch (area)

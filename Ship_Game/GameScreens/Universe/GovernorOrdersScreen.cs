@@ -31,10 +31,8 @@ namespace Ship_Game
         Empire Player => Universe.Player;
 
         FloatSlider CivRail, GrdRail, SpcRail, GarrisonRail;
-        UICheckBox GovOrbitalsBox;
-        bool WantGovOrbitals;
 
-        const int PopupW = 520, BudgetH = 280, DefenseH = 300;
+        const int PopupW = 520, BudgetH = 280, DefenseH = 340;
         const int RowH = 34, RailW = UITable.PurseRailWidth, LabelW = 150;
 
         public GovernorOrdersScreen(GameScreen summoner, UniverseScreen u, Mode kind)
@@ -114,12 +112,9 @@ namespace Ship_Game
         public override void LoadContent()
         {
             base.LoadContent();
-            const int CornerW = 28;
-            Color fill = ScreenGroups.GroupFrameFill;
-            Add(new UIPanel(BottomBigFill, fill));
-            Add(new UIPanel(new Rectangle(Rect.X + CornerW, BottomBigFill.Bottom,
-                                          Rect.Width - 2 * CornerW,
-                                          Rect.Bottom - PopupFrame.BottomLine - BottomBigFill.Bottom), fill));
+            // ⚠ no panel of our own over the body: the frame already fills its whole interior,
+            // title band included. A second layer only adds a seam to get wrong (maintainer
+            // feedback: grey figures showing through the window).
 
             float y = BodyTop + 14;
             if (Kind == Mode.Budget)
@@ -131,17 +126,19 @@ namespace Ship_Game
                 SpcRail = Row("Space Defense", y += RowH, RailMax(BudgetArea.SpaceDef), 0f,
                               () => BudgetCount(BudgetArea.SpaceDef));
 
-                float by = y + RowH + 10;
+                float by = y + RowH + 14;
+                const int BtnW = 170, Gap = 14;
+                int bx = (int)(Rect.X + (PopupW - (2 * BtnW + Gap)) / 2);
                 // ⚠ "Set" says (manual) out loud because it does two things: taking a purse over
                 // RESTARTS it from what the governor was allocating, so a level posed on a colony
                 // still on Auto would be wiped the moment it goes manual. The button cannot pose
                 // one without the other and stay honest.
-                var set = Button(ButtonStyle.DefaultActive, Rect.X + 20, by, "Set all (manual)",
+                var set = Button(ButtonStyle.DefaultActive, bx, by, "Set all (manual)",
                                  click: _ => ApplyBudgets());
                 set.Tooltip = "Applies this level to every colony and takes it off Auto. Taking manual "
                             + "control restarts from what the governor was allocating, so a level set "
                             + "while on Auto would be lost.";
-                var auto = Button(ButtonStyle.Default, Rect.X + 20 + 190, by, "Auto all",
+                var auto = Button(ButtonStyle.Default, bx + BtnW + Gap, by, "Auto all",
                                   click: _ => ForEachColony(p =>
                                   {
                                       p.SetBudgetManual(BudgetArea.Civilian, false);
@@ -155,32 +152,40 @@ namespace Ship_Game
             {
                 GarrisonRail = Row("Garrison", y, DefenseListItem.MaxGarrison, 0f, GarrisonCount);
 
-                float by = y + RowH + 10;
-                // ⚠ three buttons, one grandeur each, and no overlap: a garrison level is simply
-                // stored and serves when auto-training is on, so unlike a purse it can be posed
-                // without deciding the mode.
-                var set = Button(ButtonStyle.DefaultActive, Rect.X + 20, by, "Set",
+                // ⚠ three orders, one grandeur each, no overlap: a garrison level is simply stored
+                // and serves when auto-training is on, so unlike a purse it can be posed without
+                // deciding the mode. "Set all" rides beside its rail - it acts on THAT number.
+                var set = Button(ButtonStyle.Low100, Rect.X + 20 + LabelW + RailW + 14, (int)y - 4,
+                                 "Set all",
                                  click: _ => ForEachColony(p => p.GarrisonSize = (int)GarrisonRail.AbsoluteValue));
                 set.Tooltip = "Applies this garrison level to every colony without changing Auto / Manual.";
-                Button(ButtonStyle.Default, Rect.X + 20 + 120, by, "Auto",
+
+                float by = y + RowH + 14;
+                const int BtnW = 170, Gap = 14;
+                int bx = (int)(Rect.X + (PopupW - (2 * BtnW + Gap)) / 2);
+                Button(ButtonStyle.Default, bx, by, "Auto all",
                        click: _ => ForEachColony(p => p.AutoBuildTroops = true))
                     .Tooltip = "Turns auto-training on for every colony. The level each one keeps is untouched.";
-                Button(ButtonStyle.Default, Rect.X + 20 + 240, by, "Manual",
+                Button(ButtonStyle.Default, bx + BtnW + Gap, by, "Manual all",
                        click: _ => ForEachColony(p => p.AutoBuildTroops = false))
                     .Tooltip = "Turns auto-training off for every colony. The level each one keeps is untouched.";
 
-                float gy = by + 44;
-                WantGovOrbitals = true;
-                GovOrbitalsBox = Add(new UICheckBox(Rect.X + 20, gy,
-                                                    () => WantGovOrbitals, v => WantGovOrbitals = v,
-                                                    Fonts.Arial12Bold, "Gov. Manages Space Defense",
-                                                    GameText.DvDefenseSpaceDefTip));
-                Button(ButtonStyle.Default, Rect.X + 20 + 240, gy - 4, "Set",
-                       click: _ => ForEachColony(p => p.GovOrbitals = WantGovOrbitals))
-                    .Tooltip = "Gives every colony the state of the box beside it.";
+                // the governor's orbitals: the game's own wording, and two orders rather than a box
+                // to arm and a button to send - that is one step more than anyone asked for
+                float gy = by + 46;
+                Add(new UILabel(new Vector2(Rect.X + 20, gy + 2), "Gov. Manages Space Defense",
+                                Fonts.Arial12Bold, Colors.Cream));
                 var tally = Add(new UILabel(l => GovOrbitalsCount(), Fonts.Arial12));
-                tally.Pos = new Vector2(Rect.X + 20 + LabelW + RailW + 12, gy);
+                tally.Pos = new Vector2(Rect.X + 20 + LabelW + RailW + 14, gy + 2);
                 tally.Color = Color.Gray;
+
+                float ty = gy + 26;
+                Button(ButtonStyle.Default, bx, ty, "Toggle all On",
+                       click: _ => ForEachColony(p => p.GovOrbitals = true))
+                    .Tooltip = "Hands every colony's orbital defense to its governor.";
+                Button(ButtonStyle.Default, bx + BtnW + Gap, ty, "Toggle all Off",
+                       click: _ => ForEachColony(p => p.GovOrbitals = false))
+                    .Tooltip = "Takes every colony's orbital defense back from its governor.";
             }
         }
 

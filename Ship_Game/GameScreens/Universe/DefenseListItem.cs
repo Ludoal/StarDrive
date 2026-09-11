@@ -232,7 +232,7 @@ namespace Ship_Game
             {
                 // ⚠ same rule as the colony panel: a purse already taken over seats on the
                 // amount the player stored, or the rail springs back at the next layout
-                float seed = P.IsBudgetManual(area) ? StoredAmount(area) : P.BudgetAutoTarget(area);
+                float seed = P.IsBudgetManual(area) ? P.ManualBudgetAmount(area) : P.BudgetAutoTarget(area);
                 rail = Add(new FloatSlider(SliderStyle.Decimal1,
                                            new Rectangle(railX, y, railW, 12),
                                            "", 0f, (seed * 2f).LowerBound(20f), seed));
@@ -278,12 +278,7 @@ namespace Ship_Game
             return box;
         }
 
-        float StoredAmount(BudgetArea area) => area switch
-        {
-            BudgetArea.GroundDef => P.ManualGrdDefBudget,
-            BudgetArea.SpaceDef  => P.ManualSpcDefBudget,
-            _                    => P.ManualCivilianBudget,
-        };
+
 
         // the glyph's own square at a figure column's right end, with air on both sides
         Rectangle GlyphRect(Rectangle cell)

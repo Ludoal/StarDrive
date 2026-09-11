@@ -110,16 +110,20 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the same order window as the Economy tab, opened
             // on ITS subject - the page decides, the player never picks a section. Posed to the
             // right so the colony names and their garrisons stay readable while the order is given.
-            var setAll = Button(ButtonStyle.Low80, (int)Client.X + 12, (int)Client.Y + 2, "Set all…",
-                click: _ =>
-                {
-                    var w = new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Defense)
-                    {
-                        CenterOn = new Vector2(Client.X + Client.W - 290, Client.Y + 230)
-                    };
-                    ScreenManager.AddScreen(w);
-                });
-            setAll.Tooltip = "Give every colony the same defense orders at once, then refine them here.";
+            // ⚠ plain ASCII: the sprite font has no "…" and draws a question mark for it. Each
+            // button sits over the column it fills - the budgets one is the SAME window the
+            // Economy tab opens, because it is the same order (maintainer feedback).
+            var setDef = Button(ButtonStyle.Low100, Table.Columns[4].Rect.X, (int)Client.Y + 2,
+                "Set all defenses",
+                click: _ => ScreenManager.AddScreen(
+                    new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Defense)));
+            setDef.Tooltip = "Give every colony the same defense orders at once, then refine them here.";
+
+            var setBud = Button(ButtonStyle.Low100, Table.Columns[7].Rect.X, (int)Client.Y + 2,
+                "Set all budgets",
+                click: _ => ScreenManager.AddScreen(
+                    new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)));
+            setBud.Tooltip = "Give every colony the same budgets at once, then refine them here.";
 
             ColoniesSL = Add(new ScrollList<DefenseListItem>(Table.ListRect, RowH));
             ColoniesSL.EnableItemHighlight = true;
