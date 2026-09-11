@@ -48,6 +48,12 @@ namespace Ship_Game
             AddMaxBaseFertility(Owner.data.EmpireFertilityBonus);
             CrippledTurns = 0;
             ResetGarrisonSize();
+            // Ludoal fork: the empire's standing choice for a NEW colony, read once at founding.
+            // ⚠ read AFTER the reset, which is what it overrides; and nothing reaches back to a
+            // colony already settled - no retroactivity (maintainer feedback).
+            AutoBuildTroops = Owner.NewColonyAutoTroops;
+            GarrisonSize    = Owner.NewColonyGarrison;
+            GovOrbitals     = Owner.NewColonyGovOrbitals;
             LaunchNonOwnerTroops();
             NewColonyAffectRelations();
             SetupCyberneticsWorkerAllocations();

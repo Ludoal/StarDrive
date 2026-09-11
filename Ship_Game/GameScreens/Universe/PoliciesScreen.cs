@@ -47,7 +47,8 @@ namespace Ship_Game
         // governor type later moves the box by itself instead of needing a new magic number.
         const float PolicyRowH = 26f;
         const float BlueprintRows = 6f;                       // heading + 5 governor types
-        const float ColonyBoxH = 170f + PolicyRowH + BlueprintRows * PolicyRowH; // +1 row: Auto-terraform
+        // +1 Auto-terraform, then the New Colony block: its heading, three switches and a rail
+        const float ColonyBoxH = 170f + PolicyRowH + BlueprintRows * PolicyRowH + 5 * PolicyRowH;
         // A number on a rail costs two rows: its own title, then the rail itself, whose 28px
         // must hold a 26px knob (bench 485). The rail is narrower than its frame: these are
         // short ranges, and the value prints past the rail's right end (bench 538).
@@ -102,10 +103,7 @@ namespace Ship_Game
             // below its own row, and add order is draw order - the spill must land on top
             // of the neighbour, not under it.
 
-            UIList colony = NewBox(new RectF(x0, top, BoxW, ColonyBoxH), "Colony", GameText.PolColonyNotice);
-            // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
-            // see Planet_Colonize.SetupColonyType.
-            colony.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor", tooltip: GameText.AutoGovernorTip);
+            UIList colony = NewBox(new RectF(x0, top, BoxW, ColonyBoxH), "Governors", GameText.PolColonyNotice);
             // the empire's own mandates: what a colony left on Auto follows. Same picker as the
             // colony's, minus the Auto position - a policy has nowhere to defer to.
             // label and picker share a row: a label on its own line reads as a heading, and this
@@ -140,6 +138,29 @@ namespace Ship_Game
             // goes next and stays with the other build automations (maintainer feedback).
             colony.AddCheckbox(() => player.AutoBuildTerraformers, title: GameText.AutoBuildTerraformers,
                                tooltip: GameText.AutoBuildTerraformersTip);
+
+            // ★ EVERYTHING BELOW THIS LINE IS A DEFAULT FOR A COLONY NOT YET FOUNDED, and the
+            // heading is what separates it from an order: the Economy and Defense tabs give
+            // orders to the colonies that exist, this gives a starting point to the next one.
+            // ⚠ the three settings go UNDER the heading, never above, or a default gets read as
+            // an order (maintainer feedback).
+            colony.Add(new UILabel("New Colony", Fonts.Arial12Bold, Colors.Cream))
+                .Tooltip = "What a colony founded from now on starts with. Nothing here reaches a "
+                         + "colony that already exists.";
+            // ⚠ "Auto Governor" decides whether a new colony gets an ASSESSED governor -
+            // see Planet_Colonize.SetupColonyType. It belongs with the rest of the newborn's kit.
+            colony.AddCheckbox(() => player.AutoCoreGovernor, title: "Auto Governor",
+                               tooltip: GameText.AutoGovernorTip);
+            colony.AddCheckbox(() => player.NewColonyAutoTroops, title: "Auto Build Garrison",
+                               tooltip: "A new colony trains its own garrison from the start.");
+            SliderRow(colony, "Garrison Size", "How many troops a new colony aims to keep. Zero "
+                      + "leaves it to you, which is the game's own default.",
+                      0, DefenseListItem.MaxGarrison, player.NewColonyGarrison, "none",
+                      v => Universe.RunOnSimThread(() => player.NewColonyGarrison = v));
+            colony.AddCheckbox(() => player.NewColonyGovOrbitals,
+                               title: "Governor Manages Space Defense",
+                               tooltip: GameText.DvDefenseSpaceDefTip);
+
             colony.ReverseZOrder(); // an open list draws over the rows beneath it
 
             UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
@@ -427,7 +448,7 @@ namespace Ship_Game
         // is not a quantity; left empty the rail simply shows the number. maxText does the same
         // for the right stop. valueLane is the widest the value can be: a rail whose stop carries
         // a word gives up track for it, and the column still lines up on the last digit.
-        void SliderRow(UIList box, GameText title, GameText tooltip, float min, float max,
+        void SliderRow(UIList box, in LocalizedText title, in LocalizedText tooltip, float min, float max,
                        int current, LocalizedText zeroText, Action<int> onChange, string suffix = "",
                        LocalizedText maxText = default, int valueLane = FloatSlider.DefaultValueLane)
         {

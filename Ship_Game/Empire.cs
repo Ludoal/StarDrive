@@ -165,6 +165,14 @@ namespace Ship_Game
         //
         // Absent from an older save, the array simply stays empty: every row reads as "no default",
         // and no colony changes its conduct. There is nothing to seed and no migration to guard.
+        // Ludoal fork (maintainer feedback): what a colony founded FROM NOW ON starts with.
+        // ⚠ a DEFAULT, never an order: nothing here touches a colony that already exists, and the
+        // page says so with its "New Colony" heading. Their defaults are the game's own values,
+        // so an empire that never opens the page behaves exactly as before.
+        [StarData] public bool NewColonyAutoTroops;
+        [StarData] public int  NewColonyGarrison;
+        [StarData] public bool NewColonyGovOrbitals;
+
         [StarData] Array<string> BlueprintPolicyValue = new();
 
         const int BlueprintPolicySlots = 7; // ColonyType members
