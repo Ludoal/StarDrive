@@ -96,6 +96,9 @@ namespace Ship_Game
                 // bench 426: stock AND flow. ⚠ 240 is FULL - the icon, the bar and the picker
                 // leave 2px of it; the wide regime below gives this column the Auto switches' lane.
                 new UITable.Column { Title = Localizer.Token(GameText.Supply), Width = 240, Align = TableAlign.Center },
+                // ⚠ the "+" that fills this column lives at its head - see the button below the
+                // table layout. The title keeps its own width; the glyph is placed from the
+                // column's rect, not from a number typed twice.
                 new UITable.Column { Title = Localizer.Token(GameText.Construction2), Width = 282, Align = TableAlign.Center },
             });
             // Pop Growth and Governor ride wide displays only (bench 408): at 1440 the base
@@ -177,6 +180,17 @@ namespace Ship_Game
             Table.RowPitch = 84;
             Table.Layout(client, client.Y + 10, bandTop - BandGapTop);
             ERect = new(Table.TableRect.X, Table.TableRect.Y, Table.TableRect.Width, Table.TableRect.Height);
+
+            // Ludoal fork (maintainer feedback): the empire-wide build order, moved here from the
+            // rules page. "+" creates, and this one creates queue entries - the same sign the
+            // colony's own queue uses. At the HEAD of the column it fills, above the rush boxes:
+            // an order is given where its effect is read. Placed from the column's own rect, so
+            // it cannot drift when a column is added or resized.
+            Rectangle conHead = Table.Columns[Table.Columns.Length - 1].Rect;
+            var addToQueue = Button(ButtonStyle.Low80, conHead.Right - 30, conHead.Y - 4, "+",
+                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(this, Universe)));
+            addToQueue.SetAbsSize(24, 18);
+            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
 
             ColoniesList = Add(new ScrollList<ColoniesListItem>(Table.ListRect, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;

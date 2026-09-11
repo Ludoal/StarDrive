@@ -69,8 +69,9 @@ namespace Ship_Game
         // above it.
         const float PrioTopInset = 124f, PrioRowsH = 300f; // heading + Continuous Rush + the new-colony toggle
         // and below the rows, a heading of its own plus the button it names
-        const float ManualRowH = 26f, ManualButtonH = 26f;
-        const float ConstructionBoxH = PrioTopInset + PrioRowsH + ManualRowH + ManualButtonH + 18f;
+        // the box ends with its priority rows now: the manual order moved to the Colonies tab,
+        // and a reserved lane belongs to what fills it
+        const float ConstructionBoxH = PrioTopInset + PrioRowsH + 18f;
 
         public PoliciesScreen(UniverseScreen u) : base(u, toPause: u)
         {
@@ -218,21 +219,11 @@ namespace Ship_Game
                                            new Color(0, 0, 0, 0)));
             RebuildPriorityRows();
 
-            // Ludoal fork (bench 528): the empire-wide build order, INSIDE the frame under its own
-            // heading, seated below the priority rows. Placed from the constants above rather than
-            // from what happens to be left, so it cannot drift when a row is added higher up.
-            float manualY = top + PrioTopInset + PrioRowsH + 4;
-            Add(new UILabel(GameText.PolManualConstruction, Fonts.Arial12Bold, Colors.Cream))
-                .Pos = new Vector2(constructionBox.ClientArea.X + 12, manualY);
-
-            var addToQueue = Button(ButtonStyle.Default,
-                                    constructionBox.ClientArea.X + 12, manualY + ManualRowH,
-                                    GameText.AddToQueueTitle,
-                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(this, Universe)));
-            // its natural width plus the 10px the bench asked for
-            addToQueue.SetAbsSize((int)Fonts.Arial12Bold.TextWidth(Localizer.Token(GameText.AddToQueueTitle)) + 34,
-                                  (int)ManualButtonH);
-            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
+            // Ludoal fork (maintainer feedback): the empire-wide build order has MOVED to the
+            // Colonies tab, at the head of the Construction column it fills. An order is given
+            // where its effect is read; this page holds standing rules, not orders. ⚠ ONE door:
+            // it is not offered here as well - an order with two entrances is two behaviours to
+            // keep in step.
 
             base.LoadContent();
         }
