@@ -59,7 +59,10 @@ namespace Ship_Game
             ViewingShip = true;
         }
 
-        public void SnapViewColony(Planet p, bool combatView)
+        // govTab: which tab of the governor panel the colony opens on - 0 Governor, 1 Budget,
+        // 2 Defense. A page that sends the player to a colony sends him to the subject he was
+        // reading (maintainer feedback).
+        public void SnapViewColony(Planet p, bool combatView, int govTab = 0)
         {
             ShowShipNames = false;
             bool doReturnToShip = ViewingShip;
@@ -123,7 +126,7 @@ namespace Ship_Game
                     // any page still open closes first: the cartouche eye can fire with a page
                     // up, and the colony must not bury it under a foreign tab row
                     ScreenManager.ExitAllAbove(this);
-                    ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI));
+                    ScreenManager.AddScreen(new ColonyScreen(this, p, EmpireUI, govTab));
                     return;
                 }
                 else if (combatView && p.Habitable

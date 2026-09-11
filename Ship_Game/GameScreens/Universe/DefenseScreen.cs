@@ -143,7 +143,7 @@ namespace Ship_Game
         void OnColonyDoubleClicked(DefenseListItem item)
         {
             Universe.HostColonyTab(item.P, ScreenGroups.Group.Empire, ScreenGroups.TabIndexOf(this), govTab: 2);
-            Universe.SnapViewColony(item.P, combatView: false);
+            Universe.SnapViewColony(item.P, combatView: false, govTab: 2);
             // the colony inherits this page's automatic pause: consulting a colony from a paused
             // list must not restart the simulation
             if (Universe.LookingAtPlanet)

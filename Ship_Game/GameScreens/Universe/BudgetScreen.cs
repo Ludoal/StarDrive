@@ -512,7 +512,10 @@ namespace Ship_Game.GameScreens
             // a stacked page like every tab: exit + open in the same frame, the fresh ctor
             // claims the pause before any tick can run
             ExitScreen();
-            Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, item.Planet, Universe.EmpireUI));
+            // ⚠ the tab goes on BOTH doors: HostColonyTab arms the RE-opening (the hosted tab's
+            // own click), this line is the immediate one. Arming only the first left the page
+            // opening on the governor's front sheet (maintainer feedback).
+            Universe.ScreenManager.AddScreen(new ColonyScreen(Universe, item.Planet, Universe.EmpireUI, 1));
         }
 
         private UICheckBox AutoTaxCheckBox(Rectangle footerRect)
