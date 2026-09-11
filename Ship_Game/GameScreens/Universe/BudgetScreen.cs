@@ -338,6 +338,20 @@ namespace Ship_Game.GameScreens
             LeftMenu  = new Rectangle((int)client.X, (int)client.Y, (int)(split - client.X), (int)client.H);
             RightMenu = new Rectangle((int)split, (int)client.Y, (int)(client.Right - split), (int)client.H);
 
+            // Ludoal fork: the order is given where its effect is read - eighteen lines change
+            // under the button (maintainer feedback). The window is posed over the synthesis
+            // column rather than centred, so the table stays legible while the order is given.
+            var setAll = Button(ButtonStyle.Low80, (int)client.X + 12, (int)client.Y + 2, "Set all…",
+                click: _ =>
+                {
+                    var w = new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Budget)
+                    {
+                        CenterOn = new Vector2(RightMenu.X + RightMenu.Width / 2f, RightMenu.Y + 220)
+                    };
+                    ScreenManager.AddScreen(w);
+                });
+            setAll.Tooltip = "Give every colony the same budgets at once, then refine them here.";
+
             // the unit note of the money charte, centred over the table's reserved first line
             string unitNote = "(all money values are per turn)";
             Label(new Vector2(Table.TableRect.X + (Table.TableRect.Width - Fonts.Arial12.TextWidth(unitNote)) / 2, client.Y + 4),

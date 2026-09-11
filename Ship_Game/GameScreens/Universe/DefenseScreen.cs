@@ -96,13 +96,30 @@ namespace Ship_Game
 
             int numColonies = Player.GetPlanets().Count;
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight);
-            float contentH = UITable.ContentHeightFor(99, Math.Max(3, numColonies), RowPitch, fullAvail);
+            // 115, not 99: the order button took a line above the headers, and a reserved lane
+            // belongs to the frame that holds it - without this the list simply loses a row
+            float contentH = UITable.ContentHeightFor(115, Math.Max(3, numColonies), RowPitch, fullAvail);
             EmpireTabs = ScreenGroups.AddGroupTabs(this, ScreenGroups.LiveTitles(ScreenGroups.Group.Empire, Universe),
                                                    ScreenGroups.TabIndexOf(this), OnEmpireTabChanged,
                                                    Table.ContentWidth, contentH);
             Client = EmpireTabs.ClientArea;
             Table.RowPitch = RowPitch;
-            Table.Layout(Client, Client.Y + 10, Client.Bottom - 5);
+            // the headers drop a line: the order button sits above them, where its effect is read
+            Table.Layout(Client, Client.Y + 26, Client.Bottom - 5);
+
+            // Ludoal fork (maintainer feedback): the same order window as the Economy tab, opened
+            // on ITS subject - the page decides, the player never picks a section. Posed to the
+            // right so the colony names and their garrisons stay readable while the order is given.
+            var setAll = Button(ButtonStyle.Low80, (int)Client.X + 12, (int)Client.Y + 2, "Set all…",
+                click: _ =>
+                {
+                    var w = new GovernorOrdersScreen(this, Universe, GovernorOrdersScreen.Mode.Defense)
+                    {
+                        CenterOn = new Vector2(Client.X + Client.W - 290, Client.Y + 230)
+                    };
+                    ScreenManager.AddScreen(w);
+                });
+            setAll.Tooltip = "Give every colony the same defense orders at once, then refine them here.";
 
             ColoniesSL = Add(new ScrollList<DefenseListItem>(Table.ListRect, RowH));
             ColoniesSL.EnableItemHighlight = true;
