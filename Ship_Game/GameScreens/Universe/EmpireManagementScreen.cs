@@ -186,11 +186,10 @@ namespace Ship_Game
             // colony's own queue uses. At the HEAD of the column it fills, above the rush boxes:
             // an order is given where its effect is read. Placed from the column's own rect, so
             // it cannot drift when a column is added or resized.
+            // ★ the game's OWN mark, drawn flat like the Defense tab's (maintainer feedback): a
+            // round plate over a table header is a second dialect for a sign the game already has.
             Rectangle conHead = Table.Columns[Table.Columns.Length - 1].Rect;
-            var addToQueue = Button(ButtonStyle.Low80, conHead.Right - 30, conHead.Y - 4, "+",
-                                    click: _ => ScreenManager.AddScreen(new AddToQueueScreen(this, Universe)));
-            addToQueue.SetAbsSize(24, 18);
-            addToQueue.Tooltip = GameText.AddToQueueApplyTip;
+            AddToQueueRect = new Rectangle(conHead.Right - 26, conHead.Y, 16, 16);
 
             ColoniesList = Add(new ScrollList<ColoniesListItem>(Table.ListRect, 80));
             ColoniesList.OnClick       = OnColonyListItemClicked;
@@ -256,6 +255,10 @@ namespace Ship_Game
             ScreenGroups.SwitchEmpireTab(index, self: ScreenGroups.TabIndexOf(this), Universe, this);
         }
 
+        // the "+" at the head of the Construction column: kept as a rect because it is drawn as a
+        // flat glyph, not built as a control
+        Rectangle AddToQueueRect;
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
@@ -263,6 +266,10 @@ namespace Ship_Game
             // Ludoal fork: the frame fill FIRST - before base.Draw and before the bottom row this
             // method paints by hand, or it would cover one of them.
             batch.FillRectangle(ScreenGroups.GroupFrameFillRect(EmpireTabs), ScreenGroups.GroupFrameFill);
+
+            if (AddToQueueRect.Width > 0)
+                batch.Draw(ResourceManager.Texture("NewUI/icon_build_add"), AddToQueueRect,
+                           AddToQueueRect.HitTest(Input.CursorPosition) ? Color.White : Colors.Cream);
 
             base.Draw(batch, elapsed);
             // Policies phase 0: any OPEN supply dropdown re-paints after the whole table,
@@ -504,6 +511,16 @@ namespace Ship_Game
         {
             if (eui.HandleInput(input, caller: this)) // Ludoal fork: live top bar
                 return true;
+
+            if (AddToQueueRect.Width > 0 && AddToQueueRect.HitTest(input.CursorPosition))
+            {
+                ToolTip.CreateTooltip(GameText.AddToQueueApplyTip);
+                if (input.LeftMouseClick)
+                {
+                    ScreenManager.AddScreen(new AddToQueueScreen(this, Universe));
+                    return true;
+                }
+            }
 
             // an OPEN supply dropdown hears the input before the table: the scroll list only feeds
             // rows under the cursor, so a click landing elsewhere would never reach the list and it
