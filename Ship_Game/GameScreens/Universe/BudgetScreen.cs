@@ -298,8 +298,6 @@ namespace Ship_Game.GameScreens
             // past it grows only as the planet list needs, capped by the screen.
             float contentW = 1440 - 2 * ScreenGroups.FrameMargin;
             float fullAvail = ScreenGroups.FullTableHeight(ScreenHeight); // floor = the info cartouche
-            float h900 = 900 - ScreenGroups.TabRowY - ScreenGroups.FrameMargin;
-            float rowsNeed = 60 + Player.GetPlanets().Count * 56 + 90; // header lane + rows + footer/margins
             // ⚠ the frame takes the FULL height available, always: it was capped at the 900p
             // footprint unless the rows asked for more, which left the table short while the
             // synthesis beside it had nothing to do with that height (maintainer feedback).
