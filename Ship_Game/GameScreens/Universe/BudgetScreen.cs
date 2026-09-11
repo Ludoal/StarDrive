@@ -810,6 +810,7 @@ namespace Ship_Game.GameScreens
             // would understate this line. Troop line = TroopCostOnPlanets, the figure the
             // treasury actually debits (and the table column sum), not just our own.
             float PlanetsExpense() => -(Player.GrossPlanetIncome - Player.NetPlanetIncomes
+                                        + Player.GetPlanets().Sum(p => p.SpaceDefMaintenance)
                                         + Player.TroopCostOnPlanets
                                         + Player.MoneySpendOnProductionThisTurn + Player.MoneySpendOnProductionNow);
             costs.Spacer();
@@ -823,7 +824,11 @@ namespace Ship_Game.GameScreens
             costs.AddSplit(new UILabel("Planets subtotal", Color.Wheat),
                            new UILabel(DynamicText(PlanetsExpense, f => f.MoneyString())));
             costs.Spacer();
-            costs.AddItem("Ship Upkeep", () => -Player.TotalShipMaintenance);
+            // orbital upkeep is itemized planet-side above (the treasury charges orbitals
+            // through ship maintenance), so this line shows the fleet minus the stations —
+            // the same expression the Space Defense line adds, keeping items == total
+            costs.AddItem("Ship Upkeep", () => -(Player.TotalShipMaintenance
+                                                 - Player.GetPlanets().Sum(p => p.SpaceDefMaintenance)));
             costs.AddItem("Espionage", () => -Player.EspionageCostLastTurn);
             costs.Spacer();
 
