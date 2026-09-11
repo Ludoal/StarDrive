@@ -790,7 +790,10 @@ namespace Ship_Game
             Vector2d dir = (b - a) / len;
             // the spacing follows the galaxy rather than a pixel count, so it means the same
             // thing on a small map and a large one. The divisor is the tuning knob.
-            double slotPx = ProjectToScreenSize(UState.UniverseRadius / 300.0);
+            // ⚠ tripling the STROKE means tripling the slot: a dash already fills its slot bar a
+            // 3px breath, so the length cannot grow without the spacing growing with it
+            // (maintainer feedback: longer strokes). The divisor is the tuning knob.
+            double slotPx = ProjectToScreenSize(UState.UniverseRadius / 100.0);
             double periodPx = slotPx * 3;
             // zoomed far enough out the three slots collapse onto each other: a dotted line at
             // that distance is noise, and a loop over thousands of dashes is worse - draw the
@@ -800,8 +803,10 @@ namespace Ship_Game
                 DrawLine(a, b, color, RouteLineWidth);
                 return;
             }
-            // bench 455: a breath between dashes so neighbouring slots never touch
-            double dash = Math.Min(11.0, slotPx - 3.0);
+            // bench 455: a breath between dashes so neighbouring slots never touch.
+            // 33, not 11: a trail of long strokes reads as a route, a trail of ticks as noise
+            // (maintainer feedback).
+            double dash = Math.Min(33.0, slotPx - 3.0);
             for (double t = slot * slotPx; t < len; t += periodPx)
             {
                 double t2 = Math.Min(t + dash, len);
