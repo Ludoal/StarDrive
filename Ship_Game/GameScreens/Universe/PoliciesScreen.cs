@@ -62,7 +62,9 @@ namespace Ship_Game
         // the rhythm of the other rails: a caption, then a rail whose track is tucked up under it
         // (bench 617: the knob climbed onto a caption drawn on the rail itself)
         const float ShareCaptionH = 18f, ShareRailPitch = 46f, ShareRowsH = 3f * ShareRailPitch + 10f;
-        const float TradeBoxH = 126f + 26f + 4f * SliderRowH + ShareRowsH; // +26: the priority title row
+        // one rail left: the three freighter numbers went to Automation, each under the toggle
+        // it qualifies (maintainer feedback)
+        const float TradeBoxH = 126f + 26f + 1f * SliderRowH + ShareRowsH; // +26: the priority title row
 
         // The Prioritization rows live INSIDE the Construction frame, under its Rush row.
         // Both numbers are CONSTANTS and the frame is sized FROM them - never the
@@ -165,9 +167,7 @@ namespace Ship_Game
 
             // ⚠ Automation carries a box of the same name: that one is what the empire DOES by
             // itself, this one the rules the freighters obey.
-            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Freighters",
-                                  "The rules freighters follow. What the empire builds, upgrades "
-                                  + "and scraps by itself lives in Automation > Freighters.");
+            UIList trade = NewBox(new RectF(x2, top, BoxW2, TradeBoxH), "Trade", GameText.PolTradeNotice);
             // the RIGHT is read before the doctrine that uses it (bench 538), so the permission
             // to trade abroad heads the frame. Its own tooltip says out loud that this one is a
             // GAME rule, not an empire order - it is stored with the game setup, so it does not
@@ -195,21 +195,6 @@ namespace Ship_Game
             // checkboxes stay the RIGHT to build, upgrade and scrap; these three say HOW,
             // which is what puts them on this page. Every one of them is neutral at its
             // default, so a page never touched changes nothing.
-            // shares of the freighter fleet rather than counts: a number set once holds as the
-            // empire grows. The rail prints its own unit.
-            SliderRow(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
-                      0, 100, player.FreighterReservePct, default,
-                      v => player.FreighterReservePct = v, "%");
-            // the rail's left stop is not a quantity: it hands the refits back to the game's
-            // own formula, so it reads Auto rather than nought.
-            SliderRow(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
-                      0, 100, player.MaxFreighterRefitsPct, GameText.PolFreighterRefitAuto,
-                      v => player.MaxFreighterRefitsPct = v, "%");
-            // reads through the property, so a save that never stored the field shows the 20
-            // the game has always used instead of a bare zero.
-            SliderRow(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
-                      5, 100, player.IdleTurnsBeforeScrap, default,
-                      v => player.FreighterIdleTurns = v);
 
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 

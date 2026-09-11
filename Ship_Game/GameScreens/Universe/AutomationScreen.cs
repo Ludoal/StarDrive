@@ -44,7 +44,7 @@ namespace Ship_Game
         // Policies>Colony (-26), which is where a command that acts on a colony we already hold
         // belongs; Freighters lost the priority row and Inter-Empire Trade (-52), also to Policies.
         const float ColonizationBoxH = 130f, ConstructionBoxH = 139f,
-                    TradeBoxH = 152f,
+                    TradeBoxH = 152f + 3f * 64f, // + the three freighter rails, each under its switch
                     TroopsBoxH = 74f, // one row: the garrison troop picker
                     // two switches + slider label + slider + the column title + seven paired
                     // category rows + the Miscellaneous heading + Inhibition, at 26 per row.
@@ -214,16 +214,33 @@ namespace Ship_Game
             // title says which half it holds (maintainer feedback).
             UIList trade = NewBox(new RectF(x1, top + ColonizationBoxH + BoxGap + ConstructionBoxH + BoxGap, BoxW2, TradeBoxH),
                                   "Freighters",
-                                  "What the empire builds, upgrades and scraps by itself. The rules "
-                                  + "freighters follow live in Policies > Freighters.");
+                                  "Everything the empire does with its freighters by itself - what "
+                                  + "it builds, upgrades and scraps, and the numbers each of those "
+                                  + "obeys.");
             // The picker names the shared Freighter Model that Auto-build and Auto-upgrade both
             // use; its Auto Pick box picks the best model when checked, or reveals the manual
             // list when unchecked.
             FreighterDropDown = trade.Add(new CheckedDropdown())
                 .CreateTitled(GameText.FreighterModel, GameText.FreighterModelTip, autoPick: () => player.AutoPickBestFreighter);
             trade.AddCheckbox(() => player.AutoBuildFreighters, title: GameText.AutoBuildFreighters, tooltip: GameText.AutoBuildFreightersTip);
+            // ⚠ each number sits UNDER the switch it qualifies (maintainer feedback): a reserve
+            // read three boxes away from auto-build is a setting nobody connects to it.
+            // shares of the fleet rather than counts: a number set once holds as the empire grows
+            SliderRow(trade, GameText.PolFreighterReserve, GameText.PolFreighterReserveTip,
+                      0, 100, player.FreighterReservePct, default,
+                      v => player.FreighterReservePct = v, "%");
             trade.AddCheckbox(() => player.AutoUpgradeFreighters, title: GameText.AutoUpgradeFreighters, tooltip: GameText.AutoUpgradeFreightersTip);
+            // the left stop is not a quantity: it hands the refits back to the game's own formula,
+            // so it reads Auto rather than nought
+            SliderRow(trade, GameText.PolFreighterRefitCap, GameText.PolFreighterRefitCapTip,
+                      0, 100, player.MaxFreighterRefitsPct, GameText.PolFreighterRefitAuto,
+                      v => player.MaxFreighterRefitsPct = v, "%");
             trade.AddCheckbox(() => player.AutoScrapIdleFreighters, title: GameText.AutoScrapIdleFreighters, tooltip: GameText.AutoScrapIdleFreightersTip);
+            // reads through the property, so a save that never stored the field shows the 20 the
+            // game has always used instead of a bare zero
+            SliderRow(trade, GameText.PolFreighterIdleTurns, GameText.PolFreighterIdleTurnsTip,
+                      5, 100, player.IdleTurnsBeforeScrap, default,
+                      v => player.FreighterIdleTurns = v);
 
             trade.ReverseZOrder(); // an open list draws over the rows beneath it
 
@@ -260,6 +277,28 @@ namespace Ship_Game
         }
 
         // one category box: a one-tab frame bearing the category's name, with its rows inside
+        // ⚠ TWIN of PoliciesScreen.SliderRow, kept private here on purpose for now: the two
+        // screens are the only users, and merging them means moving the helper to shared page
+        // furniture - a tidy-up of its own, not a rider on a move. Known debt, named.
+        void SliderRow(UIList box, in LocalizedText title, in LocalizedText tooltip, float min, float max,
+                       int current, LocalizedText zeroText, Action<int> onChange, string suffix = "",
+                       LocalizedText maxText = default, int valueLane = FloatSlider.DefaultValueLane)
+        {
+            box.Add(new UILabel(title, Fonts.Arial12Bold, Colors.Cream)).Tooltip = tooltip;
+            var rail = box.Add(new FloatSlider(SliderStyle.Decimal, new Vector2(BoxW2 - 40, 28),
+                                               "", min, max, current)
+            {
+                Step = 1,
+                Tip = tooltip,
+                TrackYOffset = -5,
+                ZeroString = zeroText,
+                MaxString = maxText,
+                ValueSuffix = suffix,
+                ValueLane = valueLane,
+            });
+            rail.OnChange = s => onChange((int)s.AbsoluteValue);
+        }
+
         UIList NewBox(in RectF r, LocalizedText title, LocalizedText tooltip = default)
         {
             var box = Add(new Submenu(r, new[] { title }));
