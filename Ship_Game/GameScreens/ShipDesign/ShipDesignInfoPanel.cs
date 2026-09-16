@@ -353,10 +353,19 @@ namespace Ship_Game.GameScreens.ShipDesign
         // the compared panel asks the active one for the same row, by title
         public bool TryGetVisibleValue(string title, out float value)
         {
-            Row row = Rows.Find(r => r.Heading == null && r.Value != null
-                                  && r.Title.Text == title && IsVisible(r));
-            value = row?.Value() ?? 0f;
-            return row != null;
+            // Row is a struct: the extension Find (class-constrained) and null tests
+            // do not apply - the plain indexed scan is the right form here
+            for (int i = 0; i < Rows.Count; ++i)
+            {
+                Row r = Rows[i];
+                if (r.Heading == null && r.Value != null && r.Title.Text == title && IsVisible(r))
+                {
+                    value = r.Value();
+                    return true;
+                }
+            }
+            value = 0f;
+            return false;
         }
 
         public ShipDesignInfoPanel(ShipDesignScreen screen, in Rectangle rect) : base(rect)
