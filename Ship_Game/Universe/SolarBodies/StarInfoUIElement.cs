@@ -73,11 +73,7 @@ namespace Ship_Game
 
 			bool explored = Sys.IsExploredBy(Player);
 			var planets = Sys.PlanetList;
-			int rows = 0;
-			if (explored)
-				foreach (Planet p in planets)
-					if (p.IsExploredBy(Player))
-						rows++;
+			int rows = explored ? planets.Count(p => p.IsExploredBy(Player)) : 0;
 
 			// the planet cartouche's fixed frame grows UPWARD row by row past 8 planets
 			// (maintainer feedback) - the standard plate seats 8, a crowded system lifts

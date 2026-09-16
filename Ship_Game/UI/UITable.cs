@@ -140,10 +140,7 @@ namespace Ship_Game.UI
             int over = TableWidth - maxTableWidth;
             if (over <= 0)
                 return;
-            var folds = new Array<Column>();
-            foreach (Column c in Columns)
-                if (c.Foldable)
-                    folds.Add(c);
+            var folds = Columns.Filter(c => c.Foldable).ToArrayList();
             if (folds.IsEmpty)
                 return;
             int share = over / folds.Count + 1;

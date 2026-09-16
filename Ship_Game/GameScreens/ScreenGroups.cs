@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using SDGraphics;
+using SDUtils;
 using SDGraphics.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using Vector2 = SDGraphics.Vector2;
@@ -226,12 +227,7 @@ namespace Ship_Game.GameScreens
         // handles input, so the rect is hit-tested directly - a draw pass can run between two
         // input passes.
         public static int GroupTabUnderCursor(Submenu tabs, Vector2 cursor)
-        {
-            for (int i = 0; i < tabs.Tabs.Count; ++i)
-                if (tabs.Tabs[i].Rect.HitTest(cursor))
-                    return i;
-            return -1;
-        }
+            => tabs.Tabs.IndexOf(t => t.Rect.HitTest(cursor));
 
         // Raise the hovered tab's tip, under its own tab rather than at the cursor.
         public static void DrawTabTip(Submenu tabs, Vector2 cursor, string[] tips, string[] keys)
@@ -512,11 +508,9 @@ namespace Ship_Game.GameScreens
         // needs, the content inside doesn't move
         public static float MinTabStripWidth(LocalizedText[] titles)
         {
-            float w = 22; // the nine-slice corners either side of the menu bar
             SubTexture right = ResourceManager.Texture("NewUI/submenu_header_right");
-            foreach (LocalizedText t in titles)
-                w += Fonts.Pirulen12.TextWidth(t.Text) + 2 + right.Width;
-            return w;
+            // 22 = the nine-slice corners either side of the menu bar
+            return 22 + titles.Sum(t => Fonts.Pirulen12.TextWidth(t.Text) + 2 + right.Width);
         }
 
         // Ludoal fork: the content-sized variant - the frame hugs what it holds, anchored on
@@ -691,13 +685,7 @@ namespace Ship_Game.GameScreens
             return i >= 0 ? i : IndexOfScreen(EmpireTabScreens, t);
         }
 
-        static int IndexOfScreen(Type[] screens, Type t)
-        {
-            for (int i = 0; i < screens.Length; ++i)
-                if (screens[i] == t)
-                    return i;
-            return -1;
-        }
+        static int IndexOfScreen(Type[] screens, Type t) => screens.IndexOf(t);
 
         // ── Which group a screen belongs to ───────────────────────────────────────────────────
         // Ludoal fork: the top bar tints the button of the group you are inside. One place knows

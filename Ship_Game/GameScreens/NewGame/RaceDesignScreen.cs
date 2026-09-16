@@ -763,10 +763,7 @@ namespace Ship_Game
 
         void OnPirateStrengthClicked(UIButton b)
         {
-            int at = 0;
-            for (int i = 0; i < PirateStrengthOrder.Length; ++i)
-                if (PirateStrengthOrder[i] == P.PirateStrength) { at = i; break; }
-
+            int at = Math.Max(0, PirateStrengthOrder.IndexOf(s => s == P.PirateStrength));
             int n = PirateStrengthOrder.Length;
             P.PirateStrength = PirateStrengthOrder[(at + OptionIncrement + n) % n];
         }
@@ -793,10 +790,7 @@ namespace Ship_Game
 
         void OnPirateRaidFreqClicked(UIButton b)
         {
-            int at = 0;
-            for (int i = 0; i < PirateRaidFreqOrder.Length; ++i)
-                if (PirateRaidFreqOrder[i] == P.PirateRaidFrequency) { at = i; break; }
-
+            int at = Math.Max(0, PirateRaidFreqOrder.IndexOf(f => f == P.PirateRaidFrequency));
             int n = PirateRaidFreqOrder.Length;
             P.PirateRaidFrequency = PirateRaidFreqOrder[(at + OptionIncrement + n) % n];
         }
@@ -839,9 +833,8 @@ namespace Ship_Game
                 UniverseParams.PirateChoiceRandom,
             };
 
-            foreach (IEmpireData d in ResourceManager.AllRaces)
-                if (d is EmpireData ed && ed.IsPirateFaction)
-                    choices.Add(d.Name);
+            choices.AddRange(ResourceManager.AllRaces.FilterSelect(
+                d => d is EmpireData ed && ed.IsPirateFaction, d => d.Name));
 
             return choices.ToArray();
         }

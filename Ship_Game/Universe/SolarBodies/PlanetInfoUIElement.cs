@@ -45,10 +45,7 @@ namespace Ship_Game
                     return true;
                 if (P.Owner == null)
                     return false;
-                foreach (Mole m in Player.data.MoleList)
-                    if (m.PlanetId == P.Id)
-                        return true;
-                return false;
+                return Player.data.MoleList.Any(m => m.PlanetId == P.Id);
             }
         }
         readonly UniverseScreen Screen;

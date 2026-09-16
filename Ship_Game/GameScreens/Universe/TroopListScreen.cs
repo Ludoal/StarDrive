@@ -268,9 +268,7 @@ namespace Ship_Game
             foreach (TroopListScreenItem item in groups.Values.OrderBy(v => Rank(v.StatusText)))
                 TroopSL.AddItem(item);
 
-            NumTroops = 0;
-            foreach (TroopListScreenItem item in TroopSL.AllEntries)
-                NumTroops += item.Count;
+            NumTroops = TroopSL.AllEntries.Sum(item => item.Count);
         }
 
 

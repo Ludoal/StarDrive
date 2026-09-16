@@ -62,14 +62,7 @@ namespace Ship_Game
 
         static bool CallerDrawsHere(GameScreen caller, Vector2 pos)
         {
-            var elements = caller.GetElements();
-            for (int i = 0; i < elements.Count; ++i)
-            {
-                UIElementV2 e = elements[i];
-                if (e.Visible && e.HitTest(pos))
-                    return true;
-            }
-            return false;
+            return caller.GetElements().Find(e => e.Visible && e.HitTest(pos)) != null;
         }
 
         public bool HandleVisibleBandInput(InputState input, GameScreen caller)
@@ -832,16 +825,11 @@ namespace Ship_Game
         // Ludoal fork (wishlist): hit-test the suns at close zoom
         SolarSystem FindSunUnderCursorClose(Vector2 cursor)
         {
-            var systems = UState.Systems;
-            for (int i = 0; i < systems.Count; i++)
+            return UState.Systems.Find(s =>
             {
-                SolarSystem s = systems[i];
                 ProjectToScreenCoords(s.Position, 30000f, out Vector2d pos, out double radius);
-                float r = (float)Math.Max(radius, 24.0);
-                if (cursor.InRadius(pos.ToVec2f(), r))
-                    return s;
-            }
-            return null;
+                return cursor.InRadius(pos.ToVec2f(), (float)Math.Max(radius, 24.0));
+            });
         }
 
         // Ludoal fork (wishlist): grab a build marker with a held left button, slide it,

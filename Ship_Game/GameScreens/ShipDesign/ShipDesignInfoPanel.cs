@@ -347,26 +347,16 @@ namespace Ship_Game.GameScreens.ShipDesign
                 Localizer.Token(GT.UpkeepCost),
                 Localizer.Token(GT.Mass),
             };
-            for (int i = 0; i < LowerIsBetterCache.Length; ++i)
-                if (LowerIsBetterCache[i] == title)
-                    return true;
-            return false;
+            return LowerIsBetterCache.Contains(title);
         }
 
         // the compared panel asks the active one for the same row, by title
         public bool TryGetVisibleValue(string title, out float value)
         {
-            for (int i = 0; i < Rows.Count; ++i)
-            {
-                Row r = Rows[i];
-                if (r.Heading == null && r.Value != null && r.Title.Text == title && IsVisible(r))
-                {
-                    value = r.Value();
-                    return true;
-                }
-            }
-            value = 0f;
-            return false;
+            Row row = Rows.Find(r => r.Heading == null && r.Value != null
+                                  && r.Title.Text == title && IsVisible(r));
+            value = row?.Value() ?? 0f;
+            return row != null;
         }
 
         public ShipDesignInfoPanel(ShipDesignScreen screen, in Rectangle rect) : base(rect)

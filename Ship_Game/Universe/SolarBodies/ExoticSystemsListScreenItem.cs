@@ -254,10 +254,8 @@ namespace Ship_Game
             string s = sunId.TrimEnd('0','1','2','3','4','5','6','7','8','9');
             if (s.StartsWith("star_"))
                 s = s.Substring(5);
-            string[] words = s.Split('_');
-            for (int i = 0; i < words.Length; i++)
-                if (words[i].Length > 0)
-                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
+            string[] words = s.Split('_')
+                .Select(w => w.Length > 0 ? char.ToUpper(w[0]) + w.Substring(1) : w);
             return string.Join(" ", words);
         }
 

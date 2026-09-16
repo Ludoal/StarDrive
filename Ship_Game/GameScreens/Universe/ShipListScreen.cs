@@ -396,13 +396,10 @@ namespace Ship_Game
             }
 
             // the orange header stays truthful: re-apply the standing sort after every refill
-            for (int i = 0; i < Table.Columns.Length; ++i)
+            int sorted = Table.Columns.IndexOf(c => c.Sorted);
+            if (sorted >= 0)
             {
-                if (Table.Columns[i].Sorted)
-                {
-                    ApplySort(i, Table.Columns[i].Ascending);
-                    break;
-                }
+                ApplySort(sorted, Table.Columns[sorted].Ascending);
             }
 
             SelectedShip = null;

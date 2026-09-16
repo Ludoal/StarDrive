@@ -326,10 +326,8 @@ namespace Ship_Game
                 // ★★ THE NEED IS NEVER COMPUTED HERE. A zone's is READ off the zone, where the
                 // empire wrote it this turn; the empire's own is asked of the same function the
                 // Trade table uses, so two screens cannot drift into two definitions (bench 582).
-                var perimeter = new Array<Planet>();
-                foreach (Planet p in Player.GetPlanets())
-                    if (SelectedZone == null || SelectedZone.Serves(p))
-                        perimeter.Add(p);
+                var perimeter = Player.GetPlanets()
+                    .Filter(p => SelectedZone == null || SelectedZone.Serves(p)).ToArrayList();
 
                 // a zone's need is a fact of the turn: after a load it reads nought until the empire
                 // measures it, so the measure is asked of the simulation thread here
@@ -469,17 +467,7 @@ namespace Ship_Game
 
         // the picker shows a list the player edits on another page: it is stale the moment that
         // list has a zone more, a zone less, or the same zones in another order
-        bool ZoneOptionsStale()
-        {
-            if (ZonesShown.Count != Player.TradeZones.Count)
-                return true;
-
-            for (int i = 0; i < ZonesShown.Count; ++i)
-                if (ZonesShown[i] != Player.TradeZones[i])
-                    return true;
-
-            return false;
-        }
+        bool ZoneOptionsStale() => !ZonesShown.EqualElements(Player.TradeZones);
 
         // a run belongs to a zone by the end it DELIVERS to - the same end the zone's own dispatch
         // serves. No selection means the whole empire, so everything belongs.

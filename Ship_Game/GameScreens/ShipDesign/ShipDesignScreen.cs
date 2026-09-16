@@ -1731,9 +1731,8 @@ namespace Ship_Game
             // objects, so their expanded state is lost and every category snaps shut otherwise.
             // Keyed by heading text, the only thing that survives the rebuild.
             ExpandedGroups.Clear();
-            foreach (ShipYardBrowserItem row in HullSelectList.AllEntries)
-                if (row.Expanded && row.HeaderText.NotEmpty())
-                    ExpandedGroups.Add(row.HeaderText);
+            ExpandedGroups.AddRange(HullSelectList.AllEntries.FilterSelect(
+                row => row.Expanded && row.HeaderText.NotEmpty(), row => row.HeaderText));
 
             HullSelectList.Reset();
 

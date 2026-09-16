@@ -99,11 +99,9 @@ namespace Ship_Game
             var seen = new HashSet<int>();
             var union = new List<Building>();
             foreach (Planet p in Targets())
-                foreach (Building b in p.GetBuildingsCanBuild())
-                    if (seen.Add(b.BID))
-                        union.Add(b);
+                union.AddRange(p.GetBuildingsCanBuild().Filter(b => seen.Add(b.BID)));
 
-            return union.OrderBy(b => b.Name).ToArray();
+            return union.Sorted(b => b.Name);
         }
 
         public override void LoadContent()
@@ -215,7 +213,7 @@ namespace Ship_Game
                         items.Add(new SourceItem { Building = b });
                     break;
                 case Tab.Troops:
-                    foreach (string t in Player.GetTroopsWeCanBuild().OrderBy(t => t))
+                    foreach (string t in Player.GetTroopsWeCanBuild().Sorted(t => t))
                         items.Add(new SourceItem { TroopType = t });
                     break;
                 case Tab.Ships:
@@ -223,8 +221,8 @@ namespace Ship_Game
                     // anything else, and the colony screen offers them. Only the deep-space set
                     // (subspace projectors and the rest) is excluded, by the shared rule (bench 530).
                     foreach (IShipDesign s in Player.ShipsWeCanBuildSnapshot
-                                                    .Where(s => Empire.IsPlayerQueueableShip(s, Player))
-                                                    .OrderBy(s => s.Name))
+                                                    .Filter(s => Empire.IsPlayerQueueableShip(s, Player))
+                                                    .Sorted(s => s.Name))
                         items.Add(new SourceItem { Ship = s });
                     break;
             }

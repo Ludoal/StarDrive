@@ -27,9 +27,7 @@ namespace Ship_Game
             Colony = colony;
             Owner = colony.Owner;
             TransitionOnTime = 0.25f;
-            foreach (TradeZone zone in Owner.TradeZones)
-                if (zone.Serves(colony))
-                    Chosen.Add(zone);
+            Chosen.AddRange(Owner.TradeZones.Filter(zone => zone.Serves(colony)));
         }
 
         public override void LoadContent()

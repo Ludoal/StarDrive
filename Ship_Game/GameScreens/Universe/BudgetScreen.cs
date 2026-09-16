@@ -344,9 +344,7 @@ namespace Ship_Game.GameScreens
             });
             // widths from the data: the planet names size the Colony column (plus its icon
             // lane); a numeric column takes its own title or a money figure, whichever is wider
-            var names = new Array<string>();
-            foreach (Planet p in Player.GetPlanets())
-                names.Add(p.Name);
+            var names = Player.GetPlanets().Select(p => p.Name).ToArrayList();
             UITable.AutoSize(Table.Columns[0], Fonts.Arial12Bold, names);
             Table.Columns[0].Width += 28; // the planet icon rides ahead of the name
             for (int i = 1; i < Table.Columns.Length; ++i)
@@ -656,20 +654,10 @@ namespace Ship_Game.GameScreens
         // read the colonies, not EmpireAI.PlanetBudgets: that list is filled only under
         // the debug flag, so off the debug build it is empty and both figures read zero.
         float GovernorsMaySpend()
-        {
-            float total = 0;
-            foreach (Planet p in Player.GetPlanets())
-                if (p.Budget != null) total += p.Budget.TotalAlloc;
-            return total;
-        }
+            => Player.GetPlanets().Sum(p => p.Budget?.TotalAlloc ?? 0f);
 
         float WithheldByAllowance()
-        {
-            float total = 0;
-            foreach (Planet p in Player.GetPlanets())
-                if (p.Budget != null) total += p.Budget.WithheldByAllowance;
-            return total;
-        }
+            => Player.GetPlanets().Sum(p => p.Budget?.WithheldByAllowance ?? 0f);
 
         // one line: [name][slider][padlock][live money value] - the compact grammar for
         // the linked shares
