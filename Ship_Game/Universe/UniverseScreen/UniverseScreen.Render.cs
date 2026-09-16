@@ -253,6 +253,34 @@ namespace Ship_Game
         // system exploded view has always drawn its flag from.
         public bool IsMarkedForColonization(Planet p) => Player.AI.HasGoal(g => g.IsColonizationGoal(p));
 
+        // Galaxy-view flag counts: ONE pass over the player's goals per frame instead of
+        // rescanning the whole goals list for every planet of every visible system
+        // (the ShipGroup FrameId caching pattern). A goal marks its own TargetPlanet,
+        // so g.IsColonizationGoal(g.TargetPlanet) is true exactly for colonization goals.
+        readonly Map<SolarSystem, int> ColonizationFlagCounts = new();
+        int ColonizationFlagsFrame = -1;
+
+        int ColonizationCount(SolarSystem sys)
+        {
+            int frame = StarDriveGame.Instance?.FrameId ?? -1;
+            if (frame != ColonizationFlagsFrame)
+            {
+                ColonizationFlagsFrame = frame;
+                ColonizationFlagCounts.Clear();
+                var goals = Player.AI.Goals;
+                for (int i = 0; i < goals.Count; ++i)
+                {
+                    Planet target = goals[i].TargetPlanet;
+                    if (target?.ParentSystem != null && goals[i].IsColonizationGoal(target))
+                    {
+                        ColonizationFlagCounts.TryGetValue(target.ParentSystem, out int c);
+                        ColonizationFlagCounts[target.ParentSystem] = c + 1;
+                    }
+                }
+            }
+            return ColonizationFlagCounts.TryGetValue(sys, out int n) ? n : 0;
+        }
+
         // Galaxy view: one flag per star aggregates the system's colonizations - the
         // per-planet detail lives at closer zoom (DrawPlanetInfo). A multiplicity badge
         // rides the flag's bottom-right corner from x2 up, Features-style; a bare flag
@@ -261,7 +289,7 @@ namespace Ship_Game
         {
             if (Player.Universe.IsSectorViewOrCloser)
                 return;
-            int n = sys.PlanetList.Count(p => IsMarkedForColonization(p));
+            int n = ColonizationCount(sys);
             if (n == 0)
                 return;
 
