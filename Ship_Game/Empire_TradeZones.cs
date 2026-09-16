@@ -120,13 +120,7 @@ namespace Ship_Game
 
         // What a set of worlds can send of one good.
         public int ExportSupply(Array<Planet> exporters, Goods goods)
-        {
-            int supply = 0;
-            for (int i = 0; i < exporters.Count; ++i)
-                supply += ExportSlotsOf(exporters[i], goods);
-
-            return supply;
-        }
+            => exporters.Sum(p => ExportSlotsOf(p, goods));
 
         // What a PERIMETER wants, in whole hulls: what its importers burn, and nothing else.
         // Rounded UP - half a run still takes a hull.
@@ -144,9 +138,7 @@ namespace Ship_Game
         // adding it up on the other and the pair crosses over. One function, one definition.
         public int PerimeterNeed(Array<Planet> importers, Goods goods, bool beforeServing = false)
         {
-            float need = 0;
-            for (int i = 0; i < importers.Count; ++i)
-                need += RunsNeeded(importers[i], goods, beforeServing);
+            float need = importers.Sum(p => RunsNeeded(p, goods, beforeServing));
 
             int whole = (int)need;
             if (need > whole)
@@ -406,21 +398,9 @@ namespace Ship_Game
              : goods == Goods.Production ? p.FreeProdImportSlots > 0
              : p.FreeColonistImportSlots > 0;
 
-        bool AnyExclusiveZoneWaits(Planet planet, Goods goods)
-        {
-            for (int i = 0; i < TradeZones.Count; ++i)
-            {
-                TradeZone z = TradeZones[i];
-                if (!z.Exclusive || !z.Serves(planet))
-                    continue;
-
-                foreach (Planet p in z.ColonyPlanets(this))
-                    if (StillWaiting(p, goods))
-                        return true;
-            }
-
-            return false;
-        }
+        bool AnyExclusiveZoneWaits(Planet planet, Goods goods) =>
+            TradeZones.Find(z => z.Exclusive && z.Serves(planet)
+                              && z.ColonyPlanets(this).Find(p => StillWaiting(p, goods)) != null) != null;
 
         // ★ THE COMMON LOADING GROUND, AND IT IS PER GOOD. An exclusive zone owns its HULLS, not
         // its harvests (bench 589): once its own imports of a good are covered, its colonies lend
@@ -431,30 +411,14 @@ namespace Ship_Game
         // of nought, and reading that calls a starving enclave "served" and takes its food away.
         // ⚠ and it is the LOADING end only: nothing here opens an enclave to deliveries.
         public Array<Planet> CommonExportGround(Goods goods)
-        {
-            var colonies = new Array<Planet>();
-            for (int i = 0; i < OwnedPlanets.Count; ++i)
-            {
-                if (!AnyExclusiveZoneWaits(OwnedPlanets[i], goods))
-                    colonies.Add(OwnedPlanets[i]);
-            }
-
-            return colonies;
-        }
+            => OwnedPlanets.Filter(p => !AnyExclusiveZoneWaits(p, goods)).ToArrayList();
 
         // ★ THE COLONIES THE COMMON PASS MAY DELIVER TO: everything outside an exclusive zone.
         // An exclusive zone is served by the hulls it requisitioned and by nothing else, so its
         // worlds leave the empire's own dispatch - a world served by both keeps its berths
         // closed against the very freighters the zone took for it (maintainer feedback).
         public Array<Planet> ColoniesOutsideExclusiveZones()
-        {
-            var colonies = new Array<Planet>();
-            for (int i = 0; i < OwnedPlanets.Count; ++i)
-                if (GetExclusiveZone(OwnedPlanets[i]) == null)
-                    colonies.Add(OwnedPlanets[i]);
-
-            return colonies;
-        }
+            => OwnedPlanets.Filter(p => GetExclusiveZone(p) == null).ToArrayList();
 
         // Ludoal fork (player feedback): what stands on a body, when anything of ours does.
         // A mining rig or a research post orbits a body that is nobody's colony, so it never shows

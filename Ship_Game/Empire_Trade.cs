@@ -151,18 +151,8 @@ namespace Ship_Game
         // zone takes its colonies out of the empire's care, so leaving them in the numerator has
         // the empire budget a fleet for worlds it does not serve - a double count of NEED, hidden
         // inside an average. The colonies of an exclusive zone leave with its ships.
-        public int PlanetsOutsideExclusiveZones
-        {
-            get
-            {
-                int count = 0;
-                for (int i = 0; i < OwnedPlanets.Count; ++i)
-                    if (GetExclusiveZone(OwnedPlanets[i]) == null)
-                        ++count;
-
-                return count;
-            }
-        }
+        public int PlanetsOutsideExclusiveZones =>
+            OwnedPlanets.Count(p => GetExclusiveZone(p) == null);
 
         public int FreighterCap
         {
@@ -786,17 +776,8 @@ namespace Ship_Game
         // Is this hull one a zone is holding for its stations? Walked rather than asked of a set:
         // there are a handful of zones and a handful of held hulls, and a second index would be
         // one more thing to keep true.
-        bool IsHeldForZone(Ship freighter)
-        {
-            for (int i = 0; i < TradeZones.Count; ++i)
-            {
-                Ship[] held = TradeZones[i].LentThisTurn;
-                for (int j = 0; j < held.Length; ++j)
-                    if (held[j] == freighter)
-                        return true;
-            }
-            return false;
-        }
+        bool IsHeldForZone(Ship freighter) =>
+            TradeZones.Find(z => z.LentThisTurn.ContainsRef(freighter)) != null;
 
         // An exclusive zone serves its own colonies with its own hulls and touches nothing else. Note
         // what it CANNOT do, and that this falls out of the machinery rather than being forbidden

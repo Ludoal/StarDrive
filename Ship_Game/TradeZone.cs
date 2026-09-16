@@ -99,15 +99,10 @@ namespace Ship_Game
         // turn and owns nothing, which is the whole difference between the two regimes.
         public Array<Ship> MemberFreighters(Empire owner)
         {
-            var members = new Array<Ship>();
             if (!Exclusive || Id == 0)
-                return members;
+                return new Array<Ship>();
 
-            foreach (Ship s in owner.OwnedShips)
-                if (s.IsFreighter && s.TradeZoneId == Id)
-                    members.Add(s);
-
-            return members;
+            return owner.OwnedShips.Filter(s => s.IsFreighter && s.TradeZoneId == Id).ToArrayList();
         }
 
         public bool Serves(Planet planet) => Colonies.Contains(planet.Id);
@@ -162,13 +157,7 @@ namespace Ship_Game
         // expressed by its open supply goal, so the zone COUNTS those goals rather than testing
         // the hunger again - the goal stays the one signal, the zone only pays for it.
         public int StationDemand(Empire owner)
-        {
-            int berths = 0;
-            foreach (Ship station in Stations(owner))
-                berths += owner.AI.CountGoals(g => g.IsSupplyingGoodsToStationStationGoal(station));
-
-            return berths;
-        }
+            => Stations(owner).Sum(station => owner.AI.CountGoals(g => g.IsSupplyingGoodsToStationStationGoal(station)));
 
         // The freighters already converging on this zone. The colonies count what is inbound for
         // their own slot arithmetic, so this is a sum rather than a new count.

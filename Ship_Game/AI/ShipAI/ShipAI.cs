@@ -655,28 +655,13 @@ namespace Ship_Game.AI
         // Ludoal fork (bench 556): the STATION this run delivers to, when it delivers to one.
         // ⚠ A station run lands on no planet's incoming counter, so anything counting freighters
         // by their destination must ask here as well or it counts half the traffic.
-        public Ship TradeTargetStation
-        {
-            get
-            {
-                foreach (ShipGoal g in OrderQueue.ToArray())
-                    if (g?.Trade?.TargetStation != null)
-                        return g.Trade.TargetStation;
-
-                return null;
-            }
-        }
+        public Ship TradeTargetStation =>
+            OrderQueue.ToArray().Find(g => g?.Trade?.TargetStation != null)?.Trade.TargetStation;
 
         // Ludoal fork: where the run for THIS goods delivers - a run belongs to the zone holding
         // its IMPORT planet. Null when the leg feeds a station or carries nothing of that goods.
-        public Planet TradeImportFor(Goods goods)
-        {
-            foreach (ShipGoal g in OrderQueue.ToArray())
-                if (g?.Trade != null && g.Trade.Goods == goods)
-                    return g.Trade.ImportTo;
-
-            return null;
-        }
+        public Planet TradeImportFor(Goods goods) =>
+            OrderQueue.ToArray().Find(g => g?.Trade != null && g.Trade.Goods == goods)?.Trade.ImportTo;
 
         // Ludoal fork (bench 339): a freighter counts once, by its CURRENT phase - it is
         // IMPORTING while delivering (a drop-off leg queued) and EXPORTING otherwise (picking up or
