@@ -716,14 +716,22 @@ namespace Ship_Game
         // Prod orange, Pop white; Colonization gray) and its own overlay toggle on the minimap.
         // Lines only, no icons. Both read the same UI-safe sources the ship list and the
         // exploded view already consume (bench 428).
+        // reused across frames (cleared, not reallocated): the overlays run every frame
+        // for as long as their toggles stay on, over the whole owned fleet
+        readonly HashSet<(Planet, Planet, Goods)> SeenRoutes = new();
+
         void DrawRouteOverlays(SpriteBatch batch)
         {
             if (ShowingFoodRoutesOverlay || ShowingProdRoutesOverlay || ShowingPopRoutesOverlay)
             {
-                var seen = new HashSet<(Planet, Planet, Goods)>();
-                var freighters = Player.OwnedShips.Filter(s => s.IsFreighter && s.AI.State == AIState.SystemTrader);
-                foreach (Ship f in freighters)
+                HashSet<(Planet, Planet, Goods)> seen = SeenRoutes;
+                seen.Clear();
+                IReadOnlyList<Ship> ships = Player.OwnedShips;
+                for (int i = 0; i < ships.Count; ++i)
                 {
+                    Ship f = ships[i];
+                    if (!f.IsFreighter || f.AI.State != AIState.SystemTrader)
+                        continue;
                     // Ludoal fork (bench 556): a run to a STATION has no import PLANET, so its
                     // route is drawn to the BODY the station orbits - where the hull is going,
                     // and how a trade zone names it anyway.
