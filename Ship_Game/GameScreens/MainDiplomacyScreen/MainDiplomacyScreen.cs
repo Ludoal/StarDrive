@@ -246,9 +246,18 @@ namespace Ship_Game
             }
         }
 
+        // per-frame buffers, refilled in place: fresh allocations here would run once
+        // per empire COLUMN per frame, and the ActiveMajorEmpires property itself
+        // allocates a filtered array on every access
+        Empire[] MajorsThisFrame = Empty<Empire>.Array;
+        readonly Array<Empire> TreatyOthers = new();
+        readonly Map<string, int> ArtifactCounts = new();
+        readonly Array<Artifact> ArtifactOrder = new();
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
+            MajorsThisFrame = Universe.UState.ActiveMajorEmpires; // one snapshot per frame
 
             // Ludoal fork: the frame fill goes down FIRST, by hand. ⚠ As a Submenu background it is
             // one of the screen's children, so base.Draw would paint it AFTER these columns and cover
@@ -746,8 +755,11 @@ namespace Ship_Game
                 return;
             }
             // duplicates collapse to one line with a count, "(x2)"
-            var counts = new Map<string, int>();
-            var order = new Array<Artifact>();
+            // (buffers reused across columns: cleared, never reallocated per frame)
+            Map<string, int> counts = ArtifactCounts;
+            counts.Clear();
+            Array<Artifact> order = ArtifactOrder;
+            order.Clear();
             foreach (Artifact a in e.data.OwnedArtifacts)
             {
                 if (counts.ContainsKey(a.Name)) counts[a.Name] += 1;
@@ -841,15 +853,19 @@ namespace Ship_Game
         // share a line because they exclude or imply each other (W/P, A/N), plus O, T
         void DrawTreatyMatrix(SpriteBatch batch, Empire e, Rectangle col, float top)
         {
-            Empire[] others = Universe.UState.ActiveMajorEmpires.Filter(x => x != e);
-            if (others.Length == 0)
+            TreatyOthers.Clear();
+            for (int i = 0; i < MajorsThisFrame.Length; ++i)
+                if (MajorsThisFrame[i] != e)
+                    TreatyOthers.Add(MajorsThisFrame[i]);
+            Array<Empire> others = TreatyOthers;
+            if (others.Count == 0)
                 return;
 
-            int cellW = ((col.Width - 20) / others.Length).UpperBound(26);
-            float x0 = col.X + (col.Width - cellW * others.Length) / 2f;
+            int cellW = ((col.Width - 20) / others.Count).UpperBound(26);
+            float x0 = col.X + (col.Width - cellW * others.Count) / 2f;
 
             // flag header
-            for (int jx = 0; jx < others.Length; ++jx)
+            for (int jx = 0; jx < others.Count; ++jx)
             {
                 var flag = new Rectangle((int)(x0 + jx * cellW) + (cellW - 14) / 2, (int)top, 14, 14);
                 if (Player.IsKnown(others[jx]) || others[jx].isPlayer)
@@ -861,7 +877,7 @@ namespace Ship_Game
             // separator between the race-flag header and the treaty rows
             int sepY = (int)top + 17;
             int sepX = (int)x0;
-            int sepW = (int)(cellW * others.Length);
+            int sepW = (int)(cellW * others.Count);
             batch.DrawLine(new Vector2(sepX, sepY), new Vector2(sepX + sepW, sepY), new Color(255, 255, 255, 40).Premultiplied());
 
             // merged status row: war BREAKS every treaty at declaration
@@ -871,7 +887,7 @@ namespace Ship_Game
             for (int iy = 0; iy < 3; ++iy)
             {
                 float ry = top + 20 + iy * 22;
-                for (int jx = 0; jx < others.Length; ++jx)
+                for (int jx = 0; jx < others.Count; ++jx)
                 {
                     SubTexture icon = null;
                     Color tint = Color.White;
