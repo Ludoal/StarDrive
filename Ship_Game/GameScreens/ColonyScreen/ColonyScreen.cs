@@ -474,13 +474,8 @@ namespace Ship_Game
             // Ludoal fork: on a fresh open (no sticky selection carried), default to Stats+
             if (facilitiesTabSelected < 0)
             {
-                facilitiesTabSelected = 0;
-                for (int i = 0; i < PFacilities.Tabs.Count; ++i)
-                    if (PFacilities.Tabs[i].Title == StatsPlusTabTitle)
-                    {
-                        facilitiesTabSelected = i;
-                        break;
-                    }
+                int statsTab = PFacilities.Tabs.IndexOf(t => t.Title == StatsPlusTabTitle);
+                facilitiesTabSelected = statsTab >= 0 ? statsTab : 0;
             }
             if (facilitiesTabSelected < PFacilities.Tabs.Count)
                 PFacilities.SelectedIndex = facilitiesTabSelected;

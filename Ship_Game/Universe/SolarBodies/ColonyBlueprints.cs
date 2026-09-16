@@ -216,14 +216,8 @@ namespace Ship_Game.Universe.SolarBodies
             // plan would have no say.
             foreach (string planned in PlannedBuildings)
             {
-                for (int i = 0; i < buildingCanBuild.Count; i++)
-                {
-                    if (buildingCanBuild[i].Name == planned)
-                    {
-                        PlannedBuildingsWeCanBuild.Add(buildingCanBuild[i]);
-                        break;
-                    }
-                }
+                if (buildingCanBuild.Find(b => b.Name == planned) is { } found)
+                    PlannedBuildingsWeCanBuild.Add(found);
             }
 
             // Ludoal fork (maintainer feedback): what this colony can REACH is read off the very

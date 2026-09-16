@@ -117,12 +117,7 @@ public class SaveLoadBlueprintsScreen : GenericLoadSaveScreen
     }
 
     static bool NameIsTaken(string oldName, string newName)
-    {
-        foreach (BlueprintsTemplate t in ResourceManager.GetAllBlueprints())
-            if (t.Name != oldName && t.KnownAs(newName))
-                return true;
-        return false;
-    }
+        => ResourceManager.GetAllBlueprints().Any(t => t.Name != oldName && t.KnownAs(newName));
 
     void DoRename(string oldName, string newName)
     {

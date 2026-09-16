@@ -302,11 +302,7 @@ namespace Ship_Game.Universe.SolarBodies
         {
             get
             {
-                for (int i = 0; i < ConstructionQueue.Count; ++i)
-                    if (TryMakeBuildable(ConstructionQueue[i]))
-                        return i;
-
-                return -1;
+                return ConstructionQueue.IndexOf(TryMakeBuildable);
             }
         }
 

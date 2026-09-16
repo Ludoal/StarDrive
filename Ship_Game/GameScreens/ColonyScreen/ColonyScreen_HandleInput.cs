@@ -88,17 +88,15 @@ namespace Ship_Game
             {
                 foreach (PlanetGridSquare pgs in P.TilesList)
                 {
-                    if (pgs.TroopsAreOnTile)
+                    if (pgs.TroopsAreOnTile
+                        && pgs.TroopsHere.Find(t => t.ClickRect.HitTest(input.CursorPosition)) is { } troop)
                     {
-                        for (int i = 0; i < pgs.TroopsHere.Count; ++i)
-                            if (pgs.TroopsHere[i].ClickRect.HitTest(input.CursorPosition))
-                                return pgs.TroopsHere[i];
+                        return troop;
                     }
                 }
 
-                foreach (PlanetGridSquare pgs in P.TilesList)
-                    if (pgs.ClickRect.HitTest(input.CursorPosition))
-                        return pgs;
+                if (P.TilesList.Find(pgs => pgs.ClickRect.HitTest(input.CursorPosition)) is { } tile)
+                    return tile;
             }
             else if (LastBuiltHover != null)
             {

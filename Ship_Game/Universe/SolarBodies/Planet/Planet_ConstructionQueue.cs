@@ -248,19 +248,13 @@ public partial class Planet
             if (planned == null)
                 return false;
 
-            for (int i = 0; i < planned.Count; i++)
-            {
-                Building b = planned[i];
-                if (BuildingBuiltOrQueued(b))
-                    continue;
-
-                plannedQueue.Add(new QueueItem(this)
+            plannedQueue.AddRange(planned.FilterSelect(b => !BuildingBuiltOrQueued(b),
+                b => new QueueItem(this)
                 {
                     isBuilding = true,
                     Building   = b,
                     Cost       = b.ActualCost(Owner),
-                });
-            }
+                }));
 
             return plannedQueue.Count > 0;
         }

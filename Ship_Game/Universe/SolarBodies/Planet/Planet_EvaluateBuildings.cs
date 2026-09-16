@@ -877,13 +877,7 @@ namespace Ship_Game
 
         PlanetGridSquare PickTileForTerraformer(PlanetGridSquare[] tileList)
         {
-            var potentialTiles = new Array<PlanetGridSquare>();
-            for (int i = 0; i < tileList.Length; ++i)
-            {
-                PlanetGridSquare tile = tileList[i];
-                if (NoVolcanosAround(tile))
-                    potentialTiles.Add(tile);
-            }
+            PlanetGridSquare[] potentialTiles = tileList.Filter(NoVolcanosAround);
 
             // ⚠ NOT A DRAW, AND NOT ANY TILE. Two rules share this grid and one of them yields:
             // when terraformers are unlocked, a biosphere looks for a tile that is neither
@@ -897,9 +891,9 @@ namespace Ship_Game
             // is the terraformer's own business, and the LAST of the others when there is none -
             // the far end from where a biosphere starts looking. Deterministic either way, so a
             // reload gives back the same plan.
-            Array<PlanetGridSquare> eligible = potentialTiles.Count > 0 ? potentialTiles : tileList.ToArrayList();
+            PlanetGridSquare[] eligible = potentialTiles.Length > 0 ? potentialTiles : tileList;
             PlanetGridSquare terraformable = eligible.Find(t => t.Terraformable);
-            return terraformable ?? eligible[eligible.Count - 1];
+            return terraformable ?? eligible[eligible.Length - 1];
 
             bool NoVolcanosAround(PlanetGridSquare tile)
             {
