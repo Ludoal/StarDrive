@@ -216,6 +216,9 @@ namespace Ship_Game.GameScreens
             return gateOpen || clipFrom > 0f; // a level that fell back keeps what was noted
         }
 
+        readonly Array<(EmpireSeries S, Array<(float Date, float Val)> Pts)> DrawnSeries = new();
+        readonly Array<Array<(float Date, float Val)>> PtsPool = new();
+
         public override void Draw(SpriteBatch batch, DrawTimes elapsed)
         {
             batch.SafeBegin();
@@ -251,12 +254,19 @@ namespace Ship_Game.GameScreens
             // visible, clipped points; shared scale
             int di = (int)Domain;
             float minDate = float.MaxValue, maxDate = Universe.UState.StarDate, maxVal = 0f;
-            var drawn = new Array<(EmpireSeries S, Array<(float Date, float Val)> Pts)>();
+            // buffers reused across frames (cleared, never reallocated): the point count
+            // grows with the length of the game, so fresh per-frame arrays are unbounded
+            var drawn = DrawnSeries;
+            drawn.Clear();
+            int pooled = 0;
             foreach (EmpireSeries s in Series)
             {
                 if (s.Hidden || !SeriesVisible(s.E, out float clipFrom))
                     continue;
-                var pts = new Array<(float, float)>();
+                if (PtsPool.Count == pooled)
+                    PtsPool.Add(new Array<(float Date, float Val)>());
+                Array<(float Date, float Val)> pts = PtsPool[pooled];
+                pts.Clear();
                 foreach ((float date, float[] values) in s.Points)
                 {
                     if (date < clipFrom)
@@ -268,7 +278,10 @@ namespace Ship_Game.GameScreens
                     if (values[di] > maxVal) maxVal = values[di];
                 }
                 if (pts.Count > 0)
+                {
                     drawn.Add((s, pts));
+                    ++pooled; // a slot that stayed empty is reused by the next series
+                }
             }
 
             if (drawn.Count == 0 || maxDate <= minDate)
