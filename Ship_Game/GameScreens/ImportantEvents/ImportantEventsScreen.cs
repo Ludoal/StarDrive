@@ -16,6 +16,8 @@ namespace Ship_Game
     // remnant story progression), opened from the minimap. On the shared table charte.
     public sealed class ImportantEventsScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         readonly UniverseScreen Universe;
         Submenu GalaxyTabs;   // Ludoal fork: the Galaxy group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect -

@@ -197,7 +197,7 @@ namespace Ship_Game
         // is why it reads "Auto" rather than zero.
         public bool RefitAuto => MaxFreighterRefitsPct <= 0;
         public int FreighterRefitDice => RefitAuto ? 10 : 20;
-        public int AverageTradeIncome    => AllTimeTradeIncome / TurnCount;
+        public float AverageTradeIncome  => AllTimeTradeIncome / TurnCount;
         // ManualTrade now governs only the ROUTING side (per-cargo restrictions / trade routes):
         // the AI always auto-routes, the player auto-routes unless it drives its freighters by hand.
         public bool ManualTrade          => isPlayer && !AutoFreighters;
@@ -211,7 +211,6 @@ namespace Ship_Game
         public int TotalLevelsOfPirateFactionsAtWar => Universe.PirateFactions.Sum(e => IsAtWarWith(e) ? e.Pirates.Level : 0);
 
         Array<Relationship> TradeTreaties = new();
-        public IReadOnlyList<Relationship> TradeRelations => TradeTreaties;
 
         void UpdateTradeTreaties()
         {
@@ -248,16 +247,17 @@ namespace Ship_Game
                 taxedGoods += goods * 2f;
 
             TradeMoneyAddedThisTurn += taxedGoods;
-            AllTimeTradeIncome      += (int)taxedGoods;
+            AllTimeTradeIncome      += taxedGoods;
         }
 
         // once per turn with 3 passes if possible
-        void DispatchBuildAndScrapFreighters()
+        internal void DispatchBuildAndScrapFreighters()
         {
             UpdateTradeTreaties();
             // a colony that stops being ours leaves the zones that named it, and a zone left
             // without one is dissolved - the housekeeping has to RUN, not merely exist
             RefreshTradeZones();
+            LoadFreightersAtTheirColony();
             TradeState tradeState = new(this, false) { CountsRuns = true };
             BookTurnRuns();
             // Trade First lifts the foreign runs above production and colonists - once in the
@@ -556,6 +556,45 @@ namespace Ship_Game
             int left = maxHulls < 0 ? -1 : (maxHulls - (before - abroad.IdleFreighters.Length)).LowerBound(0);
             DispatchOrBuildFreighters(Goods.Production, interTradePlanets, CommonExportGround(Goods.Production), true, ref abroad, null, left);
             domestic.SetIdleFreighters(abroad.IdleFreighters);
+        }
+
+        static readonly Goods[] ColonyExports = { Goods.Food, Goods.Production, Goods.Colonists };
+
+        internal void LoadFreightersAtTheirColony()
+        {
+            var ships = OwnedShips;
+            for (int i = 0; i < ships.Count; ++i)
+            {
+                Ship freighter = ships[i];
+                Planet colony = freighter.DockedOrTakingOffFrom;
+                if (colony?.Owner == this && freighter.IsIdleFreighter)
+                    LoadFreighterAtColony(freighter, colony);
+            }
+        }
+
+        internal void LoadFreighterAtColony(Ship freighter, Planet colony)
+        {
+            freighter.RefreshTradeRoutes();
+            Planet[] exportFrom = { colony };
+            foreach (Goods goods in ColonyExports)
+            {
+                if (goods == Goods.Food && !NonCybernetic || colony.FreeGoodsExportSlots(goods) == 0)
+                    continue;
+
+                Planet[] importers = OwnedPlanets.Filter(p => p != colony && p.FreeGoodsImportSlots(goods) > 0);
+                importers.Sort(p => p.GetCachedIncomingCargoPriority(goods));
+                for (int i = 0; i < importers.Length; ++i)
+                {
+                    Planet importer = importers[i];
+                    if (freighter.TryGetBestTradeRoute(goods, exportFrom, importer, out Ship.ExportPlanetAndEta route))
+                    {
+                        freighter.AI.SetupFreighterPlan(route.Planet, importer, goods);
+                        colony.UpdateIncomingTradeGoods();
+                        importer.UpdateIncomingTradeGoods();
+                        return;
+                    }
+                }
+            }
         }
 
         struct TradeState

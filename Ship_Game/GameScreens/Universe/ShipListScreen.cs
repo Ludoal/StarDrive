@@ -18,6 +18,8 @@ namespace Ship_Game
 {
     public sealed class ShipListScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         public readonly UniverseScreen Universe;
         public UniverseState UState => Universe.UState;
         Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
@@ -354,8 +356,7 @@ namespace Ship_Game
 
             bool ShouldAddForCategory(Ship ship, int forCategory)
             {
-                if (ship.IsHangarShip
-                    || ship.IsHomeDefense
+                if (IsLeftOffTheList(ship)
                     || (PlayerDesignsOnly && !ship.ShipData.IsPlayerDesign)
                     || (InFleetsOnly && ship.Fleet == null)
                     || (NotInFleets && ship.Fleet != null))
@@ -403,6 +404,21 @@ namespace Ship_Game
             }
 
             SelectedShip = null;
+        }
+
+        internal static bool IsLeftOffTheList(Ship ship)
+            => ship.IsHangarShip || ship.IsHomeDefense || ship.LandShip is { Trades: false };
+
+        public bool StatusDirty; // set from the sim thread, which must not walk ShipSL
+
+        public override void Update(float fixedDeltaTime)
+        {
+            if (StatusDirty)
+            {
+                StatusDirty = false;
+                ResetStatus();
+            }
+            base.Update(fixedDeltaTime);
         }
 
         public void ResetStatus()

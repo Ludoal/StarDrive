@@ -19,6 +19,8 @@ namespace Ship_Game.GameScreens
     // and actives with live checkboxes, grayed until their level is reached.
     public sealed class InfiltrationScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         public readonly UniverseScreen Universe;
         // the player's mole-planet rows, harvested at draw, clicked in HandleInput
         readonly Array<(Rectangle Rect, Planet P)> MoleRows = new();

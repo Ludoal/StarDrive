@@ -232,41 +232,7 @@ namespace Ship_Game
             base.Draw(batch, elapsed);
 
             if (IsHeader)
-            {
-                int width = Math.Min(HeaderMaxWidth, (int)Width);
-                var r = new Rectangle((int)X, (int)Y+4, width, (int)Height - 10);
-
-                if (HeaderText != null)
-                {
-                    Color bkgColor = !Enabled ? Color.Gray
-                                    : Hovered ? new Color(95, 82, 47)
-                                    : new Color(32, 30, 18);
-                    new Selector(r, bkgColor).Draw(batch, elapsed);
-
-                    var textPos = new Vector2(r.X + 10, r.CenterY() - Fonts.Pirulen12.LineSpacing / 2);
-                    batch.DrawString(Fonts.Pirulen12, HeaderText, textPos, Color.White);
-                }
-
-                if (SubEntries != null && SubEntries.NotEmpty)
-                {
-                    // An arrow, not a +/- glyph (bench 305): RIGHT while folded, DOWN once
-                    // unfolded. One asset, the queue's own down arrow, rotated -90 for the
-                    // folded state so the style cannot drift.
-                    SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
-                    // Dark on a hovered header (bench 307): a gold arrow vanishes into the hover fill
-                    Color arrowTint = Hovered ? new Color(20, 18, 10) : Color.White;
-                    float cx = r.Right - 26 + arrow.Width / 2f;
-                    float cy = r.CenterY();
-                    if (Expanded)
-                        batch.Draw(arrow, new Rectangle((int)(cx - arrow.Width / 2f),
-                                                        (int)(cy - arrow.Height / 2f),
-                                                        arrow.Width, arrow.Height), arrowTint);
-                    else
-                        batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), arrowTint,
-                                   -1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
-                                   SpriteEffects.None, 1f);
-                }
-            }
+                DrawHeader(batch, elapsed);
 
             if (DynamicElements != null)
             {
@@ -274,6 +240,49 @@ namespace Ship_Game
                 {
                     DynamicElements[i].Draw(batch);
                 }
+            }
+        }
+
+        protected virtual void DrawHeader(SpriteBatch batch, DrawTimes elapsed)
+        {
+            int width = Math.Min(HeaderMaxWidth, (int)Width);
+            var r = new Rectangle((int)X, (int)Y+4, width, (int)Height - 10);
+
+            if (HeaderText != null)
+            {
+                new Selector(r, HeaderBackground).Draw(batch, elapsed);
+
+                var textPos = new Vector2(r.X + 10, r.CenterY() - Fonts.Pirulen12.LineSpacing / 2);
+                batch.DrawString(Fonts.Pirulen12, HeaderText, textPos, Color.White);
+            }
+
+            DrawExpandMarker(batch, r);
+        }
+
+        protected Color HeaderBackground => !Enabled ? Color.Gray
+                                          : Hovered ? new Color(95, 82, 47)
+                                          : new Color(32, 30, 18);
+
+        protected void DrawExpandMarker(SpriteBatch batch, in Rectangle header)
+        {
+            if (SubEntries != null && SubEntries.NotEmpty)
+            {
+                // An arrow, not a +/- glyph (bench 305): RIGHT while folded, DOWN once
+                // unfolded. One asset, the queue's own down arrow, rotated -90 for the
+                // folded state so the style cannot drift.
+                SubTexture arrow = ResourceManager.Texture("NewUI/icon_queue_arrow_down");
+                // Dark on a hovered header (bench 307): a gold arrow vanishes into the hover fill
+                Color arrowTint = Hovered ? new Color(20, 18, 10) : Color.White;
+                float cx = header.Right - 26 + arrow.Width / 2f;
+                float cy = header.CenterY();
+                if (Expanded)
+                    batch.Draw(arrow, new Rectangle((int)(cx - arrow.Width / 2f),
+                                                    (int)(cy - arrow.Height / 2f),
+                                                    arrow.Width, arrow.Height), arrowTint);
+                else
+                    batch.Draw(arrow, new RectF(cx, cy, arrow.Width, arrow.Height), arrowTint,
+                               -1.5707963f, new Vector2(arrow.Width / 2f, arrow.Height / 2f),
+                               SpriteEffects.None, 1f);
             }
         }
     }

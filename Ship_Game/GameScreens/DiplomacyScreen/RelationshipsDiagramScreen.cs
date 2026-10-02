@@ -13,6 +13,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 {
     public sealed class RelationshipsDiagramScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         private readonly Rectangle Window; // geometry only - the tab frame is the delimiter
         readonly Array<Peer> Peers = new Array<Peer>();
         readonly Vector2 WeightCenter; // Offset from window center for circle of empires

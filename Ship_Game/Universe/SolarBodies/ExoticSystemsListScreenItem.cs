@@ -59,6 +59,7 @@ namespace Ship_Game
         public bool IsForMining => !IsStar && Planet.IsMineable;
         public bool IsForDysonSwarm => IsStar && System.DysonSwarmType > 0;
         ExplorableGameObject SolarBody;
+        ThreatMatrix.HostilePresence Hostiles;
 
         public ExoticSystemsListScreenItem(ExoticSystemsListScreen screen, ExplorableGameObject solarBody, float distance)
         {
@@ -154,6 +155,7 @@ namespace Ship_Game
             }
 
             AddSystemName();
+            Hostiles = Player.KnownEnemyPresenceIn(System);
             AddHostileWarning();
             AddTextureAndStatus();
             AddDistanceStats();
@@ -321,7 +323,7 @@ namespace Ship_Game
 
         void AddHostileWarning()
         {
-            if (Player.KnownEnemyStrengthIn(System) > 0)
+            if (Hostiles.Any)
             {
                 Rectangle c0 = Screen.Table.Columns[0].Rect;
                 SubTexture flash = ResourceManager.Texture("Ground_UI/EnemyHere");

@@ -25,6 +25,8 @@ namespace Ship_Game
     // breaks every treaty and alliance implies NA — then borders, then trade).
     public sealed class MainDiplomacyScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         UniverseScreen Universe;
 
         Rectangle LeftRect;
@@ -679,7 +681,7 @@ namespace Ship_Game
             if (anyIntel && (alwaysShow || espionage.CanViewMoneyAndMaint))
             {
                 TableRow(batch, col, ref y, maxY, "Treasury", e.Money.String(1) + " BC", Color.White);
-                TableRow(batch, col, ref y, maxY, "Maintenance", e.BuildingAndShipMaint.String(1), Color.White);
+                TableRow(batch, col, ref y, maxY, "Maintenance", (e.BuildingAndShipMaint + e.TroopCostOnPlanets).String(1), Color.White);
             }
             else
             {

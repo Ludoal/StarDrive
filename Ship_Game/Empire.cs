@@ -60,7 +60,7 @@ namespace Ship_Game
         [StarData] public IncomingThreatDetector ThreatDetector;
         public IncomingThreat[] SystemsWithThreat => ThreatDetector.SystemsWithThreat;
 
-        int TurnCount = 1;
+        [StarData] int TurnCount = 1;
 
         [StarData] public EmpireData data;
         public DiplomacyDialog dd;
@@ -107,7 +107,7 @@ namespace Ship_Game
         public float PotentialIncome { get; private set; }
         public float ExcessGoodsMoneyAddedThisTurn { get; private set; } // money tax from excess goods
         public float MoneyLastTurn;
-        public int AllTimeTradeIncome;
+        [StarData] public float AllTimeTradeIncome;
         [StarData] public bool AutoBuildSpaceRoads;
         // LEGACY: the single "Auto-explore" toggle, kept for save compatibility - a save that
         // predates the split deserializes it, and OnDeserialized seeds the two toggles below from
@@ -357,7 +357,7 @@ namespace Ship_Game
         // Income this turn before deducting ship maintenance
         public float GrossIncome                 => GrossPlanetIncome + TotalTradeMoneyAddedThisTurn + ExcessGoodsMoneyAddedThisTurn + data.FlatMoneyBonus + TotalMoneyLeechedLastTurn;
         public float NetIncome                   => GrossIncome - AllSpending;
-        public float TotalBuildingMaintenance    =>  GrossPlanetIncome - (NetPlanetIncomes + TroopCostOnPlanets);
+        public float TotalBuildingMaintenance    => GrossPlanetIncome - NetPlanetIncomes;
         public float BuildingAndShipMaint        => TotalBuildingMaintenance + TotalShipMaintenance;
         public float AllSpending                 => BuildingAndShipMaint + MoneySpendOnProductionThisTurn + TroopCostOnPlanets + EspionageCostLastTurn;
         public bool IsExpansionists              => data.EconomicPersonality?.Name == "Expansionists";
@@ -365,7 +365,6 @@ namespace Ship_Game
         public bool IsGeneralists                => data.EconomicPersonality?.Name == "Generalists";
         public bool IsMilitarists                => data.EconomicPersonality?.Name == "Militarists";
         public bool IsTechnologists              => data.EconomicPersonality?.Name == "Technologists";
-        public float HomeDefenseShipCostMultiplier => DifficultyModifiers.CreditsMultiplier;
         public bool Rebels => data.IsRebelFaction;
 
         [StarData] public Empire ParentEmpire { get; private set; }
@@ -604,6 +603,7 @@ namespace Ship_Game
 
         public float KnownEnemyStrengthIn(SolarSystem s, Empire e) => AI.ThreatMatrix.GetHostileStrengthAt(e, s.Position, s.Radius);
         public float KnownEnemyStrengthIn(SolarSystem s) => AI.ThreatMatrix.GetHostileStrengthAt(s.Position, s.Radius);
+        public ThreatMatrix.HostilePresence KnownEnemyPresenceIn(SolarSystem s) => AI.ThreatMatrix.GetHostilePresenceAt(s.Position, s.Radius);
         public float KnownEnemyStrengthNoResearchStationsIn(Vector2 pos, float radius) 
             => AI.ThreatMatrix.GetHostileStrengthNoResearchStationsAt(pos, radius);
 
@@ -945,6 +945,12 @@ namespace Ship_Game
         {
             InitDifficultyModifiers();
             //InitPersonalityModifiers(); // TODO: crashes in tests
+        }
+
+        public void TestSetPersonality(string personality) // For UnitTests only
+        {
+            data.DiplomaticPersonality = new DTrait { Name = personality };
+            InitPersonalityModifiers();
         }
 
         void CommonInitialize()
@@ -1539,14 +1545,6 @@ namespace Ship_Game
             }
         }
 
-        public float GetTroopMaintThisTurn()
-        {
-            // Troops maintenance on ships are calculated as part of ship maintenance
-            // TODO: are troops on unowned planets for free? 
-            int troopsOnPlanets = OwnedPlanets.Sum(p => p.Troops.NumTroopsHere(this));
-            return troopsOnPlanets * ShipMaintenance.TroopMaint;
-        }
-
         public DebugTextBlock DebugEmpireTradeInfo()
         {
             int foodShips      = NumFreightersTrading(Goods.Food);
@@ -1632,6 +1630,7 @@ namespace Ship_Game
             UpdateNetPlanetIncomes();
             UpdateShipMaintenance();
             UpdatePlanetStorageStats();
+            UpdateMoneyLeechedLastTurn();
             EspionageCostLastTurn = GetEspionageCost();
             // AllSpending already includes EspionageCostLastTurn, so NetIncome
             // has it subtracted. Don't subtract again here.
@@ -2289,9 +2288,9 @@ namespace Ship_Game
 
                             if (planet.NumBuildings > 0 && Random.Roll3DiceAvg(chance * 50))
                             {
-                                var building = planet.FindBuilding(b => !b.IsBiospheres);
-                                if (building != null)
-                                    planet.ScrapBuilding(building);
+                                // an uprise is an uprise: rebels wreck a building, they do not sell
+                                // it back to the colony they are rebelling against
+                                planet.DestroyBuildingInUprise(UpriseBuildingType.Random, out _);
                             }
 
                             troop.TryLandTroop(planet);
@@ -2623,12 +2622,6 @@ namespace Ship_Game
                 AI.DefensiveCoordinator.DefenseDict.Clear();
             }
 
-            foreach (Agent agent in target.data.AgentList)
-            {
-                data.AgentList.Add(agent);
-                agent.Mission = AgentMission.Defending;
-                agent.TargetEmpire = null;
-            }
             AI.DefensiveCoordinator.ManageForcePool();
             target.data.AgentList.Clear();
             target.data.AbsorbedBy = data.Traits.Name;
@@ -2892,7 +2885,7 @@ namespace Ship_Game
         }
 
         public int EstimateCreditCost(float itemCost)   => (int)Math.Round(ProductionCreditCost(itemCost), 0);
-        public void ChargeCreditsHomeDefense(Ship ship) => ChargeCredits(ship.GetCost(this) * DifficultyModifiers.CreditsMultiplier, spendNow: true);
+        public void ChargeCreditsHomeDefense(Ship ship) => ChargeCredits(ship.GetCost(this), spendNow: true);
 
         public void ChargeCreditsOnProduction(QueueItem q, float spentProduction)
         {
@@ -2909,7 +2902,7 @@ namespace Ship_Game
         public void RefundCreditsPostRemoval(Building b)
         {
             if (b.IsMilitary)
-                RefundCredits(EstimateCreditCost(b.ActualCost(this)), 0.5f);
+                RefundCredits(b.ActualCost(this), 0.5f);
         }
 
         public void ChargeRushFees(float productionCost, bool immediate)

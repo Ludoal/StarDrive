@@ -25,10 +25,6 @@ namespace Ship_Game
         readonly UniverseScreen Universe;
         readonly Rectangle Housing;
         Rectangle ActualMap;
-        // bench 449: one-shot calibration of the frustum geometry against the real
-        // projection - linear in camera height, so three constants say it all
-        bool FrustumCalibrated;
-        double FrustumWidthPerHeight, FrustumOffsetXPerHeight, FrustumOffsetYPerHeight;
         /// Ludoal fork: the drawn map's real rect, and the projection that plots on it. The click
         /// handler reads all three so the INVERSE of WorldToMiniPos is guaranteed to match it.
         public Rectangle MapRect => ActualMap;
@@ -207,30 +203,13 @@ namespace Ship_Game
                 Log.Error(e, $"MiniMap Draw crashed {e.InnerException}");
             }
 
-            // ⚠ the rect derives from CAMERA STATE (CamPos, a smooth double), never from unprojecting
-            // through the float view matrix - that loses precision as |world coords| grow. Frustum
-            // geometry is linear in camera height, so ONE calibration against the real projection
-            // gives width-per-height and centre-offset-per-height, and every later frame is pure
-            // arithmetic on clean numbers (bench 449).
-            double camH = Universe.CamPos.Z;
-            var frustum = Universe.VisibleWorldRect;
-            if (!FrustumCalibrated && camH > 0 && frustum.Width > 0)
-            {
-                FrustumWidthPerHeight   = frustum.Width / camH;
-                FrustumOffsetXPerHeight = (frustum.X1 + frustum.Width  / 2 - Universe.CamPos.X) / camH;
-                FrustumOffsetYPerHeight = (frustum.Y1 + frustum.Height / 2 - Universe.CamPos.Y) / camH;
-                FrustumCalibrated = true;
-            }
-            double vw = FrustumWidthPerHeight * camH;
-            double vh = vw * Universe.ScreenHeight / (double)Universe.ScreenWidth;
-            double cx = Universe.CamPos.X + FrustumOffsetXPerHeight * camH;
-            double cy = Universe.CamPos.Y + FrustumOffsetYPerHeight * camH;
-            double lookX = MiniMapZero.X + (cx - vw / 2) * Scale;
-            double lookY = MiniMapZero.Y + (cy - vh / 2) * Scale;
-            double lookW = vw * Scale;
-            double lookH = vh * Scale;
-            var lookingAt = new Rectangle((int)Math.Round(lookX), (int)Math.Round(lookY),
-                                          (int)Math.Round(lookW), (int)Math.Round(lookH));
+            // draw and clamp minimap viewing area rectangle.
+            AABoundingBox2Dd view = Universe.ExactVisibleWorldRect;
+            var lookingAt = new Rectangle(
+                (int)Math.Round(MiniMapZero.X + view.X1 * Scale),
+                (int)Math.Round(MiniMapZero.Y + view.Y1 * Scale),
+                (int)Math.Round(view.Width * Scale),
+                (int)Math.Round(view.Height * Scale));
             if (lookingAt.Width < 2)
             {
                 lookingAt.Width  = 2;

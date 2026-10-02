@@ -71,7 +71,6 @@ public sealed partial class ShipDesign : IShipDesign
 
     // BaseHull is the template layout of the ship hull design
     public ShipHull BaseHull { get; private set; }
-    public HullBonus Bonuses { get; private set; }
     public FileInfo Source { get; set; }
 
     [StarData] public bool IsPlayerDesign { get; set; }
@@ -110,7 +109,6 @@ public sealed partial class ShipDesign : IShipDesign
         IsOrbitalDefense = hull.IsOrbitalDefense;
         TechsNeeded = new HashSet<string>(hull.TechsNeeded);
         BaseHull = hull;
-        Bonuses  = hull.Bonuses;
 
         Unlockable = hull.Unlockable;
         DesignSlots = Empty<DesignSlot>.Array;
@@ -133,7 +131,6 @@ public sealed partial class ShipDesign : IShipDesign
         }
 
         BaseHull = hull;
-        Bonuses = hull.Bonuses;
         SetDesignSlots(DesignSlots, updateRole:false);
 
         if (ResourceManager.Ships.GetDesign(Name, out IShipDesign existing) &&

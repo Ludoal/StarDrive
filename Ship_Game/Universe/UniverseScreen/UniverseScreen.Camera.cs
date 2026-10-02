@@ -44,6 +44,25 @@ namespace Ship_Game
             return new(newX, newY, desiredCamZ);
         }
 
+        /// <summary>
+        /// The world rect visible at the z=0 plane, derived from the camera rather than
+        /// unprojected: the universe camera looks straight down, so the rect is centred on
+        /// CamPos, with half-width camZ/M11 and half-height camZ/M22. Exact at any distance
+        /// from the origin, unlike VisibleWorldRect.
+        /// </summary>
+        public AABoundingBox2Dd ExactVisibleWorldRect
+        {
+            get
+            {
+                double camH = CamPos.Z;
+                float m11 = Projection.M11, m22 = Projection.M22;
+                double halfW = camH > 0 && m11 > 0 ? camH / m11 : 0.0;
+                double halfH = camH > 0 && m22 > 0 ? camH / m22 : 0.0;
+                return new(CamPos.X - halfW, CamPos.Y - halfH,
+                           CamPos.X + halfW, CamPos.Y + halfH);
+            }
+        }
+
         public void ViewToShip(Ship ship)
         {
             if (ship == null)
@@ -62,17 +81,18 @@ namespace Ship_Game
         // govTab: which tab of the governor panel the colony opens on - 0 Governor, 1 Budget,
         // 2 Defense. A page that sends the player to a colony sends him to the subject he was
         // reading (maintainer feedback).
-        public void SnapViewColony(Planet p, bool combatView, int govTab = 0)
+        public void SnapViewColony(Planet p, bool combatView, int govTab = 0, bool stayOnPlanet = false)
         {
             ShowShipNames = false;
             bool doReturnToShip = ViewingShip;
+            double heightBefore = CamDestination.Z;
             SetSelectedPlanet(p);
             if (p == null)
                 return;
 
             if (combatView && Debug)
             {
-                OpenCombatMenu(p);
+                OpenCombatMenu(p, stayOnPlanet);
                 return;
             }
 
@@ -86,7 +106,7 @@ namespace Ship_Game
                 if (p.Owner == Player && combatView ||
                     p.Owner != Player && Player.data.MoleList.Any(m => m.PlanetId == p.Id) && combatView)
                 {
-                    OpenCombatMenu(p);
+                    OpenCombatMenu(p, stayOnPlanet);
                     return;
                 }
 
@@ -135,12 +155,19 @@ namespace Ship_Game
                                                                     || p.System.OwnerList.Contains(Player)
                                                                     || p.OurShipsCanScanSurface(Player)))
                 {
-                    OpenCombatMenu(p); // snaps the view itself
+                    OpenCombatMenu(p, stayOnPlanet); // snaps the view itself
                     return;
                 }
 
+                RememberViewBeforePlanet(stayOnPlanet, heightBefore);
                 SnapViewTo(new(p.Position.X, p.Position.Y, GetZfromScreenState(UnivScreenState.PlanetView)), 5f, 2f); // Ludoal fork: PlanetView is the named level for this
             }
+        }
+
+        void RememberViewBeforePlanet(bool stayOnPlanet, double heightBefore)
+        {
+            StayOnViewedPlanet = stayOnPlanet;
+            HeightBeforePlanetView = heightBefore;
         }
 
         public void SnapViewTo(Vector3d worldPos, float duration, float adjustCamTimer = 2f)

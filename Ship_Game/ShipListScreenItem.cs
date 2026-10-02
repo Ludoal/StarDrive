@@ -204,7 +204,7 @@ namespace Ship_Game
             if (Ship.AI.State == AIState.Refit)
             {
                 Ship.CancelRefit();
-                Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                Screen.Universe.RunOnSimThread(() => Screen.StatusDirty = true);
                 return;
             }
             Screen.ScreenManager.AddScreen(new RefitToWindow(Screen, this));
@@ -217,18 +217,20 @@ namespace Ship_Game
                 if (Ship.AI.State == AIState.Scrap)
                 {
                     Ship.AI.ClearOrders();
+                    Ship ship = Ship; // the goal would re-issue the scrap order otherwise
+                    Screen.Universe.RunOnSimThread(() => ship.Loyalty.AI.FindAndRemoveGoal(GoalType.ScrapShip, g => g.OldShip == ship));
                 }
                 else if (Screen.Input.IsShiftKeyDown)
                 {
                     Screen.Universe.RunOnSimThread(() => Ship.Loyalty.MassScrap(Ship));
-                    Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                    Screen.Universe.RunOnSimThread(() => Screen.StatusDirty = true);
                 }
                 else
                 {
                     // OrderScrapShip defers the ScrapShip goal to the sim thread,
                     // so refresh the status only after the goal has actually run
                     Ship.AI.OrderScrapShip();
-                    Screen.Universe.RunOnSimThread(() => Screen.ResetStatus());
+                    Screen.Universe.RunOnSimThread(() => Screen.StatusDirty = true);
                 }
             }
             else
@@ -260,6 +262,12 @@ namespace Ship_Game
         }
 
         public static string GetStatusText(Ship ship)
+        {
+            string orders = GetOrdersText(ship);
+            return ship.LandShip is { Docked: true } ? $"{orders} {Localizer.Token(GameText.ShipListDocked)}" : orders;
+        }
+
+        static string GetOrdersText(Ship ship)
         {
             if (ship.AI == null)  //fbedard: prevent crash ?
                 return "";

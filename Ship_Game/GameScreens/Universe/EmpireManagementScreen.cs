@@ -17,6 +17,8 @@ namespace Ship_Game
 {
     public sealed class EmpireManagementScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         public readonly UniverseScreen Universe;
         EmpireUIOverlay eui;
         private readonly ScrollList<ColoniesListItem> ColoniesList;
@@ -165,7 +167,7 @@ namespace Ship_Game
             // Ludoal fork (maintainer feedback): the band is FIXED and the LIST absorbs the
             // resolution, not the reverse. ⚠ A scroll list rounds itself down to a whole number of
             // rows, so a band derived from the list's own bottom drifts.
-            const float GovernorH  = 208;  // the band's real height
+            const float GovernorH  = GovernorDetailsComponent.MinHeight;  // the band's real height
             const float BandGapTop = 20;   // between the list's foot and the band
             const float BandGapBot = 15;   // between the band and the frame's foot
             float bandH = GovernorH + BandGapTop + BandGapBot; // the reserve the table leaves
@@ -475,7 +477,7 @@ namespace Ship_Game
                 ScreenManager.SpriteBatch.FillRectangle(rect, Universe.Player.EmpireColor.Alpha(0.4f));
             }
 
-            if (Universe.Player.IsBuildingUnlocked(Building.TerraformerId) && (pgs.CanTerraform || pgs.BioCanTerraform))
+            if (Universe.Player.CanTerraformPlanetTiles && (pgs.CanTerraform || pgs.BioCanTerraform))
             {
                 var terraform = new Rectangle(rect.X + rect.Width - 10, rect.Y, 10, 10);
                 ScreenManager.SpriteBatch.Draw(ResourceManager.Texture("Buildings/icon_terraformer_48x48"), terraform, Color.White);

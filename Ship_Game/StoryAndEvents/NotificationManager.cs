@@ -1104,7 +1104,7 @@ namespace Ship_Game
         public void SnapToCombat(Planet p)
         {
             GameAudio.SubBassWhoosh();
-            Screen.SnapViewColony(p, p.Owner != Screen.Player);
+            Screen.SnapViewColony(p, p.Owner != Screen.Player, stayOnPlanet: true);
         }
 
         public void SnapToPlanet(Planet p)
@@ -1115,7 +1115,7 @@ namespace Ship_Game
             // inside the snap (the documented list-screen pattern).
             if (p != null && p.Owner == Screen.Player && Screen.HostedTabTitle != p.Name)
                 Screen.HostColonyTab(p, GameScreens.ScreenGroups.Group.Empire, -1);
-            Screen.SnapViewColony(p, combatView: false);
+            Screen.SnapViewColony(p, combatView: false, stayOnPlanet: true);
         }
 
         public void SnapToShip(Ship s, Vector2 where = default)

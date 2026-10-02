@@ -15,6 +15,8 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 {
     public sealed class DiplomacyScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         Rectangle Portrait;
         DialogState DState;
 
@@ -700,27 +702,27 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
             OnOfferChanged();
         }
 
-        bool DemandAnswered; // upstream issue 307
+        bool DemandAnswered;
 
-        // upstream issue 307: only the Reject button carried the refusal penalty — walking
-        // out, discussing or negotiating away an ultimatum had no consequence, though
-        // CanEscapeFromScreen=false shows the player was meant to answer. An explicit
-        // Accept/Reject afterwards still overwrites the flag.
         void MarkUnansweredDemandRejected()
         {
-            if (!DemandAnswered && TheirOffer?.ValueToModify != null)
-                TheirOffer.ValueToModify.Value = true;
+            if (DemandAnswered || TheirOffer?.IsDemand != true || TheirOffer.ValueToModify == null)
+                return;
+
+            DemandAnswered = true;
+            TheirOffer.ValueToModify.Value = true;
         }
 
         void OnNegotiateClicked(GenericButton b)
         {
+            // BeginNegotiations replaces TheirOffer, so an unanswered demand is refused here
             MarkUnansweredDemandRejected();
             BeginNegotiations();
         }
 
         void OnAcceptClicked(GenericButton b)
         {
-            DemandAnswered = true; // upstream issue 307
+            DemandAnswered = true;
             if (TheirOffer.ValueToModify != null) TheirOffer.ValueToModify.Value = false;
             if (OurOffer.ValueToModify != null)   OurOffer.ValueToModify.Value = true;
 
@@ -730,7 +732,7 @@ namespace Ship_Game.GameScreens.DiplomacyScreen
 
         void OnRejectClicked(GenericButton b)
         {
-            DemandAnswered = true; // upstream issue 307
+            DemandAnswered = true;
             if (TheirOffer.ValueToModify != null) TheirOffer.ValueToModify.Value = true;
             if (OurOffer.ValueToModify != null)   OurOffer.ValueToModify.Value = false;
             

@@ -21,6 +21,8 @@ namespace Ship_Game.GameScreens
     // deficits red, click opens the Colony Overview.
     public sealed class BudgetScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         readonly Empire Player;
         Submenu EmpireTabs; // Ludoal fork: the Empire group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect -
@@ -545,13 +547,10 @@ namespace Ship_Game.GameScreens
                                    GameText.AutoTaxes, GameText.YourEmpireWillAutomaticallyManage3);
             autoTax.OnChange = cb =>
             {
+                // the planner belongs to the sim thread; Update() brings the rate it sets back
+                // into the slider
                 if (cb.Checked)
-                {
-                    // this screen pauses the universe: the planner runs here and now, between two
-                    // turns, and the slider reads the rate it just set (bench 611)
-                    Player.AI.RunEconomicPlanner();
-                    TaxSlider.RelativeValue = Player.data.TaxRate;
-                }
+                    Universe.RunOnSimThread(UpdateTaxesAndIncomes);
                 TaxSlider.Enabled = !cb.Checked;
                 TaxSlider.Text = Player.AutoTaxes ? "Tax Rate (auto)" : Localizer.Token(GameText.TaxRate);
             };
@@ -841,18 +840,33 @@ namespace Ship_Game.GameScreens
 
         private void TaxSliderOnChange(FloatSlider s)
         {
-            Player.data.TaxRate = s.RelativeValue;
-            Player.UpdateNetPlanetIncomes();
+            if (Player.AutoTaxes) // the slider follows the planner's rate in auto, it does not set one
+                return;
+
+            float taxRate = s.RelativeValue;
+            Universe.RunOnSimThread(() =>
+            {
+                Player.data.TaxRate = taxRate;
+                Player.UpdateNetPlanetIncomes();
+            });
         }
 
         private void TreasurySliderOnChange(FloatSlider s)
         {
-            Player.data.treasuryGoal = s.AbsoluteValue; // a 0..1 slider: absolute and relative coincide
+            float treasuryGoal = s.AbsoluteValue; // a 0..1 slider: absolute and relative coincide
+            Universe.RunOnSimThread(() =>
+            {
+                Player.data.treasuryGoal = treasuryGoal;
+                UpdateTaxesAndIncomes();
+            });
+        }
 
-            Player.AI.RunEconomicPlanner(); // the screen pauses the universe; Update() rewrites the label from the fresh figures
-
+        // sim thread only: the goal and the auto rate are the economic planner's figures
+        void UpdateTaxesAndIncomes()
+        {
+            Player.AI.UpdateTreasuryGoalAndTaxes();
             if (Player.AutoTaxes)
-                TaxSlider.RelativeValue = Player.data.TaxRate;
+                Player.UpdateNetPlanetIncomes();
         }
 
         // Dynamic Text label; invoked every time the label draws - the colour comes
@@ -967,6 +981,8 @@ namespace Ship_Game.GameScreens
             TaxSlider.Text = Player.AutoTaxes
                 ? Localizer.Token(GameText.BgtAutoTaxLine)
                 : Localizer.Token(GameText.TaxRate);
+            if (Player.AutoTaxes) // the planner sets the rate on the sim thread; the slider shows it
+                TaxSlider.RelativeValue = Player.data.TaxRate;
             // the cells are LIVE but the ORDER is a snapshot of the click - re-apply the
             // standing sort each new star date, or values drift out of sorted order
             if (Player.Universe.StarDate != LastSortedDate)

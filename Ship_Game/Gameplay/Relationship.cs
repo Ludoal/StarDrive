@@ -1127,6 +1127,7 @@ namespace Ship_Game.Gameplay
             {
                 AcceptDL      = "Xeno Demand Tech Accepted",
                 RejectDL      = "Xeno Demand Tech Rejected",
+                IsDemand      = true,
                 ValueToModify = new Ref<bool>(() => HaveRejectedDemandTech,
                                                x => HaveRejectedDemandTech = x)
             };

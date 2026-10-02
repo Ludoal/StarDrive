@@ -147,7 +147,7 @@ namespace Ship_Game.Fleets
 
         void UpdateOurFleetShip(Ship ship)
         {
-            HasRepair = HasRepair || ship.HasRepairBeam || ship.HasRepairModule && ship.Ordinance > 0;
+            HasRepair = HasRepair || ship.HasRepairModule && ship.Ordinance > 0;
 
             HasOrdnanceSupplyShuttles = HasOrdnanceSupplyShuttles ||
                                         ship.Carrier.HasSupplyBays && ship.Ordinance >= 100;
@@ -686,7 +686,7 @@ namespace Ship_Game.Fleets
             task.TargetEmpire ??= Owner.AI.ThreatMatrix.GetStrongestHostileAt(targetPlanet.System);
 
             if (EndInvalidTask(!eventBuildingFound
-                               || targetPlanet.Owner != null && !Owner.IsAtWarWith(targetPlanet.Owner)
+                               || targetPlanet.Owner != null
                                || !MajorityTroopShipsAreInWell(targetPlanet) && (!StillInvasionEffective(task) 
                                || !StillCombatEffective(task, inCombat: TaskStep >= 4))))
             {
@@ -2720,7 +2720,7 @@ namespace Ship_Game.Fleets
                 if (ship == null)
                     continue;
 
-                if (!ship.Active)
+                if (!ship.Active || ship.IsLanding)
                 {
                     RemoveShip(ship, clearOrders: false);
                     continue;

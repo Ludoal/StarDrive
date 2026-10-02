@@ -52,6 +52,7 @@ namespace Ship_Game
         private readonly float Distance;
         private bool MarkedForColonization;
         public bool CanSendTroops;
+        ThreatMatrix.HostilePresence Hostiles;
 
         public PlanetListScreenItem(PlanetListScreen screen, Planet planet, float distance, bool canSendTroops)
         {
@@ -109,6 +110,7 @@ namespace Ship_Game
             AddPlanetName();
             AddPlanetTextureAndStatus();
             AddPlanetStats();
+            Hostiles = Player.KnownEnemyPresenceIn(Planet.System);
             AddHostileWarning();
             base.PerformLayout();
         }
@@ -153,9 +155,14 @@ namespace Ship_Game
 
             if (ColonizePanel != null)
             {
+                // a colony lost here is held for its owner a few turns: the icon greys and says why
+                Empire lostBy = null;
+                int graceTurns = MarkedForColonization ? 0 : Planet.ColonyGraceTurnsLeft(Player, out lostBy);
                 ColonizePanel.Visible = ShowColonizeIcon;
-                ColonizePanel.Color   = MarkedForColonization ? Color.Red : Color.White;
-                ColonizePanel.Tooltip = MarkedForColonization ? GameText.CancelColonize : GameText.Colonize;
+                ColonizePanel.Color   = MarkedForColonization ? Color.Red : graceTurns > 0 ? Color.Gray : Color.White;
+                ColonizePanel.Tooltip = MarkedForColonization ? GameText.CancelColonize
+                                      : graceTurns > 0 ? Planet.ColonyGraceTip(lostBy, graceTurns)
+                                      : GameText.Colonize;
             }
             if (TroopPanel != null)
             {
@@ -364,7 +371,7 @@ namespace Ship_Game
 
         void AddHostileWarning()
         {
-            if (Player.KnownEnemyStrengthIn(Planet.System) > 0)
+            if (Hostiles.Any)
             {
                 Rectangle c0 = Screen.Table.Columns[0].Rect;
                 SubTexture flash = ResourceManager.Texture("Ground_UI/EnemyHere");
@@ -538,6 +545,12 @@ namespace Ship_Game
 
         void OnColonizeClicked(UIButton b)
         {
+            if (!MarkedForColonization && Planet.ColonyGraceTurnsLeft(Player) > 0)
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
+
             GameAudio.EchoAffirmative();
             if (!MarkedForColonization)
             {

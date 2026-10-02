@@ -34,6 +34,8 @@ namespace Ship_Game
 
     public sealed partial class ShipDesignScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         public UniverseScreen ParentUniverse;
         public Empire Player => ParentUniverse.Player;
         public DesignStanceButtons OrdersButton;
@@ -1027,7 +1029,7 @@ namespace Ship_Game
 
                 ScreenManager.AddScreen(new ShipDesignSaveScreen(this, DesignOrHullName, hullDesigner:HullEditMode) { CenterOn = FrameCentre });
             });
-            BtnSaveAs.Tooltip = Localizer.Token(GameText.SaveShipDesignDesc);
+            BtnSaveAs.Tooltip = GameText.SaveShipDesignDesc;
             BtnSaveAs.Hotkey = InputBindings.FromString("Ctrl+S");
             // Ludoal fork: Load is gone - the browser on the right lists every design and loads on
             // double-click, so a modal picker on top of it was one door too many.
@@ -1101,7 +1103,7 @@ namespace Ship_Game
                 OnSymmetricDesignToggle();
             });
             BtnSymmetricDesign.ClickSfx = "blip_click";
-            BtnSymmetricDesign.Tooltip = Localizer.Token(GameText.YouCanSwitchFromNormal);
+            BtnSymmetricDesign.Tooltip = GameText.YouCanSwitchFromNormal;
             BtnSymmetricDesign.Hotkey  = InputBindings.FromString("M");
             BtnSymmetricDesign.Style   = SymmetricDesignBtnStyle;
 

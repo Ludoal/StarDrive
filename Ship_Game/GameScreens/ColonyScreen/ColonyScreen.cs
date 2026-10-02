@@ -123,6 +123,7 @@ namespace Ship_Game
                                   && !IsStatsPlusTabSelected && !IsTradeTabSelected;
         Building ToScrap;
         PlanetGridSquare BioToScrap;
+        PlanetGridSquare ToUnprotect;
 
         public bool ClickedTroop;
 
@@ -266,7 +267,7 @@ namespace Ship_Game
             float planetInfoH = Math.Max(26 + portraitH + 14, infoLinesH + 10);
             // 208: the same height the Colonies band gives the very same component, so the
             // governor block reads identically on both screens (maintainer feedback).
-            const float governorH   = 208;
+            const float governorH   = GovernorDetailsComponent.MinHeight;
             const float laborH      = 150;   // three sliders, their locks and the title bar
 
             RectF planetInfoR = new(gridLeft, gridTop, colLeftW, planetInfoH);
@@ -1213,6 +1214,15 @@ namespace Ship_Game
                 P.DestroyBioSpheres(BioToScrap, !BioToScrap.Building?.CanBuildAnywhere == true);
                 P.RefreshBuildingsWeCanBuildHere();
                 BioToScrap = null;
+            }
+        }
+
+        void RemovePlayerBuiltProtectionAccepted()
+        {
+            if (ToUnprotect != null)
+            {
+                P.Universe.Screen.RunOnSimThread(ToUnprotect.RemovePlayerBuiltProtection);
+                ToUnprotect = null;
             }
         }
     }

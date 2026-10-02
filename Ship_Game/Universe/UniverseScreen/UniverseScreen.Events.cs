@@ -8,6 +8,7 @@ namespace Ship_Game
 {
     public partial class UniverseScreen
     {
+
         /// EVT: triggered when Player's buildable ships are updated
         public void OnPlayerBuildableShipsUpdated()
         {

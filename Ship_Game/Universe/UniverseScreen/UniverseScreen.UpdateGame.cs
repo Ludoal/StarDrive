@@ -181,6 +181,10 @@ namespace Ship_Game
                         }
                     }
                 }
+                else
+                {
+                    InvokePendingSimThreadActions();
+                }
             }
         }
 
@@ -281,6 +285,7 @@ namespace Ship_Game
 
                 Shields?.Update(timeStep);
                 FTLManager.Update(this, timeStep);
+                CargoShuttles.Update(this, timeStep);
 
                 // update in reverse, to allow Update() to remove the junk
                 for (int i = UState.JunkList.Count - 1; i >= 0; --i)
@@ -343,7 +348,6 @@ namespace Ship_Game
                     {
                         Empire empire = wereUpdated[i];
                         empire.UpdateMilitaryStrengths();
-                        empire.UpdateMoneyLeechedLastTurn();
                         if (empire.isPlayer) // update this once per turn
                             UpdateDysonSwarms();
                     }
@@ -430,6 +434,8 @@ namespace Ship_Game
             if (action != null)
             {
                 PendingSimThreadActions.Enqueue(action);
+                if (!Visible && UState.Paused)
+                    DrawCompletedEvt.Set(); // a hidden universe never draws, so wake the sim to drain this
             }
             else
             {

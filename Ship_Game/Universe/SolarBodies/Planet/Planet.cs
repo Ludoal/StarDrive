@@ -156,6 +156,10 @@ namespace Ship_Game
         public bool IsSabotaged => CrippledTurns > 0;
         public bool CanLaunchBuilderShips => !SpaceCombatNearPlanet && NumBuildShipsLaunched < NumBuildShipsCanLaunch;
         public int NumBuildShipsCanLaunchperTurn => NumBuildShipsCanLaunch / 4;
+        public int BuilderShipsOut => NumBuildShipsLaunched;
+        public int BuilderShipsLimit => NumBuildShipsCanLaunch;
+        public int SupplyShuttlesOut { get; private set; }
+        public int SupplyShuttlesLimit => (int)InfraStructure;
         public bool IsMineable => Mining != null;
 
         public float GetGroundStrengthOther(Empire allButThisEmpire)
@@ -711,7 +715,7 @@ namespace Ship_Game
             if (loadWeapon)
             {
                 ResourceManager.GetWeaponTemplate(DysonSwarm.DysonSwarmLauncherTemplate, out IWeaponTemplate t);
-                DysonSwarmLauncher = new(Universe, t, null, null, null);
+                DysonSwarmLauncher = new(Universe, t, null, null);
             }
         }
 
@@ -791,6 +795,7 @@ namespace Ship_Game
             {
                 var ship = (Ship)enemyShips[i];
                 if (ship.Dying
+                    || ship.IsLanding
                     || ship.IsInWarp
                     || ship.EMPDisabled && w?.EMPDamage > 0 && enemyShips.Length > 1
                     || w != null && !w.TargetValid(ship) && !canLaunchShips
@@ -877,6 +882,7 @@ namespace Ship_Game
             UpdatePlanetShields();
             TotalTroopConsumption = GetTotalTroopConsumption();
             UpdateNumBuilderShipsCanLaunch();
+            SupplyShuttlesOut = CountSupplyShuttlesOut();
         }
 
         void UpdateNumBuilderShipsCanLaunch()
@@ -894,7 +900,7 @@ namespace Ship_Game
         public void LaunchBuilderShip(Ship targetConstructor)
         {
             string builderShipName = Owner.GetSupplyShuttleName();
-            Vector2 launchFrom = GetBuilderShipTargetVector(launch: true, out bool fromShipyard);
+            Vector2 launchFrom = GetLaunchPosition(out bool fromShipyard);
             Ship builderShip;
             if (fromShipyard)
                 builderShip = Ship.CreateShipAtShipyard(Universe, builderShipName, Owner, launchFrom);
@@ -908,21 +914,52 @@ namespace Ship_Game
             }
         }
 
-        public Vector2 GetBuilderShipTargetVector(bool launch, out bool fromShipyard)
+        public Vector2 GetLaunchPosition(out bool fromShipyard)
         {
-            fromShipyard = false;
-            if (Owner.Random.RollDie(1+NumShipyards) > 1)
+            Ship shipyard = PickRandomShipyard();
+            fromShipyard = shipyard != null;
+            return shipyard?.Position.GenerateRandomPointInsideCircle(50, Owner.Random) ?? Position;
+        }
+
+        Ship PickRandomShipyard()
+        {
+            Ship[] orbitals = OrbitalStations.GetInternalArrayItems();
+            int count = Math.Min(OrbitalStations.Count, orbitals.Length);
+            Ship picked = null;
+            int numShipyards = 0;
+            for (int i = 0; i < count; ++i)
             {
-                var potentialShipyards = OrbitalStations.Filter(s => s.IsShipyard);
-                if (potentialShipyards.Length > 0)
+                Ship orbital = orbitals[i];
+                if (orbital is { IsShipyard: true, Active: true, Dying: false }
+                    && orbital.Loyalty == Owner
+                    && Random.InRange(++numShipyards) == 0)
                 {
-                    fromShipyard = true;
-                    Vector2 pos = Random.Item(potentialShipyards).Position;
-                    return launch ? pos.GenerateRandomPointInsideCircle(50, Owner.Random) : pos;
+                    picked = orbital;
                 }
             }
+            return picked;
+        }
 
-            return Position;
+        public Ship FindShipyardToLandOn(Ship ship)
+        {
+            Ship[] orbitals = OrbitalStations.GetInternalArrayItems();
+            int count = Math.Min(OrbitalStations.Count, orbitals.Length);
+            Ship nearest = null;
+            float nearestDist = float.MaxValue;
+            for (int i = 0; i < count; ++i)
+            {
+                Ship orbital = orbitals[i];
+                if (orbital is { IsShipyard: true, Active: true, Dying: false } && orbital.Loyalty == ship.Loyalty)
+                {
+                    float dist = orbital.Position.SqDist(ship.Position);
+                    if (dist < nearestDist)
+                    {
+                        nearest = orbital;
+                        nearestDist = dist;
+                    }
+                }
+            }
+            return nearest;
         }
 
         void UpdatePlanetShields()
@@ -1234,11 +1271,10 @@ namespace Ship_Game
 
         public int NumSupplyShuttlesCanLaunch() // Net, after subtracting already launched shuttles
         {
-            var planetSupplyGoals = Owner.AI
-                .FindGoals(g => g is RearmShipFromPlanet && g.PlanetBuildingAt == this);
-
-            return (int)InfraStructure - planetSupplyGoals.Length;
+            return SupplyShuttlesLimit - CountSupplyShuttlesOut();
         }
+
+        int CountSupplyShuttlesOut() => Owner.AI.CountGoals(g => g is RearmShipFromPlanet && g.PlanetBuildingAt == this);
 
         private void UpdateHomeDefenseHangars(Building b)
         {
@@ -1609,6 +1645,8 @@ namespace Ship_Game
             if (IsExploredBy(Universe.Player) && (OwnerIsPlayer || attacker.isPlayer))
                 Universe.Notifications.AddPlanetDiedNotification(this);
 
+            LostBy = Owner.IsFaction ? null : Owner;
+            LostStarDate = Universe.StarDate;
             SetOwner(null, attacker);
         }
 
@@ -1646,7 +1684,6 @@ namespace Ship_Game
         public float HabitablePercentage { get; private set; }
         public int NumFreeBiospheres { get; private set; }
 
-        public float HabiableBuiltCoverage { get; private set; }
         public int TotalInvadeInjure { get; private set; }
         public float BuildingGeodeticOffense { get; private set; }
 

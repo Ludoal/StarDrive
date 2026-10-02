@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SDGraphics;
@@ -217,12 +217,10 @@ public sealed partial class Empire
     {
         planet = null;
         int travelMultiplier = travelBack ? 2 : 1;
+        bool prioritized = isPlayer && PlayerPrioritizedPorts.Length > 0;
+        IReadOnlyList<Planet> actualPorts = prioritized ? PlayerPrioritizedPorts : ports;
 
-        // Prioritized ports restrict the candidates, but they must not change the selector:
-        // an existing ship has to fly there (and back), so travel time stays part of the choice.
-        IReadOnlyList<Planet> actualPorts = isPlayer && PlayerPrioritizedPorts.Length > 0 ? PlayerPrioritizedPorts : ports;
-
-        if (actualPorts.Count == 0 || !GetBestPorts(actualPorts, out Planet[] bestPorts, 1))
+        if (actualPorts.Count == 0 || !GetBestPorts(actualPorts, out Planet[] bestPorts, prioritized ? 0.5f : 1))
             return false;
 
         planet = bestPorts.FindMin(p => p.TurnsUntilQueueComplete(cost, 1f, newShip)
@@ -233,13 +231,10 @@ public sealed partial class Empire
     public bool FindPlanetToRefitAt(IReadOnlyList<Planet> ports, float cost, IShipDesign newShip, out Planet planet)
     {
         planet = null;
-        if (ports.Count == 0)
-            return false;
+        bool prioritized = isPlayer && PlayerPrioritizedPorts.Length > 0;
+        IReadOnlyList<Planet> actualPorts = prioritized ? PlayerPrioritizedPorts : ports;
 
-        if (isPlayer && PlayerPrioritizedPorts.Length > 0)
-            return FindPlanetToBuildShipAt(ports, newShip, out planet);
-
-        if (!GetBestPorts(ports, out Planet[] bestPorts, 1))
+        if (actualPorts.Count == 0 || !GetBestPorts(actualPorts, out Planet[] bestPorts, prioritized ? 0.5f : 1))
             return false;
 
         planet = bestPorts.FindMin(p => p.TurnsUntilQueueComplete(cost, 1f, newShip));
@@ -270,8 +265,8 @@ public sealed partial class Empire
             float averageMaxProd = ports.Average(ModifiedNetMaxProductionPotential);
             bestPorts = ports.Filter(p => !p.IsCrippled
                                      && (p.CType != ColonyType.Research || !filterResearchPorts || p.PrioritizedPort)
-                                     && (p.CType != ColonyType.Colony && p.Prod.NetMaxPotential.GreaterOrEqual(averageMaxProd * portQuality))
-                                         || p.CType == ColonyType.Colony && p.Prod.NetIncome.GreaterOrEqual(averageMaxProd * portQuality));
+                                     && (p.CType != ColonyType.Colony && p.Prod.NetMaxPotential.GreaterOrEqual(averageMaxProd * portQuality)
+                                         || p.CType == ColonyType.Colony && p.Prod.NetIncome.GreaterOrEqual(averageMaxProd * portQuality)));
         }
 
 

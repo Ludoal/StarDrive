@@ -236,7 +236,6 @@ namespace Ship_Game.Ships
             GridInfo = gridInfo;
             BaseHull = hull;
             NumDesignSlots = numModules;
-            Bonuses = hull.Bonuses;
             IsShipyard |= hull.IsShipyard;
             IsOrbitalDefense |= hull.IsOrbitalDefense;
 

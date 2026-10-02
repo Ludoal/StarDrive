@@ -18,6 +18,8 @@ namespace Ship_Game
 {
     public sealed class EmpirePatrolsScreen : GameScreen
     {
+        public override bool HelpKeyOpensCodex => true;
+
         Submenu GalaxyTabs; // Ludoal fork: the Galaxy group's tab row, this screen being one tab
         // Ludoal fork: this page's real frame is its tab row's rect
         public override Rectangle PageFrame => GalaxyTabs?.Rect ?? base.PageFrame;

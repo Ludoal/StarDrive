@@ -12,6 +12,8 @@ namespace Ship_Game
 {
     public sealed class SearchTechScreen : PopupWindow
     {
+        public override bool HelpKeyOpensCodex => true;
+
         readonly ResearchScreenNew Screen;
         ScrollList<SearchTechItem> TechList;
         UITextEntry SearchTech;

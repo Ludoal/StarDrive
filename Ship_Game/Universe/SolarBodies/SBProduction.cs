@@ -8,6 +8,7 @@ using Vector2 = SDGraphics.Vector2;
 using SDUtils;
 using System.Linq;
 using Ship_Game.Data.Serialization;
+using Ship_Game.ExtensionMethods;
 
 namespace Ship_Game.Universe.SolarBodies
 {
@@ -229,9 +230,9 @@ namespace Ship_Game.Universe.SolarBodies
             if (!ResourceManager.ShipTemplateExists(q.ShipData.Name))
                 return false;
 
-            Vector2 launchPos = P.GetBuilderShipTargetVector(launch: true, out bool fromShipyard);
+            Vector2 launchPos = GetLaunchPos(q, out bool fromShipyard);
 
-            Ship shipAt = fromShipyard ? Ship.CreateShipAtShipyard(P.Universe, q.ShipData.Name, Owner, launchPos)
+            Ship shipAt = fromShipyard ? Ship.CreateShipAtShipyard(P.Universe, q.ShipData.Name, Owner, launchPos, P)
                                        : Ship.CreateShipNearPlanet(P.Universe, q.ShipData.Name, Owner, P, true);
 
             q.Goal?.ReportShipComplete(shipAt);
@@ -260,6 +261,7 @@ namespace Ship_Game.Universe.SolarBodies
                 TradeZone zone = shipAt.Loyalty?.GetTradeZoneById(q.TradeZoneId);
                 if (zone != null)
                     shipAt.Loyalty.AssignFreighterToZone(shipAt, zone);
+                Owner.LoadFreighterAtColony(shipAt, P);
             }
 
             if (shipAt.ShipData.IsColonyShip)
@@ -367,6 +369,23 @@ namespace Ship_Game.Universe.SolarBodies
                 int i = FirstBuildableIndex;
                 return i < 0 ? null : ConstructionQueue[i];
             }
+        }
+
+        Vector2 GetLaunchPos(QueueItem q, out bool fromShipyard)
+        {
+            if (q.LaunchShipyard is { Active: true, Dying: false } shipyard && shipyard.Loyalty == Owner && shipyard.GetTether() == P)
+            {
+                fromShipyard = true;
+                return shipyard.Position.GenerateRandomPointInsideCircle(50, Owner.Random);
+            }
+
+            if (q.LaunchFromPlanet)
+            {
+                fromShipyard = false;
+                return P.Position;
+            }
+
+            return P.GetLaunchPosition(out fromShipyard);
         }
 
         // Applies available production to production queue
@@ -756,15 +775,7 @@ namespace Ship_Game.Universe.SolarBodies
             }
         }
 
-        public bool Cancel(Building b)
-        {
-            lock (ConstructionQueue)
-            {
-                QueueItem item = ConstructionQueue.Find(q => q.Building == b);
-                item?.SetCanceled();
-                return item != null;
-            }
-        }
+        public void RemoveMovedItem(QueueItem q) => Finish(q);
 
         public bool Cancel(Goal g)
         {
@@ -878,11 +889,10 @@ namespace Ship_Game.Universe.SolarBodies
             {
                 if (q.isShip && q.ShipData.Name == oldShip.Name)
                 {
-                    float percentCompleted = q.ProductionSpent / q.ActualCost;
                     q.ShipData = newShip;
-                    q.Cost = q.ProductionSpent <= 10
-                           ? newShip.GetCost(Owner) 
-                           : q.Cost + refitCost*P.ShipCostModifier;
+                    q.Cost = q.ProductionSpent <= 10 && q.Goal is not RefitShip
+                           ? newShip.GetCost(Owner)
+                           : q.Cost + refitCost;
                 }
             }
         }

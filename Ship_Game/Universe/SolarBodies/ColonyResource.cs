@@ -273,8 +273,7 @@ namespace Ship_Game.Universe.SolarBodies
         // The current tax rate applied by empire tax rate and planet tax rate modifiers
         public float TaxRate { get; private set; }
 
-        // the STRUCTURAL part of the tax pipe: racial bonus/penalty plus building tax
-        // percentages - everything but the player's slider (PR 397 review)
+        // Racial tax modifier and this planet's tax buildings, without the empire tax rate
         public float TaxRateMultiplier { get; private set; } = 1f;
 
         // revenue before maintenance is deducted
@@ -297,20 +296,20 @@ namespace Ship_Game.Universe.SolarBodies
 
         public ColonyMoney(Planet planet) { Planet = planet; }
 
-        public float NetRevenueGain(Building b)
+        // Credits per turn this building costs the colony net of its own revenue; a standing one is already in the figures
+        public float NetCostOf(Building b, bool standing = false, float minEmpireTaxRate = 0f)
         {
-            float newPopulation = b.MaxPopIncrease*0.001f;
-            if (b.IsBiospheres)
-                newPopulation += Planet.PopPerBiosphere(Planet.Owner)*0.001f;
+            float direction = standing ? -1f : 1f;
+            float taxRate = TaxRate.LowerBound(minEmpireTaxRate * TaxRateMultiplier);
+            float taxable = Planet.PopulationBillion * IncomePerColonist + IncomeFromBuildings;
+            float share = Planet.PopulationBillion * b.CreditsPerColonist + b.Income;
+            float otherRate = TaxRateMultiplier > 0
+                            ? taxRate * (TaxRateMultiplier + direction * b.PlusTaxPercentage) / TaxRateMultiplier
+                            : taxRate;
 
-            // Judge building revenue at a fixed NOMINAL tax rate (issue 321), so build/scrap
-            // choices do not follow fiscal policy. Biospheres are a capacity decision and do not
-            // consult this; the estimator serves the other revenue-bearing buildings.
-            const float NominalTaxRate = 0.25f;
-            // the structural tax modifiers (racial + building tax percentages) do apply -
-            // only the player's SLIDER is excluded from the nominal basis (PR 397 review)
-            float grossIncome = newPopulation * IncomePerColonist * NominalTaxRate * TaxRateMultiplier;
-            return grossIncome - b.ActualMaintenance(Planet);
+            float change = (taxable + direction * share) * otherRate - taxable * taxRate;
+            float revenue = direction * change * Planet.Owner.ExoticCreditsBonus;
+            return b.ActualMaintenance(Planet) - revenue;
         }
 
         public void Update()
@@ -331,7 +330,7 @@ namespace Ship_Game.Universe.SolarBodies
                 IncomeFromBuildings += b.Income;
             }
 
-            TroopMaint = Planet.Troops.Count * ShipMaintenance.TroopMaint; // We count enemy troops as well
+            TroopMaint = Planet.Troops.NumTroopsHere(Planet.Owner) * ShipMaintenance.TroopMaint;
 
             // And finally we adjust local TaxRate by the bonus multiplier
             TaxRateMultiplier = taxRateMultiplier;

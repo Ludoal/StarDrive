@@ -84,6 +84,29 @@ namespace Ship_Game
             ScreenManager.SpriteBatch.DrawString(font, troop.Level.ToString(), pos, Color.Gold);
         }
 
+        // Mirrors what the governor actually honors, so the badge never promises more than it does:
+        // PlayerBuiltIsProtected is false on AI colonies (a mole's view) and under exclusive blueprints,
+        // and terraformers are cleared on completion regardless of who built them. Unscrappable buildings
+        // need no protection, and a biosphere never becomes the tile building, so the badge would vanish
+        bool IsProtectedPlayerBuilt(PlanetGridSquare pgs)
+        {
+            if (!P.PlayerBuiltIsProtected)
+                return false;
+
+            // copy first: the sim thread can clear either of these while we draw
+            Building building = pgs.Building;
+            if (building != null)
+                return building.IsPlayerAdded && CanBeProtected(building);
+
+            QueueItem qi = pgs.QItem;
+            return qi is { IsPlayerAdded: true } && CanBeProtected(qi.Building);
+        }
+
+        static bool CanBeProtected(Building b) => b.Scrappable && !b.IsBiospheres && b.PlusTerraformPoints <= 0;
+
+        static Rectangle PlayerBuiltRect(PlanetGridSquare pgs)
+            => new(pgs.ClickRect.X + pgs.ClickRect.Width / 2 - 10, pgs.ClickRect.Y, 20, 20);
+
         void DrawTileIcons(SpriteBatch batch, PlanetGridSquare pgs)
         {
             if (pgs.Biosphere)
@@ -111,6 +134,20 @@ namespace Ship_Game
                 else if (hoveringOverTerra)
                 {
                     ToolTip.CreateTooltip(GameText.ThisTileCanBeTerraformed);
+                }
+            }
+
+            if (IsProtectedPlayerBuilt(pgs))
+            {
+                Rectangle playerBuilt = PlayerBuiltRect(pgs);
+                bool hoveringOverPlayerBuilt = playerBuilt.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive;
+                SubTexture lockIcon = ResourceManager.Texture("NewUI/icon_lock");
+                batch.Draw(lockIcon, new Rectangle(playerBuilt.X + 2, playerBuilt.Y + 2, playerBuilt.Width, playerBuilt.Height), Color.Black);
+                batch.Draw(lockIcon, playerBuilt, hoveringOverPlayerBuilt ? Color.Gold : Color.Red);
+                if (hoveringOverPlayerBuilt)
+                {
+                    string tip = $"{Localizer.Token(GameText.PlayerBuiltProtectedFromScrap)}\n\n{Localizer.Token(GameText.ClickToRemovePlayerBuiltProtection)}";
+                    ToolTip.CreateTooltip(tip, codexUid: Codex.CodexHooks.Find(GameText.PlayerBuiltProtectedFromScrap));
                 }
             }
 
@@ -621,7 +658,7 @@ namespace Ship_Game
                     var buildingIcon = new Rectangle(pgs.ClickRect.X + pgs.ClickRect.Width / 2 - 32,
                         pgs.ClickRect.Y + pgs.ClickRect.Height / 2 - 32, 64, 64);
                     batch.Draw(ResourceManager.Texture("Buildings/icon_" + pgs.Building.Icon + "_64x64"),
-                        buildingIcon, pgs.Building.IsPlayerAdded ? Color.WhiteSmoke : Color.White);
+                        buildingIcon, Color.White);
                 }
                 else if (pgs.QItem != null)
                 {
@@ -705,7 +742,9 @@ namespace Ship_Game
 
             if (IsStatTabSelected)
             {
-                DrawMoney(ref bCursor, batch);
+                Vector2 shipsOutCursor = bCursor;
+                float moneyWidth = DrawMoney(ref bCursor, batch);
+                DrawShipsOut(shipsOutCursor, batch, moneyWidth);
                 DrawPlanetStat(ref bCursor, batch, TextFont);
                 return bCursor.Y;
             }
@@ -767,12 +806,14 @@ namespace Ship_Game
                     bCursor.Y += Font20.LineSpacing + 5;
                     batch.DrawString(TextFont, MultiLineFormat(GameText.DragAStructureFromThe), bCursor, color);
                     DrawTilePopInfo(ref bCursor, batch, pgs);
+                    DrawPlayerBuiltProtection(batch, ref bCursor, pgs);
                     return;
                 case null when pgs.Habitable:
                     batch.DrawString(Font20, Localizer.Token(GameText.HabitableLand), bCursor, color);
                     bCursor.Y += Font20.LineSpacing + 5;
                     batch.DrawString(TextFont, MultiLineFormat(GameText.DragAStructureFromThe), bCursor, color);
                     DrawTilePopInfo(ref bCursor, batch, pgs);
+                    DrawPlayerBuiltProtection(batch, ref bCursor, pgs);
                     return;
             }
 
@@ -813,6 +854,19 @@ namespace Ship_Game
             bCursor.Y += TextFont.LineSpacing * 2;
             batch.DrawString(TextFont, Localizer.Token(GameText.ScrapBuildingHint), bCursor, Color.White);
             bCursor.Y += TextFont.LineSpacing; // bench 431: the LAST line counts in the measure, or the elevator eats it
+            DrawPlayerBuiltProtection(batch, ref bCursor, pgs);
+        }
+
+        // Whatever the tile shows - a finished building, or a queued one on land that still
+        // reads as empty - a lock badge on it must be explained here too
+        void DrawPlayerBuiltProtection(SpriteBatch batch, ref Vector2 bCursor, PlanetGridSquare pgs)
+        {
+            if (!IsProtectedPlayerBuilt(pgs))
+                return;
+
+            string protection = MultiLineFormat(GameText.PlayerBuiltProtectedFromScrap);
+            batch.DrawString(TextFont, protection, bCursor, Color.Gold);
+            bCursor.Y += TextFont.MeasureString(protection).Y;
         }
 
         // TODO: extracted method, needs refactor/clean
@@ -882,7 +936,7 @@ namespace Ship_Game
                 DrawMultiLine(ref bCursor, Localizer.Token(GameText.ThisPlanetsPopulationIsShrinking), Color.LightPink);
         }
 
-        void DrawMoney(ref Vector2 cursor, SpriteBatch batch)
+        float DrawMoney(ref Vector2 cursor, SpriteBatch batch)
         {
             string gIncome = Localizer.Token(GameText.GrossIncome);
             string gUpkeep = Localizer.Token(GameText.Expenditure2);
@@ -898,6 +952,7 @@ namespace Ship_Game
             // Decimal-aligned: the integer part ends on one pivot for the three money lines,
             // the fraction and unit hang right of it.
             Vector2 cur = cursor; // a local function cannot capture a ref parameter (CS1628)
+            float widest = 0; // the farthest right a money line reaches, for the ships-out column
             void MoneyLine(string label, float v, Color c)
             {
                 batch.DrawString(font, $"{label}: ", cur, Color.LightGray);
@@ -906,6 +961,7 @@ namespace Ship_Game
                 string s = $"{v.ToString("0.00", CultureInfo.InvariantCulture)} BC/turn";
                 string intPart = s.Substring(0, s.IndexOf('.') < 0 ? s.Length : s.IndexOf('.'));
                 batch.DrawString(font, s, new Vector2(cur.X + 178 - font.TextWidth(intPart), cur.Y), c);
+                widest = Math.Max(widest, 178 - font.TextWidth(intPart) + font.TextWidth(s));
                 cur.Y += font.LineSpacing + 1;
             }
             MoneyLine(gIncome, grossIncome, Color.LightGreen);
@@ -914,6 +970,31 @@ namespace Ship_Game
             MoneyLine(netIncome > 0 ? nIncome : nLosses, netIncome, netIncome > 0.0 ? Color.Green : Color.Red);
             cursor = cur;
             cursor.Y += font.LineSpacing;
+            return widest;
+        }
+
+        void DrawShipsOut(Vector2 cursor, SpriteBatch batch, float moneyWidth)
+        {
+            Font font = Font14;
+            cursor.X += Math.Max(PFacilities.Rect.Width * 0.5f, moneyWidth + 20);
+            string builders = $"{Localizer.Token(GameText.BuilderShipsLabel)}: ";
+            string shuttles = $"{Localizer.Token(GameText.SupplyShuttlesLabel)}: ";
+            float valueX = Math.Max(font.MeasureString(builders).X, font.MeasureString(shuttles).X) + 5;
+
+            DrawShipsOutLine(ref cursor, batch, font, builders, valueX, P.BuilderShipsOut, P.BuilderShipsLimit, GameText.BuilderShipsOutTip);
+            DrawShipsOutLine(ref cursor, batch, font, shuttles, valueX, P.SupplyShuttlesOut, P.SupplyShuttlesLimit, GameText.SupplyShuttlesOutTip);
+        }
+
+        void DrawShipsOutLine(ref Vector2 cursor, SpriteBatch batch, Font font, string label, float valueX,
+                              int shipsOut, int limit, GameText tip)
+        {
+            string value = $"{shipsOut} / {limit}";
+            batch.DrawString(font, label, cursor, Color.LightGray);
+            batch.DrawString(font, value, new Vector2(cursor.X + valueX, cursor.Y), Colors.Cream);
+            var hover = new Rectangle((int)cursor.X, (int)cursor.Y, (int)(valueX + font.MeasureString(value).X), font.LineSpacing);
+            if (hover.HitTest(Input.CursorPosition) && P.Universe.Screen.IsActive)
+                ToolTip.CreateTooltip(tip);
+            cursor.Y += font.LineSpacing + 1;
         }
 
         void DrawTilePopInfo(ref Vector2 cursor, SpriteBatch batch, PlanetGridSquare tile, int spacing = 5)

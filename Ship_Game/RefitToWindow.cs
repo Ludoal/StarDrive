@@ -22,6 +22,8 @@ namespace Ship_Game
     // reminder, and the foot (Rush toggle + buttons) lives INSIDE the frame.
     public sealed class RefitToWindow : PopupWindow
     {
+        public override bool HelpKeyOpensCodex => true;
+
         readonly ShipListScreen Screen;
         readonly Ship ShipToRefit;
         Empire Player => ShipToRefit.Universe.Player;
@@ -225,7 +227,9 @@ namespace Ship_Game
 
         public override void ExitScreen()
         {
-            Screen?.ResetStatus();
+            // after the refit goals this window queued have run, so the list shows their orders
+            if (Screen != null)
+                Screen.Universe.RunOnSimThread(() => Screen.StatusDirty = true);
             base.ExitScreen();
         }
 

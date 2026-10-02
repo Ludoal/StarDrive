@@ -162,9 +162,18 @@ namespace Ship_Game
         void OnColonizeClicked(UIButton b)
         {
             if (Player.AI.HasGoal(g => g.IsColonizationGoal(P)))
+            {
                 Player.AI.CancelColonization(P);
+            }
+            else if (P.ColonyGraceTurnsLeft(Player) > 0) // held for the empire that lost it
+            {
+                GameAudio.NegativeClick();
+                return;
+            }
             else
+            {
                 Player.AI.AddGoalAndEvaluate(new MarkForColonization(P, Player, isManual: true));
+            }
             GameAudio.EchoAffirmative();
         }
 
@@ -192,6 +201,13 @@ namespace Ship_Game
             BtnColonize.Style   = marked ? ButtonStyle.WideHostile : ButtonStyle.WideActive;
             BtnColonize.Tooltip = marked ? GameText.CancelTheColonizationMissionThat
                                          : GameText.MarkThisPlanetForColonization;
+            Empire lostBy = null;
+            int graceTurns = marked ? 0 : P.ColonyGraceTurnsLeft(Player, out lostBy);
+            if (graceTurns > 0) // a colony lost here is held for its owner a few turns
+            {
+                BtnColonize.Style   = ButtonStyle.Wide;
+                BtnColonize.Tooltip = Planet.ColonyGraceTip(lostBy, graceTurns);
+            }
             BtnColonize.OnClick = OnColonizeClicked;
             int landing = IncomingTroops;
             BtnSendTroops.Text    = landing > 0 ? $"{Localizer.Token(GameText.UhLandingCount)} {landing}" : GameText.UhSendTroops;
@@ -685,7 +701,11 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(ti.Tooltip);
             }
 
-            if (P.IsResearchable && ExoticRect.HitTest(input.CursorPosition) && input.InGameSelect)
+            // a deployed station keeps its ProcessResearchStation goal alive forever, so without
+            // this guard a click here cancels that goal: the station keeps orbiting and still
+            // reads as deployed, but silently stops contributing research with no way back
+            if (P.IsResearchable && !P.IsResearchStationDeployedBy(Player)
+                && ExoticRect.HitTest(input.CursorPosition) && input.InGameSelect)
             {
                 if      (Player.AI.HasGoal(g => g.IsResearchStationGoal(P))) Player.AI.CancelResearchStation(P);
                 else if (Player.CanBuildResearchStations)                    Player.AI.AddGoalAndEvaluate(new ProcessResearchStation(Player, P));

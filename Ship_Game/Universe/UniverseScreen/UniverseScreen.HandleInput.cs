@@ -158,7 +158,6 @@ namespace Ship_Game
             if (input.InfluenceOverlay)           ShowingInfluenceOverlay   = ToggleUIComponent("sd_ui_accept_alt3", ShowingInfluenceOverlay);
             if (input.GravityWellOverlay)         ShowingGravityWellOverlay = ToggleUIComponent("sd_ui_accept_alt3", ShowingGravityWellOverlay);
             if (input.VisionOverlay)              ShowingVisionOverlay      = ToggleUIComponent("sd_ui_accept_alt3", ShowingVisionOverlay);
-            if (input.CodexHelp)                  HandleCodexHelp();
             if (input.BlueprintsSceen)            ScreenManager.AddScreen(new BlueprintsScreen(this, Player));
             if (input.EmpirePatrolsScreen)        ScreenManager.AddScreen(new EmpirePatrolsScreen(this, Player));
             if (input.ImportantEventsScreen)      ScreenManager.AddScreen(new ImportantEventsScreen(this)); // Ludoal fork: F7
@@ -234,21 +233,6 @@ namespace Ship_Game
                 HandleDebugEvents(input);
 
             return false;
-        }
-
-        void HandleCodexHelp()
-        {
-            string uid = ToolTip.GetActiveCodexUid();
-
-            GameAudio.TacticalPause();
-            // OpenAt before AddScreen: ScreenManager queues the screen for the
-            // next tick, so we stash PendingUid and LoadContent flushes it.
-            // Ludoal fork: with no codex tooltip active, F1 opens the codex at its
-            // root — same as the Help (?) button — instead of doing nothing.
-            var codex = new Codex.CodexScreen(this);
-            if (uid != null)
-                codex.OpenAt(uid);
-            ScreenManager.AddScreen(codex);
         }
 
         void HandleDebugEvents(InputState input)
@@ -336,12 +320,19 @@ namespace Ship_Game
                     snappingToShip = true;
                     CamDestination.Z = transitionStartPosition.Z;
                 }
+                else if (StayOnViewedPlanet)
+                {
+                    Planet viewed = workersPanel.P;
+                    CamDestination = new(viewed.Position.X, viewed.Position.Y + 400f, HeightBeforePlanetView);
+                    SetSelectedPlanet(viewed);
+                }
                 else
                 {
                     CamDestination = transitionStartPosition;
                     SetSelectedPlanet(workersPanel.P);
                 }
                 transitionElapsedTime = 0f;
+                StayOnViewedPlanet = false;
                 LookingAtPlanet = false;
                 // Ludoal fork: the colony may HOLD the pause it inherited from the list that
                 // opened it, and this close path never calls ExitScreen - give the simulation
@@ -680,7 +671,7 @@ namespace Ship_Game
             for (int i = 0; i < ships.Length; i++)
             {
                 Ship ship = ships[i];
-                if (ship.Active && ship.ShieldMax > 0f && ship.IsVisibleToPlayerInMap && !ship.IsLaunching)
+                if (ship.Active && ship.ShieldMax > 0f && ship.IsVisibleToPlayerInMap && !ship.IsLaunching && !ship.IsLanding)
                 {
                     shields.AddRange(ship.GetActiveShields().Select(s => s.Shield));
                 }
@@ -706,7 +697,7 @@ namespace Ship_Game
 
         bool CanClickOnShip(SpatialObjectBase go)
         {
-            return go is Ship { InPlayerSensorRange: true } ship
+            return go is Ship { InPlayerSensorRange: true, IsLanding: false } ship
                 // feature: if we're zoomed OUT a lot, ignore subspace projector clicks
                 && (!ship.IsSubspaceProjector || CamPos.Z <= 1_200_000.0);
         }
@@ -756,7 +747,7 @@ namespace Ship_Game
             for (int i = 0; i < ships.Length; i++)
             {
                 Ship ship = ships[i];
-                if (!ship.Active || !ship.InPlayerSensorRange)
+                if (!ship.Active || ship.IsLanding || !ship.InPlayerSensorRange)
                     continue;
                 if (ship.IsSubspaceProjector && CamPos.Z > 1_200_000.0)
                     continue;
@@ -1088,23 +1079,28 @@ namespace Ship_Game
 
         Array<Ship> GetAllShipsInArea(in RectF screenArea, InputState input, out Fleet fleet)
         {
-            fleet = null;
             Ship[] potentialShips = GetVisibleShipsInScreenRect(screenArea);
+            return FilterBoxSelection(potentialShips, SelectedShipList, input.IsShiftKeyDown,
+                                      input.IsCtrlKeyDown, input.IsAltKeyDown, out fleet);
+        }
+
+        internal static Array<Ship> FilterBoxSelection(Ship[] potentialShips, IReadOnlyList<Ship> currentSelection,
+                                                       bool addToSelection, bool ctrlSelect, bool altSelect,
+                                                       out Fleet fleet)
+        {
+            fleet = null;
             if (potentialShips.Length == 0)
                 return new();
 
-            bool hasCombatShips = potentialShips.Any(IsCombatShip);
+            bool hasCombatShips = potentialShips.Any(s => s.Loyalty.isPlayer && IsCombatShip(s));
 
-            // TODO: These are not documented to the players
-            bool addToSelection = input.IsShiftKeyDown;
-            bool ctrlSelect     = input.IsCtrlKeyDown;
             bool selectAll      = ctrlSelect || !hasCombatShips;
-            bool nonPlayer      = input.IsAltKeyDown || !potentialShips.Any(s => s.Loyalty.isPlayer);
+            bool nonPlayer      = altSelect || !potentialShips.Any(s => s.Loyalty.isPlayer);
             bool onlyPlayer     = !nonPlayer && potentialShips.Any(s => s.Loyalty.isPlayer);
 
             var ships = new Array<Ship>();
             if (addToSelection)
-                ships.AddRange(SelectedShipList);
+                ships.AddRange(currentSelection);
 
             foreach (Ship ship in potentialShips)
             {
@@ -1120,11 +1116,8 @@ namespace Ship_Game
             if (onlyPlayer && !ctrlSelect && !hasCombatShips)
             {
                 // if we selected a bunch of civilian ships, but some of them are troop transports
-                // then discard all ships that aren't troop transports.
-                // count only the player's own selected ships - an ENEMY transport in the box
-                // would poison this and strip the whole selection (issue 298). And Ctrl means
-                // 'everything of mine': the preference filter yields to it.
-                bool hasTroopTransports = ships.Any(s => s.IsSingleTroopShip);
+                // then discard all ships that aren't troop transports
+                bool hasTroopTransports = potentialShips.Any(s => s.Loyalty.isPlayer && s.IsSingleTroopShip);
                 if (hasTroopTransports)
                     ships.RemoveAll(s => !s.IsSingleTroopShip);
             }
@@ -1310,7 +1303,6 @@ namespace Ship_Game
                 bool sameRole   = ship.DesignRole == clicked.DesignRole;
                 bool sameDesign = ship.Name == clicked.Name;
 
-                // TODO: These are not documented to the players
                 if (input.SelectSameDesign) // Ctrl+Alt+DoubleClick
                 {
                     if (sameDesign)

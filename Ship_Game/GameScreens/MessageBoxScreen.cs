@@ -84,7 +84,7 @@ namespace Ship_Game
         {
             ScreenManager.FadeBackBufferToBlack(TransitionAlpha * 2 / 3);
 
-            Message = Fonts.Arial12Bold.ParseText(Original + ToAppend, 250f);
+            Message = Fonts.Arial12Bold.ParseText(Original + ToAppend, BoxWidth - 20);
             Vector2 msgSize = Fonts.Arial12Bold.MeasureString(Message);
             // Ludoal fork (bench 362): a box summoned by a frame-bound screen centres on that frame
             Vector2 c = CenterOn ?? Summoner?.PageFrameCentre() ?? new Vector2(ScreenWidth / 2f, ScreenHeight / 2f);

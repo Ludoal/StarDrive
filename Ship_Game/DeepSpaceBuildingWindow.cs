@@ -192,9 +192,7 @@ namespace Ship_Game
             if (ShipToBuild == null)
                 return false;
 
-            if (targetSystem != null && (Screen.CursorWorldPosition2D.InRadius(targetSystem.Position, MinimumBuildDistanceFromSun) 
-                                         && targetPlanet == null // a planet's orbit is a valid site even close to the sun -
-                                                                 // the planet UI allows it, this menu refused it (issue 284)
+            if (targetSystem != null && (targetPlanet == null && Screen.CursorWorldPosition2D.InRadius(targetSystem.Position, MinimumBuildDistanceFromSun)
                                          || !targetSystem.InSafeDistanceFromRadiation(Screen.CursorWorldPosition2D)))
             {
                 return false;
