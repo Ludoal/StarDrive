@@ -34,6 +34,9 @@ namespace Ship_Game
         // ⚠ two rails in ONE cell need a word each: the column header says "Budget" for both, so
         // without them nothing on the row says which purse is which (maintainer feedback).
         UILabel GrdTag, SpcTag;
+        // the text cells are rebuilt on every layout rather than moved, so the last pass's go
+        // first - kept, they stay where the row was and pile up under it as the list scrolls
+        readonly Array<UILabel> CellLabels = new();
 
         // ★ the three act on the SAME row but not on the same kind of thing: "<" brings a troop
         // that already exists here (the colony screen's Call Troops), "+" orders a hull that does
@@ -97,6 +100,10 @@ namespace Ship_Game
 
         public override void PerformLayout()
         {
+            foreach (UILabel old in CellLabels)
+                Remove(old);
+            CellLabels.Clear();
+
             UITable.Column[] cols = Screen.Table.Columns;
             Color color = Color.White;
 
@@ -145,8 +152,8 @@ namespace Ship_Game
             Rectangle gov = cols[4].Rect;
             string letter = GovernorLetter(P);
             int letterX = gov.X + gov.Width / 2 - 18;
-            Label(new Vector2(letterX, Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f).ToFloored(),
-                  letter, Fonts.Arial12Bold, Colors.Governor(P.CType));
+            CellLabels.Add(Label(new Vector2(letterX, Y + Height / 2 - Fonts.Arial12Bold.LineSpacing / 2f).ToFloored(),
+                                 letter, Fonts.Arial12Bold, Colors.Governor(P.CType)));
 
             int boxY = (int)(Y + Height / 2 - 6);
             if (SpaceDef == null)
@@ -209,8 +216,10 @@ namespace Ship_Game
 
         UILabel CellIn(Rectangle rect, string text, TableAlign align, Color color)
         {
-            return Label(UITable.CellPos(Fonts.Arial12Bold, rect, Y, Height, text, align),
-                         text, Fonts.Arial12Bold, color);
+            UILabel cell = Label(UITable.CellPos(Fonts.Arial12Bold, rect, Y, Height, text, align),
+                                 text, Fonts.Arial12Bold, color);
+            CellLabels.Add(cell);
+            return cell;
         }
 
         // the cell minus its button lane: a right-aligned figure would otherwise sit under it
