@@ -106,11 +106,11 @@ namespace Ship_Game
                                   "", SmallFont, Cream);
             RefreshLiveState();
 
+            Hostiles = Player.KnownEnemyPresenceIn(Planet.System); // the System cell prints them
             AddSystemName();
             AddPlanetName();
             AddPlanetTextureAndStatus();
             AddPlanetStats();
-            Hostiles = Player.KnownEnemyPresenceIn(Planet.System);
             AddHostileWarning();
             base.PerformLayout();
         }
@@ -214,8 +214,7 @@ namespace Ship_Game
         void AddSystemName()
         {
             UITable.Column c = Screen.Table.Columns[0];
-            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, Planet.System.Name, c.Align),
-                  Planet.System.Name, SmallFont, Cream);
+            this.AddSystemNameCell(c.Rect, c.Align, Y, Height, Planet.System, Hostiles, GameText.HostilesLineTip);
         }
 
         void AddPlanetName()

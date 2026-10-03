@@ -22984,6 +22984,9 @@ SpShipRepairTip:
 BgtTradeCargoTip:
  Id: 30442
  ENG: "What your freighters earned this turn on the goods they delivered: the tax on those goods once you have the Tax Goods bonus, the Mercantile trait's bonus per unit, and 2 credits per unit delivered to another empire. Trade treaties are on the line below."
+HostilesLineTip:
+ Id: 30444
+ ENG: "Hostile ships our sensors have seen in this system, their combined strength, and the flag of each empire they belong to. A sighting keeps its strength after the ships have left, until we look again; its ship count is then left out."
 BgtTradeTreatiesTip:
  Id: 30443
  ENG: "What your trade treaties paid this turn. A treaty starts at -3 credits per turn and gains a tenth of a credit each turn, up to a ceiling set by the partner's population, your trade capacity and your relations."

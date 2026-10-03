@@ -6355,6 +6355,7 @@ namespace Ship_Game
         SpShipRepairTip = 30103,
         BgtTradeCargoTip = 30442,
         BgtTradeTreatiesTip = 30443,
+        HostilesLineTip = 30444,
         AutoGovernorTip = 30104,
         PrioritizationHeaderTip = 30106,
         /// <summary>Environmental</summary>

@@ -294,6 +294,18 @@ namespace Ship_Game
             if (!hostiles.Any)
                 return;
 
+            float y = (nameY + nameFont.LineSpacing).UpperBound(rect.Bottom - tinyFont.LineSpacing);
+            item.AddHostilesLine(left, y, usable, hostiles);
+        }
+
+        /// <summary>
+        /// The line under a system's name: how many hostile ships our threat map has seen there,
+        /// their strength, and a flag per empire. The label goes when the column is too narrow.
+        /// </summary>
+        public static void AddHostilesLine(this UIElementContainer item, float x, float y, float usable,
+                                           in ThreatMatrix.HostilePresence hostiles, LocalizedText tip = default)
+        {
+            Graphics.Font tinyFont = Fonts.Arial8Bold;
             Empire[] empires = hostiles.Empires ?? Empty<Empire>.Array;
             int flagSize     = tinyFont.LineSpacing;
             float openW      = tinyFont.MeasureString(" (").X;
@@ -303,10 +315,8 @@ namespace Ship_Game
             if (tinyFont.MeasureString(text).X + flagsW > usable) // no room for the label in this column
                 text = HostilesText(hostiles, withLabel: false);
 
-            float x = left;
-            float y = (nameY + nameFont.LineSpacing).UpperBound(rect.Bottom - tinyFont.LineSpacing);
             Color color = Color.IndianRed;
-            item.Label(new Vector2(x, y), text, tinyFont, color);
+            item.Label(new Vector2(x, y), text, tinyFont, color).Tooltip = tip;
             x += tinyFont.MeasureString(text).X;
 
             if (empires.Length > 0)
@@ -323,6 +333,24 @@ namespace Ship_Game
                 }
                 item.Label(new Vector2(x, y), ")", tinyFont, color);
             }
+        }
+
+        // Ludoal fork: the System cell of our tables - the name in the row's font, centred on the row,
+        // with the hostiles line under it when our threat map knows of some there. The cell keeps
+        // clear of the alert icon the rows pin to its right edge.
+        public static void AddSystemNameCell(this UIElementContainer item, in Rectangle col, UI.TableAlign align,
+                                             float rowY, float rowH, SolarSystem system,
+                                             in ThreatMatrix.HostilePresence hostiles, LocalizedText tip = default)
+        {
+            const int AlertIconLane = 24;
+            Graphics.Font font = Fonts.Arial12Bold;
+            Vector2 pos = UI.UITable.CellPos(font, col, rowY, rowH, system.Name, align);
+            if (hostiles.Any)
+                pos.Y = (float)Math.Round(rowY + rowH / 2f - (font.LineSpacing + Fonts.Arial8Bold.LineSpacing) / 2f);
+
+            item.Label(pos, system.Name, font, Colors.Cream);
+            if (hostiles.Any)
+                item.AddHostilesLine(pos.X, pos.Y + font.LineSpacing, col.Right - AlertIconLane - pos.X, hostiles, tip);
         }
 
         public static bool DataVisibleToPlayer(Empire empire)

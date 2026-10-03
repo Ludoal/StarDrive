@@ -154,8 +154,8 @@ namespace Ship_Game
                 SetDysonSwarmVisibility();
             }
 
+            Hostiles = Player.KnownEnemyPresenceIn(System); // the System cell prints them
             AddSystemName();
-            Hostiles = Player.KnownEnemyPresenceIn(System);
             AddHostileWarning();
             AddTextureAndStatus();
             AddDistanceStats();
@@ -222,7 +222,7 @@ namespace Ship_Game
         void AddSystemName()
         {
             UITable.Column c = Screen.Table.Columns[0];
-            Label(UITable.CellPos(SmallFont, c.Rect, Y, Height, System.Name, c.Align), System.Name, SmallFont, Cream);
+            this.AddSystemNameCell(c.Rect, c.Align, Y, Height, System, Hostiles, GameText.HostilesLineTip);
         }
 
         void AddPlanetName()
