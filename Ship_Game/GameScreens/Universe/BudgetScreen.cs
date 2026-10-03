@@ -973,6 +973,22 @@ namespace Ship_Game.GameScreens
         }
 
         float LastSortedDate;
+        int PurseHash = -1;
+
+        // which purses are taken over. A row's Auto box lands on the sim thread, so its rail can
+        // only follow once the flag has moved there: the rows are laid out again when it does,
+        // the way the Defense tab watches its own
+        int ComputePurseHash()
+        {
+            int h = 17;
+            foreach (Planet p in Player.GetPlanets())
+            {
+                h = h * 31 + (p.IsBudgetManual(BudgetArea.Civilian) ? 1 : 0);
+                h = h * 31 + (p.IsBudgetManual(BudgetArea.GroundDef) ? 1 : 0);
+                h = h * 31 + (p.IsBudgetManual(BudgetArea.SpaceDef) ? 1 : 0);
+            }
+            return h;
+        }
 
         public override void Update(float fixedDeltaTime)
         {
@@ -989,6 +1005,13 @@ namespace Ship_Game.GameScreens
             {
                 LastSortedDate = Player.Universe.StarDate;
                 FillList();
+            }
+            // a re-layout, not a refill: the rows stay where the player scrolled them
+            int purses = ComputePurseHash();
+            if (purses != PurseHash)
+            {
+                PurseHash = purses;
+                ColonySL.RequiresLayout = true;
             }
             base.Update(fixedDeltaTime);
         }
