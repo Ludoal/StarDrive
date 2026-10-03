@@ -73,7 +73,8 @@ jobs:
           # branches would otherwise share one interleaved series and become impossible to tell
           # apart. Base 1.61.* means UI rework; 1.60.00046.* stays the playable QoL line.
           $base = "${env:MAJOR_MINOR}"
-          if ('${{ github.ref_name }}' -eq 'ui-rework') {
+          # a fusion-* branch is an upstream merge waiting to become ui-rework: same line
+          if ('${{ github.ref_name }}' -eq 'ui-rework' -or '${{ github.ref_name }}' -like 'fusion-*') {
             $base = "${env:UI_REWORK_BASE}"
           }
           elseif ('${{ github.ref_name }}' -eq 'qol-47') {
