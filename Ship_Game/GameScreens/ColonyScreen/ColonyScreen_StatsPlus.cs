@@ -111,6 +111,14 @@ namespace Ship_Game
                    P.IsStarving ? Color.Red : StatsPlusLayout.SPTone(growth), GameText.SpNetGrowthTip);
             SPLineTip(ref left, batch, cols, blockW, "Saturation", (P.PopulationRatio * 100f).String(1) + " %",
                    P.PopulationRatio > 1f ? Color.Orange : Color.White, GameText.SpSaturationTip);
+            StatsPlusLayout.SPGap(ref left, TextFont);
+
+            // ── SHIPS OUT — what the colony has in flight against what it may send at once ──
+            StatsPlusLayout.SPHeader(ref left, batch, "SHIPS OUT");
+            SPLineTip(ref left, batch, cols, blockW, Localizer.Token(GameText.BuilderShipsLabel),
+                   $"{P.BuilderShipsOut} / {P.BuilderShipsLimit}", Color.White, GameText.BuilderShipsOutTip);
+            SPLineTip(ref left, batch, cols, blockW, Localizer.Token(GameText.SupplyShuttlesLabel),
+                   $"{P.SupplyShuttlesOut} / {P.SupplyShuttlesLimit}", Color.White, GameText.SupplyShuttlesOutTip);
 
             // ── YIELDS (per turn) — per-source sums, same principle as the Budget ──
             StatsPlusLayout.SPHeader(ref right, batch, "YIELDS (per turn)");
