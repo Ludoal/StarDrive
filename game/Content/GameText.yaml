@@ -22983,13 +22983,16 @@ SpShipRepairTip:
  ENG: "Hull repair provided to friendly ships in orbit. Reduced while a space battle rages nearby."
 BgtTradeCargoTip:
  Id: 30442
- ENG: "What your freighters earned this turn on the goods they delivered: the tax on those goods once you have the Tax Goods bonus, the Mercantile trait's bonus per unit, and 2 credits per unit delivered to another empire. Trade treaties are on the line below."
+ ENG: "What your freighters earned on their deliveries this turn: the goods tax when Tax Goods is unlocked, the Mercantile bonus per unit, and 2 credits per unit delivered to another empire. Treaty income is not counted here."
+ FRA: "Ce que vos cargos ont gagné sur leurs livraisons ce tour-ci : l'impôt sur la marchandise si Tax Goods est acquis, le bonus Mercantile par unité, et 2 crédits par unité livrée à un autre empire. Les traités ne sont pas comptés ici."
 HostilesLineTip:
  Id: 30444
- ENG: "Hostile ships our sensors have seen in this system, their combined strength, and the flag of each empire they belong to. A sighting keeps its strength after the ships have left, until we look again; its ship count is then left out."
+ ENG: "Hostile ships our sensors have seen in this system: how many, their combined strength, and one flag per empire. Only what has been scanned is counted. After the ships leave, the observation keeps its strength until the system is scanned again; the count is then hidden and only the strength remains."
+ FRA: "Les vaisseaux hostiles que nos capteurs ont vus dans ce système : leur nombre, leur force cumulée, et un drapeau par empire. Seul ce qui a été scanné est compté. Après leur départ, l'observation garde sa force jusqu'au prochain passage des capteurs ; le nombre disparaît alors, seule la force reste."
 BgtTradeTreatiesTip:
  Id: 30443
- ENG: "What your trade treaties paid this turn. A treaty starts at -3 credits per turn and gains a tenth of a credit each turn, up to a ceiling set by the partner's population, your trade capacity and your relations."
+ ENG: "What your trade treaties paid this turn, one line per partner below. A treaty starts at minus 3 credits per turn and gains 0.1 each turn up to its ceiling, which grows with the partner's population, open borders or an alliance, and your share of the two empires' trade value."
+ FRA: "Ce que vos traités commerciaux ont payé ce tour-ci, une ligne par partenaire ci-dessous. Un traité démarre à moins 3 crédits par tour et regagne 0,1 par tour jusqu'à son plafond, qui grandit avec la population du partenaire, des frontières ouvertes ou une alliance, et votre part de la valeur commerciale des deux empires."
 AutoGovernorTip:
  Id: 30104
  ENG: "New colonies are assigned a governor type suited to the planet (fertile worlds lean Agricultural, rich ones Industrial). Unchecked, new colonies start unmanaged."
