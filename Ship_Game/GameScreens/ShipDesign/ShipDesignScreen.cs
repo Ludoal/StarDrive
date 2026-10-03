@@ -1089,14 +1089,14 @@ namespace Ship_Game
                 OnStripShipToggle();
             });
             BtnStripShip.ClickSfx = "blip_click";
-            BtnStripShip.Tooltip = Localizer.Token(GameText.StripsTheShipOfAny);
+            BtnStripShip.Tooltip = GameText.StripsTheShipOfAny;
 
             BtnStripDefence = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.StripDefence), click: b =>
             {
                 StripDefenceModules();
             });
             BtnStripDefence.ClickSfx = "blip_click";
-            BtnStripDefence.Tooltip = Localizer.Token(GameText.StripDefenceTip);
+            BtnStripDefence.Tooltip = GameText.StripDefenceTip;
 
             BtnSymmetricDesign = leftFoot.Add(ButtonStyle.WideActive, Localizer.Token(GameText.SymmetricDesign), click: b =>
             {
@@ -1113,7 +1113,7 @@ namespace Ship_Game
                 BtnArcs.Style = ArcsBtnStyle;
             });
             BtnArcs.ClickSfx = "blip_click";
-            BtnArcs.Tooltip  = Localizer.Token(GameText.ShipyardArcsTip);
+            BtnArcs.Tooltip  = GameText.ShipyardArcsTip;
             BtnArcs.Hotkey   = InputBindings.FromString("Tab");
             BtnArcs.Style    = ArcsBtnStyle;
 
@@ -1123,7 +1123,7 @@ namespace Ship_Game
                 BtnShields.Style = ShieldsBtnStyle;
             });
             BtnShields.ClickSfx = "blip_click";
-            BtnShields.Tooltip  = Localizer.Token(GameText.ShieldsOverlayTip);
+            BtnShields.Tooltip  = GameText.ShieldsOverlayTip;
             BtnShields.Style    = ShieldsBtnStyle;
 
             BtnToggleOverlay = rightFoot.Add(ButtonStyle.WideActive, GameText.ToggleOverlay, click: b =>
@@ -1133,7 +1133,7 @@ namespace Ship_Game
             BtnToggleOverlay.ClickSfx = "blip_click";
             // bench 459: every button in the row carries a tooltip, or the module list's tooltip
             // bleeds through this one (existing token 2204)
-            BtnToggleOverlay.Tooltip = Localizer.Token(GameText.ToggleTheModuleGridOverlay);
+            BtnToggleOverlay.Tooltip = GameText.ToggleTheModuleGridOverlay;
 
             // a third of a column each, so a trio spans exactly the list above it
             foreach (UIButton b in new[] { BtnStripShip, BtnStripDefence, BtnSymmetricDesign,

@@ -517,7 +517,6 @@ namespace Ship_Game
                 }
 
                 if (qi.IsCivilianBuilding
-                    && !(qi.IsPlayerAdded && OwnerIsPlayer) // a player-queued building is the player's call, not the governor's — mirrors the scrap guard in SuitableForScrap
                     && !qi.Building.IsTerraformer
                     && !RequiredInBlueprints(qi.Building)
                     && qi.Building.ActualMaintenance(this) > budget)

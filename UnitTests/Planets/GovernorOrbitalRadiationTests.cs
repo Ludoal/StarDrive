@@ -33,6 +33,7 @@ public class GovernorOrbitalRadiationTests : StarDriveTest
         Colony.SetWantedStations(0);
         Colony.SetWantedShipyards(0);
         Colony.SetManualSpaceDefBudget(1000);
+        Colony.SetManualSpcBudgetOn(true);
     }
 
     int PlatformsOrdered => Colony.OrbitalsBeingBuilt(RoleName.platform);

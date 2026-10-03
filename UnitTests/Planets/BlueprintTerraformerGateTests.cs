@@ -28,17 +28,19 @@ namespace UnitTests.Planets
             P = AddHomeWorldToEmpire(new Vector2(1000), Player);
         }
 
-        // Everything in the plan is unlocked, so PercentAchievable is 100 and the gate turns
-        // purely on how much of it is standing.
+        static bool IsPlannable(Building b) => b.IsSuitableForBlueprints && !b.IsMilitary && b.EventOnBuild == null;
+
+        // Everything in the plan can be raised on this colony, so PercentAchievable is 100 and the
+        // gate turns purely on how much of it is standing. The reachable share is counted against
+        // the colony's own offer, so the offer is rebuilt after the unlocks.
         void PlanBuildings(int count, bool exclusive = false)
         {
-            Plannable = ResourceManager.BuildingsDict.Values
-                .Where(b => b.IsSuitableForBlueprints && !b.IsMilitary && b.EventOnBuild == null)
-                .Take(count).ToArray();
+            foreach (Building b in ResourceManager.BuildingsDict.Values.Where(IsPlannable))
+                Player.UnlockEmpireBuilding(b.Name);
+            P.RefreshBuildingsWeCanBuildHere();
+            Plannable = P.GetBuildingsCanBuild().Where(IsPlannable).Take(count).ToArray();
 
             AssertEqual(count, Plannable.Length, "test needs this many buildings to plan");
-            foreach (Building b in Plannable)
-                Player.UnlockEmpireBuilding(b.Name);
             var planned = new HashSet<string>(Plannable.Select(b => b.Name));
             AssertEqual(count, planned.Count, "planned building names must be distinct");
 
@@ -111,9 +113,12 @@ namespace UnitTests.Planets
         [TestMethod]
         public void AnUnreachablePlanNeverBlocksTerraformers()
         {
-            var unlocked = new HashSet<string>(Player.GetUnlockedBuildings().Select(b => b.Name));
+            // a building standing on the colony counts as reachable, so it is left out too
+            var reachable = new HashSet<string>(Player.GetUnlockedBuildings().Select(b => b.Name));
+            foreach (Building b in P.Buildings)
+                reachable.Add(b.Name);
             var planned = new HashSet<string>(ResourceManager.BuildingsDict.Values
-                .Where(b => !unlocked.Contains(b.Name)).Take(BigPlanSize).Select(b => b.Name));
+                .Where(b => !reachable.Contains(b.Name)).Take(BigPlanSize).Select(b => b.Name));
             AssertEqual(BigPlanSize, planned.Count, "test needs this many buildings the empire has not unlocked");
 
             P.AddBlueprints(new BlueprintsTemplate("test", false, null, new Array<string>((IEnumerable<string>)planned), Planet.ColonyType.Colony), Player);

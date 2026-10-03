@@ -639,7 +639,7 @@ namespace Ship_Game
                 float rowY = y;
                 TableRow(batch, col, ref y, maxY, "Spies", espionage.InfiltrationLevelSummary(), Color.White);
                 if (new Rectangle(col.X + 8, (int)rowY, col.Width - 16, Font12.LineSpacing).HitTest(Input.CursorPosition))
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.DpInfiltrationDepthTheirs));
+                    ToolTip.CreateTooltip(GameText.DpInfiltrationDepthTheirs);
             }
             else
             {

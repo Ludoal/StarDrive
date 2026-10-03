@@ -405,50 +405,50 @@ namespace Ship_Game
                     ToolTip.CreateTooltip(Localizer.Token(GameText.ResearchScreen) + "\n\n" + Localizer.Token(GameText.CurrentResearch) + ": " + Player.Research.TopicLocText.Text, "R", tipPos);
                     break;
                 case "Budget":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.EconomicOverview2), "T", tipPos);
+                    ToolTip.CreateTooltip(GameText.EconomicOverview2, "T", tipPos);
                     break;
                 case "Main Menu":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheMainMenu), "O", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheMainMenu, "O", tipPos);
                     break;
                 case "Shipyard":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipyard), "Y", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheShipyard, "Y", tipPos);
                     break;
                 case "Empire":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEmpireOverviewScreen), "U", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheEmpireOverviewScreen, "U", tipPos);
                     break;
                 case "Diplomacy":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheDiplomacyOverviewScreen), "I", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheDiplomacyOverviewScreen, "I", tipPos);
                     break;
                 case "Espionage":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheEspionageManagementScreen), "E", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheEspionageManagementScreen, "E", tipPos);
                     break;
                 case "ShipList":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheShipRoster), "K", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheShipRoster, "K", tipPos);
                     break;
                 case "Fleets":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheFleetManager), "J", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheFleetManager, "J", tipPos);
                     break;
                 case "Planets":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensPlanetReconnaissancePanel), "L", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensPlanetReconnaissancePanel, "L", tipPos);
                     break;
                 case "Troops":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhOpensTroopsArrayTooltip), "C", tipPos);
+                    ToolTip.CreateTooltip(GameText.UhOpensTroopsArrayTooltip, "C", tipPos);
                     break;
                 case "Patrols":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.EmpirePatrolsScreenTip), "P", tipPos);
+                    ToolTip.CreateTooltip(GameText.EmpirePatrolsScreenTip, "P", tipPos);
                     break;
                 case "Blueprints":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.BlueprintsScreenTip), "F", tipPos);
+                    ToolTip.CreateTooltip(GameText.BlueprintsScreenTip, "F", tipPos);
                     break;
                 case "?":
                     // the real help binding is F1 (CodexHelp)
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.OpensTheHelpMenu), "F1", tipPos);
+                    ToolTip.CreateTooltip(GameText.OpensTheHelpMenu, "F1", tipPos);
                     break;
                 case "SpeedDown":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhSlowerGameSpeedTooltip), "-", tipPos);
+                    ToolTip.CreateTooltip(GameText.UhSlowerGameSpeedTooltip, "-", tipPos);
                     break;
                 case "SpeedUp":
-                    ToolTip.CreateTooltip(Localizer.Token(GameText.UhFasterGameSpeedTooltip), "+", tipPos);
+                    ToolTip.CreateTooltip(GameText.UhFasterGameSpeedTooltip, "+", tipPos);
                     break;
             }
         }

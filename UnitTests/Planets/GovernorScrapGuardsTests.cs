@@ -64,9 +64,9 @@ namespace UnitTests.Planets
         bool OverBudgetMayScrap(Building b)
             => P.SuitableForScrap(b, overBudget: true, P.Storage.MostGoodsInStorage, scrapZeroMaintenance: false, replacing: false);
 
-        void AddBlueprints(string planned)
+        void AddBlueprints(string planned, bool exclusive = false)
         {
-            var template = new BlueprintsTemplate("test", false, null, new Array<string> { planned }, Planet.ColonyType.Colony);
+            var template = new BlueprintsTemplate("test", exclusive, null, new Array<string> { planned }, Planet.ColonyType.Colony);
             P.AddBlueprints(template, Enemy);
         }
 
@@ -217,13 +217,24 @@ namespace UnitTests.Planets
             Assert.IsFalse(ReplaceMayTake(b), "a replacement could not be placed on the uninhabitable tile this one frees");
         }
 
+        // Ludoal fork: only an exclusive plan clears what it does not name; a plan that is not
+        // exclusive leaves an unplanned building to the guards
         [TestMethod]
-        public void BlueprintsStillClearAnUnplannedBuildingThatPaysForItself()
+        public void AnExclusivePlanStillClearsAnUnplannedBuildingThatPaysForItself()
+        {
+            Building resort = Place(maintenance: 0.5f, income: 5f);
+            AddBlueprints(ResourceManager.BuildingsDict.Values.First(t => t.Name != resort.Name).Name, exclusive: true);
+
+            Assert.IsTrue(ReplaceMayTake(resort), "an exclusive plan asks for the plan alone, so a building outside it goes whatever it earns");
+        }
+
+        [TestMethod]
+        public void APlanThatIsNotExclusiveKeepsAnUnplannedBuildingThatPaysForItself()
         {
             Building resort = Place(maintenance: 0.5f, income: 5f);
             AddBlueprints(ResourceManager.BuildingsDict.Values.First(t => t.Name != resort.Name).Name);
 
-            Assert.IsTrue(ReplaceMayTake(resort), "blueprints ask for the plan, so a building outside it goes whatever it earns");
+            Assert.IsFalse(ReplaceMayTake(resort), "a plan that is not exclusive cleared an unplanned building that pays for itself");
         }
 
         [TestMethod]

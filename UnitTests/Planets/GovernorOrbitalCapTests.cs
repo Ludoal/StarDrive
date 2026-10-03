@@ -34,6 +34,7 @@ public class GovernorOrbitalCapTests : StarDriveTest
         Colony.ManualOrbitals = true;
         Colony.SetWantedStations(0);
         Colony.SetManualSpaceDefBudget(1000);
+        Colony.SetManualSpcBudgetOn(true);
         Colony.Population = Colony.MaxPopulation;
         Colony.UpdateIncomes();
 

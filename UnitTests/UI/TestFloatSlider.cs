@@ -20,7 +20,7 @@ namespace UnitTests.UI
         public void AStepDragFiresOnChangeOncePerStep()
         {
             var screen = new SliderScreen();
-            var slider = new FloatSlider(SliderStyle.Percent, new Rectangle(100, 100, 232, 40), "test", 0f, 1f, 0.5f);
+            var slider = new FloatSlider(SliderStyle.Percent, new Rectangle(100, 100, 200 + FloatSlider.DefaultValueLane, 40), "test", 0f, 1f, 0.5f);
             screen.Add(slider);
             int calls = 0, repeats = 0;
             float last = slider.RelativeValue;

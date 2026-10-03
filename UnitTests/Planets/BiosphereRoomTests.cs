@@ -20,6 +20,7 @@ namespace UnitTests.Planets
             Player.UnlockEmpireBuilding(Bio.Name);
             Colony.CType = Planet.ColonyType.Core;
             Colony.SetManualCivBudget(1000);
+            Colony.SetManualCivBudgetOn(true);
             Colony.UpdateIncomes();
         }
 
