@@ -33,9 +33,17 @@ namespace Ship_Game
 
                 // Ludoal fork: the gesture hint belongs to the ROW, not to the list - hung off
                 // the list's rect it would fire over category headers too, which have no Module.
-                if (HitTest(GameBase.ScreenManager.input.CursorPosition))
+                if (Hot(Rect))
                     ToolTip.CreateTooltip(GameText.SyModulePickTooltip);
             }
+        }
+
+        // the list draws one row more than it shows and clips the overflow, so a row's rect can run
+        // past the list's foot, over the buttons under it: a hover counts inside the visible area only
+        bool Hot(in Rectangle r)
+        {
+            Vector2 cursor = GameBase.ScreenManager.input.CursorPosition;
+            return List.ItemsHousing.HitTest(cursor) && r.HitTest(cursor);
         }
 
         void DrawModule(SpriteBatch batch)
@@ -84,21 +92,21 @@ namespace Ship_Game
                 var turretRect = new Rectangle((int)bCursor.X + 226, (int)bCursor.Y + 20, 18, 20);
                 batch.Draw(ResourceManager.Texture("UI/icon_can_rotate"), rotateRect, Color.White);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_turret"), turretRect, Color.White);
-                if (rotateRect.HitTest(GameBase.ScreenManager.input.CursorPosition) || turretRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
+                if (Hot(rotateRect) || Hot(turretRect))
                     ToolTip.CreateTooltip(GameText.ThisModuleCanBeRotated);
             }
             else if (!m.DisableRotation)
             {
                 var rotateRect = new Rectangle((int)bCursor.X + 228, (int)bCursor.Y + 3, 20, 22);
                 batch.Draw(ResourceManager.Texture("UI/icon_can_rotate"), rotateRect, Color.White);
-                if (rotateRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
+                if (Hot(rotateRect))
                     ToolTip.CreateTooltip(GameText.IndicatesThatThisModuleCan);
             }
             else if (m.InstalledWeapon?.IsTurret == true)
             {
                 var turretRect = new Rectangle((int)bCursor.X + 223, (int)bCursor.Y + 3, 25, 23);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_turret"), turretRect, Color.White);
-                if (turretRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
+                if (Hot(turretRect))
                     ToolTip.CreateTooltip(GameText.IndicatesThisModuleHasA);
             }
 
@@ -106,7 +114,7 @@ namespace Ship_Game
             {
                 var obsoleteRect = new Rectangle((int)bCursor.X + 220, (int)bCursor.Y + 22, 17, 17);
                 batch.Draw(ResourceManager.Texture("NewUI/icon_queue_delete"), obsoleteRect, Color.Red);
-                if (obsoleteRect.HitTest(GameBase.ScreenManager.input.CursorPosition))
+                if (Hot(obsoleteRect))
                     ToolTip.CreateTooltip(GameText.ThisModuleWasMarkedAs);
             }
         }
