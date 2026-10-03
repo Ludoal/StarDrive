@@ -322,8 +322,30 @@ namespace UnitTests.AITests.Empire
                 "the lifetime average must not restart when a game is loaded");
         }
 
+        // Ludoal fork: the Budget splits trade into freighters and treaties, each partner in the
+        // treaties line's tooltip; the three come from one snapshot, so they add up to the total
         [TestMethod]
-        [Ignore("Ludoal fork: the Budget screen has no per-partner trade rows yet")]
+        public void TheTradeHalvesAndPartnersAddUpToTheTradeTotal()
+        {
+            Planet homeworld = CreateEmpireAndHomeWorld();
+            Player.SignTreatyWith(Enemy, TreatyType.Trade);
+            Player.data.Traits.TaxGoods = true;
+            Player.data.Traits.Mercantile = 0f;
+            Player.data.TaxRate = 0.5f;
+            Player.TaxGoods(10f, homeworld);
+            Player.DoMoney();
+
+            AssertEqual(0.001f, 5f, Player.FreighterIncomeThisTurn, "ten goods taxed at half");
+            AssertEqual(0.001f, Player.TotalTradeMoneyAddedThisTurn,
+                        Player.FreighterIncomeThisTurn + Player.TreatyIncomeThisTurn,
+                        "the two Budget lines must add up to the trade total");
+            AssertEqual(1, Player.TreatyIncomesThisTurn.Length, "one tooltip row per trade partner");
+            AssertEqual(0.001f, Player.TreatyIncomeThisTurn, Player.TreatyIncomesThisTurn[0].Income,
+                        "the partner rows must add up to the treaties line");
+        }
+
+        [TestMethod]
+        [Ignore("Ludoal fork: each partner is a row of the treaties line's tooltip, taken with the turn's figures")]
         public void TheTradePanelListsATreatySignedThisTurn()
         {
             CreateUniverseAndPlayerEmpire();

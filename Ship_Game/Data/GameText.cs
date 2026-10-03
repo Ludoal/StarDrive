@@ -6353,6 +6353,8 @@ namespace Ship_Game
         SpMaxProdToQueueTip = 30101,
         SpFromStorageTip = 30102,
         SpShipRepairTip = 30103,
+        BgtTradeCargoTip = 30442,
+        BgtTradeTreatiesTip = 30443,
         AutoGovernorTip = 30104,
         PrioritizationHeaderTip = 30106,
         /// <summary>Environmental</summary>

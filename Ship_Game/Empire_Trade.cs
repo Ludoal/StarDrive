@@ -112,6 +112,11 @@ namespace Ship_Game
         [StarData] public float FastVsBigFreighterRatio { get; private set; } = 0.5f;
         public float TradeMoneyAddedThisTurn { get; private set; }
         public float TotalTradeMoneyAddedThisTurn { get; private set; }
+        // the turn's trade income in its two halves, and what each partner paid, all taken at the
+        // moment the total is, so the lines the Budget shows always add up to it
+        public float FreighterIncomeThisTurn { get; private set; }
+        public float TreatyIncomeThisTurn { get; private set; }
+        public (Empire Partner, float Income)[] TreatyIncomesThisTurn { get; private set; } = Empty<(Empire, float)>.Array;
         [StarData] public float AverageFreighterCargoCap { get; private set; } = 20;
         [StarData] public int AverageFreighterFTLSpeed { get; private set; } = 20000;
         [StarData] public float TotalPlanetStorage { get; private set; }
@@ -1180,7 +1185,22 @@ namespace Ship_Game
 
         void UpdateTradeIncome()
         {
-            TotalTradeMoneyAddedThisTurn = TotalTradeTreatiesIncome() + TradeMoneyAddedThisTurn;
+            var partners = new Array<(Empire, float)>();
+            float treaties = 0f;
+            foreach (Relationship rel in ActiveRelations)
+            {
+                if (rel.Treaty_Trade)
+                {
+                    float income = rel.TradeIncome(this);
+                    partners.Add((rel.Them, income));
+                    treaties += income;
+                }
+            }
+
+            TreatyIncomesThisTurn        = partners.ToArray();
+            TreatyIncomeThisTurn         = treaties;
+            FreighterIncomeThisTurn      = TradeMoneyAddedThisTurn;
+            TotalTradeMoneyAddedThisTurn = treaties + TradeMoneyAddedThisTurn;
             TradeMoneyAddedThisTurn = 0; // Reset Trade Money for the next turn.
         }
 

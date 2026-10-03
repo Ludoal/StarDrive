@@ -22981,6 +22981,12 @@ SpFromStorageTip:
 SpShipRepairTip:
  Id: 30103
  ENG: "Hull repair provided to friendly ships in orbit. Reduced while a space battle rages nearby."
+BgtTradeCargoTip:
+ Id: 30442
+ ENG: "What your freighters earned this turn on the goods they delivered: the tax on those goods once you have the Tax Goods bonus, the Mercantile trait's bonus per unit, and 2 credits per unit delivered to another empire. Trade treaties are on the line below."
+BgtTradeTreatiesTip:
+ Id: 30443
+ ENG: "What your trade treaties paid this turn. A treaty starts at -3 credits per turn and gains a tenth of a credit each turn, up to a ceiling set by the partner's population, your trade capacity and your relations."
 AutoGovernorTip:
  Id: 30104
  ENG: "New colonies are assigned a governor type suited to the planet (fertile worlds lean Agricultural, rich ones Industrial). Unchecked, new colonies start unmanaged."

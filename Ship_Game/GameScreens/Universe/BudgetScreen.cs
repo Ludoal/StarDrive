@@ -77,10 +77,11 @@ namespace Ship_Game.GameScreens
 
             public void AddItem(LocalizedText text, Func<float> getValue) => AddItem(text, getValue, Color.White);
             // a line whose figure is not a share of the lines above needs to say so
-            public void AddItem(LocalizedText text, Func<float> getValue, LocalizedText tip)
+            public UILabel AddItem(LocalizedText text, Func<float> getValue, LocalizedText tip)
             {
-                AddSplit(new UILabel(text.Text, Color.White) { Tooltip = tip },
-                         new UILabel(NeutralText(getValue, f => f.MoneyString())) );
+                var key = new UILabel(text.Text, Color.White) { Tooltip = tip };
+                AddSplit(key, new UILabel(NeutralText(getValue, f => f.MoneyString())) );
+                return key;
             }
             public void AddItem(LocalizedText text, Func<float> getValue, Color keyColor)
             {
@@ -829,7 +830,8 @@ namespace Ship_Game.GameScreens
 
             income.Spacer();
             income.AddItem(GameText.PlanetaryTaxes, () => Player.GrossPlanetIncome); // "Planetary Taxes"
-            income.AddItem("Trade (cargo + treaties)", () => Player.TotalTradeMoneyAddedThisTurn);
+            income.AddItem("Trade Cargo", () => Player.FreighterIncomeThisTurn, GameText.BgtTradeCargoTip);
+            TreatiesKey = income.AddItem("Trade Treaties", () => Player.TreatyIncomeThisTurn, GameText.BgtTradeTreatiesTip);
             income.AddItem("Excess Goods", () => Player.ExcessGoodsMoneyAddedThisTurn);
             income.AddItem("Money Leeched", () => Player.TotalMoneyLeechedLastTurn);
             income.AddItem(GameText.Other, () => Player.data.FlatMoneyBonus);
@@ -975,6 +977,25 @@ namespace Ship_Game.GameScreens
         float LastSortedDate;
         int PurseHash = -1;
 
+        // the treaties line names each partner it adds up, from the same snapshot as its figure;
+        // rebuilt when the snapshot changes, once a turn
+        UILabel TreatiesKey;
+        (Empire Partner, float Income)[] TreatiesShown;
+
+        void RefreshTreatiesTip()
+        {
+            var partners = Player.TreatyIncomesThisTurn;
+            if (TreatiesKey == null || ReferenceEquals(partners, TreatiesShown))
+                return;
+            TreatiesShown = partners;
+            string tip = Localizer.Token(GameText.BgtTradeTreatiesTip);
+            if (partners.Length > 0)
+                tip += "\n";
+            foreach ((Empire partner, float income) in partners)
+                tip += $"\n{partner.data.Traits.Plural}: {income.MoneyString()}";
+            TreatiesKey.Tooltip = tip;
+        }
+
         // which purses are taken over. A row's Auto box lands on the sim thread, so its rail can
         // only follow once the flag has moved there: the rows are laid out again when it does,
         // the way the Defense tab watches its own
@@ -1006,6 +1027,7 @@ namespace Ship_Game.GameScreens
                 LastSortedDate = Player.Universe.StarDate;
                 FillList();
             }
+            RefreshTreatiesTip();
             // a re-layout, not a refill: the rows stay where the player scrolled them
             int purses = ComputePurseHash();
             if (purses != PurseHash)
